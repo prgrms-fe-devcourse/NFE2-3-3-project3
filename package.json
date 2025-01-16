@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@vitejs/plugin-vue": "^5.2.1",
+    "axios": "^1.7.9",
     "highlight.js": "^11.11.1",
     "lowlight": "^2.9.0",
     "pinia": "^2.3.0",
