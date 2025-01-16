@@ -16,11 +16,11 @@
       <div class="mt-4 sm:mt-0 grid grid-cols-2 gap-4">
         <div>
           <p class="text-gray-500">현재 권한</p>
-          <p class="bg-gray-200 p-2 rounded">[권한]</p>
+          <p class="bg-gray-200 p-2 rounded">내용</p>
         </div>
         <div>
           <p class="text-gray-500">다음 권한</p>
-          <p class="bg-gray-200 p-2 rounded">[권한]</p>
+          <p class="bg-gray-200 p-2 rounded">내용</p>
         </div>
       </div>
     </section>
@@ -31,21 +31,21 @@
       >
         <div class="w-16 h-16 bg-gray-300 rounded mb-2"></div>
         <h3 class="text-lg font-semibold text-gray-700">문제 만들기</h3>
-        <p class="text-sm text-gray-500 mt-2">description</p>
+        <p class="text-sm text-gray-500 mt-2">상세 내용</p>
       </div>
       <div
         class="bg-gray-100 shadow-md rounded-md p-4 flex flex-col items-center"
       >
         <div class="w-16 h-16 bg-gray-300 rounded mb-2"></div>
         <h3 class="text-lg font-semibold text-gray-700">시험장 입실</h3>
-        <p class="text-sm text-gray-500 mt-2">description</p>
+        <p class="text-sm text-gray-500 mt-2">상세 내용</p>
       </div>
       <div
         class="bg-gray-100 shadow-md rounded-md p-4 flex flex-col items-center"
       >
         <div class="w-16 h-16 bg-gray-300 rounded mb-2"></div>
         <h3 class="text-lg font-semibold text-gray-700">다시 볼 문제</h3>
-        <p class="text-sm text-gray-500 mt-2">description</p>
+        <p class="text-sm text-gray-500 mt-2">상세 내용</p>
       </div>
     </section>
 
@@ -63,3 +63,4 @@
 </template>
 
 <style scoped></style>
+gi

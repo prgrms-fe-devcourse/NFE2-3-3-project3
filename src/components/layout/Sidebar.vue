@@ -3,21 +3,28 @@ import { RouterLink } from "vue-router";
 </script>
 
 <template>
-  <aside class="w-full lg:w-64 bg-gray-200 h-auto lg:h-full">
-    <RouterLink to="/" class="p-6 text-xl font-bold text-gray-700 text-center">
+  <aside class="w-full lg:w-64 bg-gray-200 h-full flex flex-col">
+    <!-- 로고 링크 -->
+    <RouterLink
+      to="/"
+      class="p-4 text-xl font-bold text-gray-700 text-center no-underline inline-block"
+    >
       LOGO
     </RouterLink>
 
-    <div class="flex justify-center my-4">
+    <!-- 문제 만들기 버튼 -->
+    <div class="flex justify-center mb-4">
       <button
-        class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+        class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 border-none"
       >
         문제 만들기 +
       </button>
     </div>
+
+    <!-- MY 메뉴 -->
     <nav>
-      <div class="px-4 text-gray-500 uppercase text-sm">MY</div>
-      <div class="mt-2 space-y-2">
+      <div class="px-4 font-bold text-gray-700 uppercase text-sm mb-2">MY</div>
+      <div class="space-y-2">
         <RouterLink
           to="/my-problems"
           class="block px-4 py-2 text-gray-700 hover:bg-gray-300 rounded no-underline"
@@ -37,8 +44,12 @@ import { RouterLink } from "vue-router";
           내 문제
         </RouterLink>
       </div>
-      <div class="px-4 mt-6 text-gray-500 uppercase text-sm">게시판</div>
-      <div class="mt-2 space-y-2">
+
+      <!-- 게시판 메뉴 -->
+      <div class="px-4 mt-6 font-bold text-gray-700 uppercase text-sm mb-2">
+        게시판
+      </div>
+      <div class="space-y-2">
         <RouterLink
           to="/problem-board"
           class="block px-4 py-2 text-gray-700 hover:bg-gray-300 rounded no-underline"

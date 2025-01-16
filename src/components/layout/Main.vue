@@ -5,11 +5,11 @@ import { RouterView } from "vue-router";
 </script>
 
 <template>
-  <div class="flex flex-col lg:flex-row h-screen">
-    <Sidebar />
+  <div class="flex h-screen">
+    <Sidebar class="lg:w-64 w-16 bg-gray-200 h-full" />
     <div class="flex-1 flex flex-col">
       <Header />
-      <main class="p-6 flex-1">
+      <main class="flex-1 px-6 py-4">
         <RouterView />
       </main>
     </div>
