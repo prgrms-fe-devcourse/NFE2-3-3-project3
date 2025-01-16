@@ -2,7 +2,6 @@
 
 <template>
   <div class="p-6 space-y-6">
-    <!-- User Info Section -->
     <section
       class="bg-gray-100 shadow-md rounded-md p-4 flex flex-col sm:flex-row justify-between items-center"
     >
@@ -26,7 +25,6 @@
       </div>
     </section>
 
-    <!-- Card Section -->
     <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       <div
         class="bg-gray-100 shadow-md rounded-md p-4 flex flex-col items-center"
@@ -51,7 +49,6 @@
       </div>
     </section>
 
-    <!-- Bottom Info Section -->
     <section
       class="bg-gray-100 shadow-md rounded-md p-4 flex justify-between items-center"
     >
@@ -65,6 +62,4 @@
   </div>
 </template>
 
-<style scoped>
-/* Adjust as needed for consistency */
-</style>
+<style scoped></style>
