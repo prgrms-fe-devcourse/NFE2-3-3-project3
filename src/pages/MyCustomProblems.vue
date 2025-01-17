@@ -1,5 +1,5 @@
 <script setup></script>
 <template>
-  <h1>MY CustomProblems</h1>
+  <h1>MyCustom</h1>
 </template>
 <style scoped></style>
