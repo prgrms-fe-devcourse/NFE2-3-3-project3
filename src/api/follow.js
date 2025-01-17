@@ -1,7 +1,7 @@
 import { supabase } from "./index.js";
 
 export const follow = {
-  // 팔로우 관계 생성
+  // 팔로우
   async create({ uid, follow_id }) {
     try {
       // 자기 자신을 팔로우하는 것 방지
@@ -34,7 +34,7 @@ export const follow = {
     }
   },
 
-  // 팔로우 관계 삭제 (언팔로우)
+  // 언팔로우
   async delete({ uid, follow_id }) {
     try {
       const { error } = await supabase

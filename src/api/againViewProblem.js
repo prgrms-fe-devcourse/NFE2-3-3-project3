@@ -73,8 +73,8 @@ export const againViewProblem = {
   // 필터링 조회 (여러 조건 가능)
   /**
    * 지정된 필터 조건에 따라 again_view_problem 테이블의 데이터를 조회합니다
-   * @param {string} column - 필터링할 컬럼명
-   * @param {string} operator - 필터링 연산자
+   * @param column - 필터링할 컬럼명
+   * @param operator - 필터링 연산자
    *                           - 'eq': 같음
    *                           - 'gt': 초과
    *                           - 'lt': 미만
@@ -83,9 +83,9 @@ export const againViewProblem = {
    *                           - 'like': 부분 일치 (대소문자 구분)
    *                           - 'ilike': 부분 일치 (대소문자 구분 없음)
    *                           - 'in': 배열 내 값과 일치
-   * @param {*} value - 필터링할 값
-   * @returns {Promise<Array>} 필터링된 데이터 배열을 created_at 기준 내림차순으로 반환
-   * @throws {Error} 지원하지 않는 연산자가 입력된 경우 에러 발생
+   * @param value - 필터링할 값
+   * @returns 필터링된 데이터 배열을 created_at 기준 내림차순으로 반환
+   * @throws 지원하지 않는 연산자가 입력된 경우 에러 발생
    */
   async getWithFilter(column, operator, value) {
     try {
@@ -129,9 +129,9 @@ export const againViewProblem = {
 
   /**
    * 최근 N일 동안 추가된 다시 볼 문제들을 조회합니다
-   * @param {number} days - 조회할 일수
-   * @param {string} [uid] - 선택적 사용자 ID. 입력 시 해당 사용자의 문제만 조회
-   * @returns {Promise<Array>} 조회된 문제 목록
+   * @param days - 조회할 일수
+   * @param uid - 선택적 사용자 ID. 입력 시 해당 사용자의 문제만 조회
+   * @returns 조회된 문제 목록
    */
   async getRecentProblems(days, uid = null) {
     try {
@@ -155,16 +155,16 @@ export const againViewProblem = {
   },
 
   /**
-   * 특정 월에 추가된 다시 볼 문제들을 조회합니다
-   * @param {number} year - 연도
-   * @param {number} month - 월 (1-12)
-   * @param {string} [uid] - 선택적 사용자 ID
-   * @returns {Promise<Array>} 조회된 문제 목록
+   * 특정 월에 추가된 다시 볼 문제 조회
+   * @param year - 연도
+   * @param month - 월 (1-12)
+   * @param uid - 선택적 사용자 ID
+   * @returns 조회된 문제 목록
    */
   async getMonthlyProblems(year, month, uid = null) {
     try {
       const startDate = new Date(year, month - 1, 1); // month는 0부터 시작하므로 -1
-      const endDate = new Date(year, month, 0); // 다음 달의 0일 = 이번 달의 마지막 날
+      const endDate = new Date(year, month, 0);
       
       let query = supabase
         .from("again_view_problem")
@@ -184,10 +184,10 @@ export const againViewProblem = {
   },
 
   /**
-   * 여러 문제들의 다시 볼 문제 상태를 한 번에 조회합니다
-   * @param {number[]} problemIds - 조회할 문제 ID 배열
-   * @param {string} [uid] - 선택적 사용자 ID
-   * @returns {Promise<Array>} 조회된 문제 목록
+   * 여러 문제들의 다시 볼 문제 상태를 한 번에 조회
+   * @param problemIds - 조회할 문제 ID 배열
+   * @param uid - 선택적 사용자 ID
+   * @returns 조회된 문제 목록
    */
   async getBulkProblems(problemIds, uid = null) {
     try {
@@ -209,8 +209,8 @@ export const againViewProblem = {
 
   /**
    * 오늘 추가된 다시 볼 문제들을 조회합니다
-   * @param {string} [uid] - 선택적 사용자 ID
-   * @returns {Promise<Array>} 조회된 문제 목록
+   * @param uid - 선택적 사용자 ID
+   * @returns 조회된 문제 목록
    */
   async getTodayProblems(uid = null) {
     try {
