@@ -1,5 +1,20 @@
 <script setup>
 import { RouterLink } from "vue-router";
+import { againViewProblem } from '@/api/againViewProblem.js';
+
+const handleCreate = async () => {
+  const newData = {
+    problem_id: 1,
+    uid: '123e4567-e89b-12d3-a456-426614174000' // UUID 형식의 문자열
+  };
+  
+  try {
+    const result = await againViewProblem.create(newData);
+    console.log('생성 결과:', result);
+  } catch (error) {
+    console.error('에러:', error);
+  }
+};
 </script>
 
 <template>
@@ -14,6 +29,7 @@ import { RouterLink } from "vue-router";
     <div class="flex justify-center my-4">
       <button
         class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 border-none"
+        @click="handleCreate"
       >
         문제 만들기 +
       </button>
