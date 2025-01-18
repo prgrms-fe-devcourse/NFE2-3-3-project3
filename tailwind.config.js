@@ -3,13 +3,15 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        //팀컬러
         orange: {
           1: "#F1A140", // Orange-1
           2: "#F6C085", // Orange-2
           3: "#FBE1C0", // Orange-3
         },
+        //배경색
         beige: {
-          1: "#F7F3E9", // Beige-1
+          1: "#F7F3E9", // Beige-1,
           2: "#FAF8F1", // Beige-2
         },
       },
