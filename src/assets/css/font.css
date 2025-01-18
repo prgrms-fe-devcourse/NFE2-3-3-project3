@@ -1,0 +1,35 @@
+/* Pretendard Regular */
+
+/* Pretendard Regular */
+@font-face {
+  font-family: "Pretendard";
+  src: url("../fonts/Pretendard-Regular.woff2") format("woff2"),
+    url("../fonts/Pretendard-Regular.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* Pretendard Bold*/
+@font-face {
+  font-family: "Pretendard";
+  src: url("../fonts/Pretendard-Bold.woff2") format("woff2"),
+    url("../fonts/Pretendard-Bold.woff") format("woff");
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* LaundryGothic Regular */
+@font-face {
+  font-family: "LaundryGothic";
+  src: url("../fonts/Laundrygothic-Regular.woff") format("woff");
+  font-weight: 400; /* Regular */
+  font-style: normal;
+}
+
+/* LaundryGothic Bold */
+@font-face {
+  font-family: "LaundryGothic";
+  src: url("../fonts/Laundrygothic-Bold.woff") format("woff");
+  font-weight: 700; /* Bold */
+  font-style: normal;
+}
