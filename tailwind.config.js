@@ -15,9 +15,12 @@ module.exports = {
           2: "#FAF8F1", // Beige-2
         },
       },
+      //폰트 추가
       fontFamily: {
-        pretend: ["Pretendard", ...defaultTheme.fontFamily.sans], // Pretendard 추가
-        laundry: ["LaundryGothic", "sans-serif"], // LaundryGothic 추가
+        //기본
+        pretend: ["Pretendard", ...defaultTheme.fontFamily.sans],
+        //제목
+        laundry: ["LaundryGothic", "sans-serif"],
       },
     },
   },
