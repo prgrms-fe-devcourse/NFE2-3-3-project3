@@ -4,7 +4,7 @@ const logoPath = new URL("@/assets/logos/logo.svg", import.meta.url).href;
 </script>
 
 <template>
-  <aside class="w-[220px] bg-beige-2 h-full flex flex-col items-center py-6">
+  <aside class="w-[220px] bg-beige-2 h-full flex flex-col relative top-0 z-50 items-center py-6">
     <!-- 로고 -->
     <RouterLink to="/home" class="mb-[24px]">
       <img :src="logoPath" alt="Pullgo" class="w-auto h-auto" />

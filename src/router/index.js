@@ -7,8 +7,7 @@ import MyCustomProblems from "@/pages/MyCustomProblems.vue";
 import ProblemBoard from "@/pages/ProblemBoard.vue";
 import ProblemSetBoard from "@/pages/ProblemSetBoard.vue";
 import ReviewBoard from "@/pages/ReviewBoard.vue";
-import ExamRoom from "@/pages/ExamRoom.vue";
-
+import ExamRoom from "@/pages/exam-room/ExamRoom.vue";
 import MainContent from "@/components/layout/MainContent.vue";
 import LandingPage from "@/pages/LandingPage.vue";
 import ExamHistory from "@/pages/ExamHistory.vue";

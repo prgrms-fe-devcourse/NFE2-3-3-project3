@@ -1,6 +1,4 @@
 /* Pretendard Regular */
-
-/* Pretendard Regular */
 @font-face {
   font-family: "Pretendard";
   src: url("../../fonts/Pretendard-Regular.woff2") format("woff2"),
@@ -21,7 +19,7 @@
 /* LaundryGothic Regular */
 @font-face {
   font-family: "LaundryGothic";
-  src: url("../../fonts/Pretendard-Regular.woff") format("woff");
+  src: url("../../fonts/Laundrygothic-Regular.woff") format("woff");
   font-weight: 400; /* Regular */
   font-style: normal;
 }
