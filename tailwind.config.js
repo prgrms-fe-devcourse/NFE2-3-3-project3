@@ -1,5 +1,4 @@
-import defaultTheme from "tailwindcss/defaultTheme";
-
+const defaultTheme = require("tailwindcss/defaultTheme");
 module.exports = {
   content: ["./index.html", "./src/**/*.{vue,js,ts,jsx,tsx}"],
   theme: {
@@ -13,20 +12,33 @@ module.exports = {
         },
         //배경색
         beige: {
-          1: "#F7F3E9", // Beige-1,
+          1: "#F7F3E9", // Beige-1
           2: "#FAF8F1", // Beige-2
         },
+        black: {
+          1: "#1A1A1A", // default
+          2: "#414860",
+          3: "#1E2338",
+          4: "#D4D4D4",
+          5: "#E5E4E6",
+        },
+        navy: {
+          1: "#1E2338",
+          2: "#414860",
+          3: "#6A718B",
+          4: "#8992B5",
+        },
+        gray: {
+          1: "#777777",
+        },
       },
-      //폰트 추가
       fontFamily: {
-        //기본
-        pretend: ["Pretendard", ...defaultTheme.fontFamily.sans],
-        //제목
+        sans: ["Pretendard", ...defaultTheme.fontFamily.sans],
         laundry: ["LaundryGothic", "sans-serif"],
       },
     },
   },
   corePlugins: {
-    preflight: false, // Tailwind CSS의 기본 리셋(preflight)을 비활성화
+    preflight: false,
   },
 };
