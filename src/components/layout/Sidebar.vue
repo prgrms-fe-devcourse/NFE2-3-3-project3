@@ -1,7 +1,5 @@
 <script setup>
 import { RouterLink } from "vue-router";
-import { againViewProblem } from '@/api/againViewProblem.js';
-
 </script>
 
 <template>
