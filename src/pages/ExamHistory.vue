@@ -1,5 +1,5 @@
 <script setup></script>
 <template>
-  <h1>보관한 문제집</h1>
+  <h1>시험 내역</h1>
 </template>
 <style scoped></style>

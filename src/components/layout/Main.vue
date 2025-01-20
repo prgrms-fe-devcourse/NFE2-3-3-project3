@@ -1,17 +1,17 @@
 <script setup>
 import Sidebar from "@/components/layout/Sidebar.vue";
-import Header from "@/components/layout/Header.vue";
+
 import { RouterView } from "vue-router";
+import { useRoute } from "vue-router";
+
+const route = useRoute();
 </script>
 
 <template>
   <div class="flex h-screen">
-    <Sidebar class="lg:w-64 w-16 bg-gray-200 h-full" />
-    <div class="flex-1 flex flex-col">
-      <Header />
-      <main class="flex-1 px-6 py-4">
-        <RouterView />
-      </main>
+    <Sidebar v-if="route.path !== '/'" />
+    <div class="flex-1 bg-beige-2 p-6">
+      <RouterView />
     </div>
   </div>
 </template>
