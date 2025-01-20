@@ -1,5 +1,5 @@
 <script setup>
-import { auth } from "@/api/auth";
+import { authAPI } from "@/api/auth";
 
 const emit = defineEmits(["update:modelValue", "login-success"]);
 const props = defineProps({
@@ -10,19 +10,19 @@ const props = defineProps({
 });
 
 const handleGoogleLogin = async () => {
-  await auth.logInWithGoogle();
+  await authAPI.logInWithGoogle();
   emit("login-success");
   emit("update:modelValue", false);
 };
 
 const handleGithubLogin = async () => {
-  await auth.logInWithGithub();
+  await authAPI.logInWithGithub();
   emit("login-success");
   emit("update:modelValue", false);
 };
 
 const handleKakaoLogin = async () => {
-  await auth.logInWithKakao();
+  await authAPI.logInWithKakao();
   emit("login-success");
   emit("update:modelValue", false);
 };

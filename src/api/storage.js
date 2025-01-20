@@ -1,6 +1,6 @@
 import { supabase } from "./index.js";
 
-export const storage = {
+export const storageAPI = {
   /**
    * 이미지 업로드
    * @param file - 업로드할 이미지 파일

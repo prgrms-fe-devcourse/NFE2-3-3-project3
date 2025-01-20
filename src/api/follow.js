@@ -1,15 +1,22 @@
 import { supabase } from "./index.js";
 
-export const follow = {
-  // 팔로우
-  async create({ uid, follow_id }) {
+export const followAPI = {
+  /**
+   * @description 사용자 팔로우하기
+   * @param {string} follow_id - 팔로우 받는 사용자 ID
+   * @returns {object} 생성된 팔로우 데이터
+   */
+  async followUser(follow_id) {
     try {
-      // 자기 자신을 팔로우하는 것 방지
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      const uid = user.id;
+
       if (uid === follow_id) {
         throw new Error("자기 자신을 팔로우할 수 없습니다.");
       }
 
-      // 이미 팔로우 중인지 확인
       const { data: existing } = await supabase
         .from("follow")
         .select("id")
@@ -23,7 +30,7 @@ export const follow = {
 
       const { data, error } = await supabase
         .from("follow")
-        .insert([{ uid, follow_id }])
+        .insert([{ follow_id }])
         .select();
 
       if (error) throw error;
@@ -34,13 +41,16 @@ export const follow = {
     }
   },
 
-  // 언팔로우
-  async delete({ uid, follow_id }) {
+  /**
+   * @description 사용자 언팔로우하기
+   * @param {string} follow_id - 언팔로우 당하는 사용자 ID
+   * @returns {boolean} 성공 여부
+   */
+  async unfollowUser(follow_id) {
     try {
       const { error } = await supabase
         .from("follow")
         .delete()
-        .eq("uid", uid)
         .eq("follow_id", follow_id);
 
       if (error) throw error;
@@ -51,102 +61,75 @@ export const follow = {
     }
   },
 
-  // 특정 사용자의 팔로잉 목록 조회
-  async getFollowing(uid, { page = 1, pageSize = 20 } = {}) {
+  /**
+   * @description 특정 사용자의 팔로잉 목록 조회
+   * @param {string} uid - 조회할 사용자 ID
+   * @returns {Array} 팔로잉 목록
+   */
+  async getFollowing(uid) {
     try {
-      const from = (page - 1) * pageSize;
-      const to = from + pageSize - 1;
-
-      const { data, error, count } = await supabase
+      const { data, error } = await supabase
         .from("follow")
-        .select(`
+        .select(
+          `
           *,
           following:auth.users!follow_id(
             id,
             email
           )
-        `, { count: 'exact' })
-        .eq("uid", uid)
-        .range(from, to);
+        `
+        )
+        .eq("uid", uid);
 
       if (error) throw error;
-
-      return {
-        data,
-        count,
-        currentPage: page,
-        pageSize,
-        totalPages: Math.ceil(count / pageSize),
-      };
+      return data;
     } catch (error) {
       console.error(error);
       throw error;
     }
   },
 
-  // 특정 사용자의 팔로워 목록 조회
-  async getFollowers(uid, { page = 1, pageSize = 20 } = {}) {
+  /**
+   * @description 특정 사용자의 팔로워 목록 조회
+   * @param {string} uid - 조회할 사용자 ID
+   * @returns {Array} 팔로워 목록
+   */
+  async getFollowers(uid) {
     try {
-      const from = (page - 1) * pageSize;
-      const to = from + pageSize - 1;
-
-      const { data, error, count } = await supabase
+      const { data, error } = await supabase
         .from("follow")
-        .select(`
+        .select(
+          `
           *,
           follower:auth.users!uid(
             id,
             email
           )
-        `, { count: 'exact' })
-        .eq("follow_id", uid)
-        .range(from, to);
+        `
+        )
+        .eq("follow_id", uid);
 
       if (error) throw error;
-
-      return {
-        data,
-        count,
-        currentPage: page,
-        pageSize,
-        totalPages: Math.ceil(count / pageSize),
-      };
+      return data;
     } catch (error) {
       console.error(error);
       throw error;
     }
   },
-
-  // 팔로우 상태 확인
-  async checkFollowStatus({ uid, follow_id }) {
-    try {
-      const { data, error } = await supabase
-        .from("follow")
-        .select("id")
-        .eq("uid", uid)
-        .eq("follow_id", follow_id)
-        .single();
-
-      if (error && error.code !== 'PGRST116') throw error;
-      return !!data;
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  },
-
-  // 팔로우/팔로워 수 조회
+  
+  /**
+   * @description 특정 사용자의 팔로우/팔로워 수 조회
+   * @param {string} uid - 조회할 사용자 ID
+   * @returns {object} 팔로잉 수와 팔로워 수
+   */
   async getCounts(uid) {
     try {
-      const [{ data: following, error: followingError }, { data: followers, error: followersError }] = await Promise.all([
-        supabase
-          .from("follow")
-          .select("id", { count: 'exact' })
-          .eq("uid", uid),
-        supabase
-          .from("follow")
-          .select("id", { count: 'exact' })
-          .eq("follow_id", uid)
+      const [
+        { data: following, error: followingError },
+        { data: followers, error: followersError },
+      ] = await Promise.all([
+        supabase.from("follow").select("id").eq("uid", uid),
+        supabase.from("follow").select("id").eq("follow_id", uid),
       ]);
 
       if (followingError) throw followingError;
@@ -154,11 +137,11 @@ export const follow = {
 
       return {
         followingCount: following.length,
-        followersCount: followers.length
+        followersCount: followers.length,
       };
     } catch (error) {
       console.error(error);
       throw error;
     }
-  }
+  },
 };

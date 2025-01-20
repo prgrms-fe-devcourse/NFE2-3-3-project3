@@ -1,6 +1,6 @@
 import { supabase } from "./index.js";
 
-export const auth = {
+export const authAPI = {
 // GitHub 로그인
 async logInWithGithub() {
   try {
@@ -50,7 +50,7 @@ async logInWithKakao() {
       if (error) throw error;
       return user;
     } catch (error) {
-      console.error('사용자 정보 조회 실패:', error);
+      // console.error('사용자 정보 조회 실패:', error);
       throw error;
     }
   },
