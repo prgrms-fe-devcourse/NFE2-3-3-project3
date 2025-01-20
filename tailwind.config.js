@@ -9,7 +9,7 @@ module.exports = {
           1: "#F1A140", // Orange-1
           2: "#F6C085", // Orange-2
           3: "#FBE1C0", // Orange-3
-          hover: "#E28B30"
+          hover: "#E28B30",
         },
         //배경색
         beige: {
@@ -32,7 +32,7 @@ module.exports = {
         gray: {
           1: "#777777",
           2: "#4F4F4F",
-          3: "#B1B1B1"
+          3: "#B1B1B1",
         },
       },
       fontFamily: {
