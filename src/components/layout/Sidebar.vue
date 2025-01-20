@@ -3,7 +3,7 @@ import { RouterLink } from "vue-router";
 </script>
 
 <template>
-  <aside class="w-full lg:w-64 bg-gray-200 h-auto lg:h-full">
+  <aside class="w-full lg:w-64 bg-gray-200 h-auto lg:h-full relative top-0 z-50">
     <RouterLink
       to="/"
       class="p-6 text-xl font-bold text-gray-700 text-center inline-block no-underline"

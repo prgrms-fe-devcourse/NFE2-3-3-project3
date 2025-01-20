@@ -1,20 +1,19 @@
 import { supabase } from "./index.js";
 
-export const auth = {
-  // GitHub 로그인
-  async logInWithGithub() {
-    try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "github",
-      });
-
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error("GitHub 로그인 실패:", error);
-      throw error;
-    }
-  },
+export const authAPI = {
+// GitHub 로그인
+async logInWithGithub() {
+  try {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'github'
+    });
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('GitHub 로그인 실패:', error);
+    throw error;
+  }
+},
 
   // Google 로그인
   async logInWithGoogle() {
