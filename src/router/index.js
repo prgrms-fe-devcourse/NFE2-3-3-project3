@@ -1,11 +1,11 @@
 import { createRouter, createWebHistory } from "vue-router";
-import DefaultLayout from '@/components/layout/DefaultLayout.vue';
+import DefaultLayout from "@/components/layout/DefaultLayout.vue";
 
 // 페이지 컴포넌트 가져오기
 import MyProblemSets from "@/pages/MyProblemSets.vue";
 import MyProblems from "@/pages/MyProblems.vue";
 import MyCustomProblems from "@/pages/MyCustomProblems.vue";
-import ProblemBoard from "@/pages/ProblemBoard.vue";
+import ProblemBoard from "@/pages/problem-board/ProblemBoard.vue";
 import ProblemSetBoard from "@/pages/problem-set-board/ProblemSetBoard.vue";
 import ReviewBoard from "@/pages/ReviewBoard.vue";
 import ExamRoom from "@/pages/exam-room/ExamRoom.vue";
@@ -13,82 +13,88 @@ import MainContent from "@/components/layout/MainContent.vue";
 import LandingPage from "@/pages/LandingPage.vue";
 import ExamHistory from "@/pages/ExamHistory.vue";
 import ProblemSetBoardDetail from "@/pages/ProblemSetBoardDetail.vue";
+import ProblemBoardDetail from "@/pages/ProblemBoardDetail.vue";
 
 const routes = [
   // 레이아웃이 필요없는 페이지들
   {
-    path: '/',
-    name: 'LandingPage',
+    path: "/",
+    name: "LandingPage",
     component: LandingPage,
   },
   {
-    path: '/editor',
-    name: 'Editor',
-    component: () => import('@/pages/Editor.vue'),
+    path: "/editor",
+    name: "Editor",
+    component: () => import("@/pages/Editor.vue"),
   },
   {
-    path: '/exam',
-    name: 'ExamEnvironment',
-    component: () => import('@/pages/ExamEnvironment.vue'),
+    path: "/exam",
+    name: "ExamEnvironment",
+    component: () => import("@/pages/ExamEnvironment.vue"),
   },
 
   // DefaultLayout을 사용하는 페이지들
   {
-    path: '/',
+    path: "/",
     component: DefaultLayout,
     children: [
       {
-        path: 'home',
-        name: 'Home',
+        path: "home",
+        name: "Home",
         component: MainContent,
       },
       {
-        path: 'my-problems',
-        name: 'MyProblems',
+        path: "my-problems",
+        name: "MyProblems",
         component: MyProblems,
       },
       {
-        path: 'my-problem-sets',
-        name: 'MyProblemSets',
+        path: "my-problem-sets",
+        name: "MyProblemSets",
         component: MyProblemSets,
       },
       {
-        path: 'my-custom-problems',
-        name: 'MyCustomProblems',
+        path: "my-custom-problems",
+        name: "MyCustomProblems",
         component: MyCustomProblems,
       },
       {
-        path: 'problem-board',
-        name: 'ProblemBoard',
+        path: "problem-board",
+        name: "ProblemBoard",
         component: ProblemBoard,
       },
       {
-        path: 'problem-set-board',
-        name: 'ProblemSetBoard',
+        path: "problem-set-board",
+        name: "ProblemSetBoard",
         component: ProblemSetBoard,
       },
       {
-        path: 'review-board',
-        name: 'ReviewBoard',
+        path: "review-board",
+        name: "ReviewBoard",
         component: ReviewBoard,
       },
       {
-        path: 'exam-room',
-        name: 'ExamRoom',
+        path: "exam-room",
+        name: "ExamRoom",
         component: ExamRoom,
       },
       {
-        path: 'exam-history',
-        name: 'ExamHistory',
+        path: "exam-history",
+        name: "ExamHistory",
         component: ExamHistory,
       },
       {
-        path: 'problem-set-board/:problemSetId',
-        name: 'ProblemSetBoardDetail',
+        path: "problem-set-board/:problemSetId",
+        name: "ProblemSetBoardDetail",
         component: ProblemSetBoardDetail,
       },
-    ]
-  }
+      {
+        path: "problem-board/:problemId",
+        name: "ProblemBoardDetail",
+        component: ProblemBoardDetail,
+      },
+    ],
+  },
 ];
 
 const router = createRouter({

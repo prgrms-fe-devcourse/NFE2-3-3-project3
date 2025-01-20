@@ -19,7 +19,7 @@ const sort = ref({ name: "최신순", value: "최신순" });
     <Search :show-status="false" />
     <section class="flex flex-col gap-[18px]">
       <div class="flex justify-between items-center">
-        <p class="font-semibold text-xl">552문제집</p>
+        <p class="font-semibold text-xl">{{ WORK_BOOKS.length }} 문제집</p>
         <Select
           v-model="sort"
           :options="SORTS"
@@ -35,8 +35,8 @@ const sort = ref({ name: "최신순", value: "최신순" });
           :to="`/problem-set-board/${workbook}`"
         />
       </div>
-      <Paginator :rows="10" :totalRecords="120"></Paginator>
     </section>
+    <Paginator :rows="10" :totalRecords="120"></Paginator>
   </section>
 </template>
 <style scoped></style>
