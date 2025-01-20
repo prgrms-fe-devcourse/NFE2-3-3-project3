@@ -3,12 +3,30 @@
 
 /* index.css 또는 global.css */
 
+:root {
+  /* primary */
+  --p-primary-color: #f1a140 !important;
+  --p-primary-hover-color: #f6c085 !important;
+  --p-primary-active-color: #fbe1c0 !important;
+  /* highlight */
+  --p-highlight-background: #f6c085 !important;
+  --p-highlight-color: #1a1a1a !important;
+  /* content */
+  --p-content-hover-background: #fbe1c0 !important;
+  /* list */
+  --p-list-option-selected-focus-background: #fbe1c0 !important;
+  --p-list-option-focus-background: #fbe1c0 !important;
+}
+
 *,
 *::before,
 *::after {
   margin: 0;
   padding: 0;
+  border: 0 solid;
   box-sizing: border-box;
+  @apply text-base;
+  @apply text-black-1;
 }
 
 html,
@@ -25,4 +43,25 @@ body {
 
 button {
   all: unset;
+}
+
+div {
+  @apply border-black-4;
+}
+
+li {
+  list-style: none;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  text-decoration: none;
+}
+
+input:focus {
+  @apply outline-none;
+  @apply border-orange-1;
 }
