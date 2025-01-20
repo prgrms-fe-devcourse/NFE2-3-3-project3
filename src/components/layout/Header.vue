@@ -2,6 +2,31 @@
 import { ref, onMounted } from "vue";
 import { useAuthStore } from "../../store/authStore";
 import LoginModal from "./LoginModal.vue";
+import Menu from "primevue/menu";
+const alertPath = new URL("@/assets/icons/alert.svg", import.meta.url).href;
+const pointPath = new URL("@/assets/icons/point.svg", import.meta.url).href;
+
+// 메뉴 항목 정의
+const menuItems = [
+  {
+    label: "프로필",
+    icon: "pi pi-user",
+  },
+  {
+    label: "로그아웃",
+    icon: "pi pi-sign-out",
+  },
+];
+
+// Menu 참조
+const menu = ref(null);
+
+// Menu 열기 함수
+const openMenu = (event) => {
+  menu.value.toggle(event); // 클릭 위치에서 메뉴 표시
+};
+//포인트 추적
+const points = ref(40);
 
 const authStore = useAuthStore();
 const showLoginModal = ref(false);
@@ -24,35 +49,50 @@ onMounted(async () => {
 </script>
 
 <template>
-  <header class="bg-gray-100 shadow-md w-full fixed top-0 left-1">
-    <div class="container mx-auto flex items-center pr-6 flex-wrap">
-      <nav
-        class="flex items-center space-x-3 text-gray-600 mt-2 lg:mt-0 lg:ml-auto p-4"
-      >
-        <a href="#" class="hover:text-gray-800 no-underline">다크 모드</a>
-        <a href="#" class="hover:text-gray-800 no-underline">알림</a>
-        <a href="#" class="hover:text-gray-800 no-underline">포인트</a>
+  <header class="w-full">
+    <nav class="flex items-center space-x-3 text-gray-600 justify-end py-6 px-16">
+      <a href="#" class="hover:text-gray-800 no-underline">다크 모드</a>
+      <!-- 알림 및 포인트 -->
+      <img :src="alertPath" alt="alert" />
 
-        <!-- 로그인 상태에 따른 버튼 표시 -->
-        <template v-if="authStore.isAuthenticated">
-          <span class="text-sm text-gray-700">{{ authStore.user?.email }}</span>
-          <button
-            @click="handleLogout"
-            class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
-          >
-            로그아웃
-          </button>
-        </template>
-        <template v-else>
-          <button
-            @click="showLoginModal = true"
-            class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-          >
-            로그인
-          </button>
-        </template>
-      </nav>
-    </div>
+      <div
+        class="flex items-center w-[53px] h-[24px] rounded-full font-pretend"
+      >
+        <!-- 별 아이콘 -->
+        <img :src="pointPath" alt="point" />
+        <!-- 포인트 숫자 -->
+        <span class="text-sm font-bold text-gray-800 -ml-6">{{ points }}</span>
+      </div>
+      <!-- 메뉴 트리거 -->
+      <div
+        @click="openMenu"
+        class="flex items-center gap-2 cursor-pointer font-pretend"
+      >
+        <span class="font-bold">안효태님</span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          class="w-5 h-5"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </div>
+      <!-- Menu -->
+      <Menu
+        :model="menuItems"
+        ref="menu"
+        popup
+        appendTo="body"
+        class="p-menu w-[200px] font-pretend"
+      />
+    </nav>
 
     <!-- 로그인 모달 -->
     <LoginModal v-model="showLoginModal" @login-success="handleLoginSuccess" />
