@@ -9,11 +9,13 @@ export const categoryAPI = {
     try {
       const { data, error } = await supabase
         .from("category")
-        .select(`
+        .select(
+          `
           *,
           problems:problem(count)
-        `)
-        .order('created_at', { ascending: false });
+        `,
+        )
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       return data;
@@ -34,7 +36,7 @@ export const categoryAPI = {
         .from("category")
         .select("*")
         .ilike("name", `%${searchTerm}%`)
-        .order('created_at', { ascending: false });
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       return data;
@@ -76,5 +78,5 @@ export const categoryAPI = {
       console.error(error);
       throw error;
     }
-  }
+  },
 };
