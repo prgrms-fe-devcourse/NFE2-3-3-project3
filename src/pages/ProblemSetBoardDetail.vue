@@ -1,5 +1,5 @@
 <script setup></script>
 <template>
-  <h1>ProblemSetBoard</h1>
+  <h1>ProblemSetBoardDetail</h1>
 </template>
 <style scoped></style>
