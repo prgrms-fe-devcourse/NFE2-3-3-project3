@@ -34,12 +34,12 @@ defineProps({
       <h3 class=" font-medium text-lg">{{ title }}</h3>
       <div class="item-middle">
         <button
-          class="hover:bg-black-1/15 transition w-8 h-8 rounded-full flex justify-center items-center box-border"
+          class="hover:bg-black-1/10 transition w-8 h-8 rounded-full flex justify-center items-center box-border"
         >
           <img :src="pencilIcon" alt="시험 수정" class="w-4 h-4" />
         </button>
         <button
-          class="hover:bg-black-1/15 transition w-8 h-8 rounded-full flex justify-center items-center box-border"
+          class="hover:bg-black-1/10 transition w-8 h-8 rounded-full flex justify-center items-center box-border"
         >
           <img :src="trashIcon" alt="시험 삭제" class="w-4 h-4" />
         </button>
