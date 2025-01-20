@@ -10,23 +10,21 @@ const props = defineProps({
 });
 
 const handleGoogleLogin = async () => {
-  try {
-    await auth.logInWithGoogle();
-    emit("login-success");
-    emit("update:modelValue", false);
-  } catch (error) {
-    console.error("Google login failed:", error);
-  }
+  await auth.logInWithGoogle();
+  emit("login-success");
+  emit("update:modelValue", false);
 };
 
 const handleGithubLogin = async () => {
-  try {
-    await auth.logInWithGithub();
-    emit("login-success");
-    emit("update:modelValue", false);
-  } catch (error) {
-    console.error("GitHub login failed:", error);
-  }
+  await auth.logInWithGithub();
+  emit("login-success");
+  emit("update:modelValue", false);
+};
+
+const handleKakaoLogin = async () => {
+  await auth.logInWithKakao();
+  emit("login-success");
+  emit("update:modelValue", false);
 };
 </script>
 
@@ -80,6 +78,18 @@ const handleGithubLogin = async () => {
                 alt="GitHub logo"
               />
               <span>GitHub로 로그인</span>
+            </button>
+
+            <button
+              @click="handleKakaoLogin"
+              class="flex w-full items-center justify-center space-x-2 rounded-lg border border-[#FEE500] bg-[#FEE500] px-4 py-3 text-black hover:bg-[#FEE500]/90 focus:outline-none focus:ring-[#FEE500]"
+            >
+              <img
+                src="https://developers.kakao.com/assets/img/about/logos/kakaotalksharing/kakaotalk_sharing_btn_medium.png"
+                class="h-6 w-6"
+                alt="Kakao logo"
+              />
+              <span>카카오로 로그인</span>
             </button>
           </div>
 

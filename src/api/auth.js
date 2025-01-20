@@ -5,13 +5,13 @@ export const auth = {
   async logInWithGithub() {
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'github'
+        provider: "github",
       });
-      
+
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('GitHub 로그인 실패:', error);
+      console.error("GitHub 로그인 실패:", error);
       throw error;
     }
   },
@@ -20,13 +20,13 @@ export const auth = {
   async logInWithGoogle() {
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google'
+        provider: "google",
       });
-      
+
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Google 로그인 실패:', error);
+      console.error("Google 로그인 실패:", error);
       throw error;
     }
   },
@@ -34,12 +34,15 @@ export const auth = {
   // 현재 로그인한 사용자 정보 조회
   async getCurrentUser() {
     try {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
+
       if (error) throw error;
       return user;
     } catch (error) {
-      console.error('사용자 정보 조회 실패:', error);
+      console.error("사용자 정보 조회 실패:", error);
       throw error;
     }
   },
@@ -50,7 +53,7 @@ export const auth = {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
     } catch (error) {
-      console.error('로그아웃 실패:', error);
+      console.error("로그아웃 실패:", error);
       throw error;
     }
   },
@@ -58,12 +61,15 @@ export const auth = {
   // 사용자 세션 관리
   async getSession() {
     try {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.getSession();
+
       if (error) throw error;
       return session;
     } catch (error) {
-      console.error('세션 조회 실패:', error);
+      console.error("세션 조회 실패:", error);
       throw error;
     }
   },
@@ -71,11 +77,13 @@ export const auth = {
   // 세션 상태 변경 감지
   onAuthStateChange(callback) {
     try {
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(callback);
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange(callback);
       return subscription;
     } catch (error) {
-      console.error('Auth 상태 변경 감지 실패:', error);
+      console.error("Auth 상태 변경 감지 실패:", error);
       throw error;
     }
-  }
+  },
 };
