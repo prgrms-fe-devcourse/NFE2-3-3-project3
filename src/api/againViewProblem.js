@@ -89,7 +89,7 @@ export const againViewProblem = {
    */
   async getWithFilter(column, operator, value) {
     try {
-      const query = supabase.from("again_view_problem").select("*");
+      let query = supabase.from("again_view_problem").select("*");
 
       switch (operator) {
         case "eq":
@@ -120,7 +120,7 @@ export const againViewProblem = {
           throw new Error(`지원하지 않는 연산자입니다: ${operator}`);
       }
 
-      return await query.order('created_at', { ascending: false });
+      return await query.order("created_at", { ascending: false });
     } catch (error) {
       console.error(error);
       throw error;
@@ -137,7 +137,7 @@ export const againViewProblem = {
     try {
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - days);
-      
+
       let query = supabase
         .from("again_view_problem")
         .select("*")
@@ -147,7 +147,7 @@ export const againViewProblem = {
         query = query.eq("uid", uid);
       }
 
-      return await query.order('created_at', { ascending: false });
+      return await query.order("created_at", { ascending: false });
     } catch (error) {
       console.error(error);
       throw error;
@@ -165,7 +165,7 @@ export const againViewProblem = {
     try {
       const startDate = new Date(year, month - 1, 1); // month는 0부터 시작하므로 -1
       const endDate = new Date(year, month, 0);
-      
+
       let query = supabase
         .from("again_view_problem")
         .select("*")
@@ -176,7 +176,7 @@ export const againViewProblem = {
         query = query.eq("uid", uid);
       }
 
-      return await query.order('created_at', { ascending: false });
+      return await query.order("created_at", { ascending: false });
     } catch (error) {
       console.error(error);
       throw error;
@@ -200,7 +200,7 @@ export const againViewProblem = {
         query = query.eq("uid", uid);
       }
 
-      return await query.order('created_at', { ascending: false });
+      return await query.order("created_at", { ascending: false });
     } catch (error) {
       console.error(error);
       throw error;
@@ -216,7 +216,7 @@ export const againViewProblem = {
     try {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      
+
       let query = supabase
         .from("again_view_problem")
         .select("*")
@@ -226,7 +226,7 @@ export const againViewProblem = {
         query = query.eq("uid", uid);
       }
 
-      return await query.order('created_at', { ascending: false });
+      return await query.order("created_at", { ascending: false });
     } catch (error) {
       console.error(error);
       throw error;
@@ -244,5 +244,4 @@ export const againViewProblem = {
       console.error(error);
     }
   },
-
 };

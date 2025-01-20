@@ -6,11 +6,13 @@ export const category = {
     try {
       const { data, error } = await supabase
         .from("category")
-        .select(`
+        .select(
+          `
           *,
           problems:problem(count)
-        `)
-        .order('created_at', { ascending: false });
+        `,
+        )
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       return data;
@@ -27,7 +29,7 @@ export const category = {
         .from("category")
         .select("*")
         .ilike("name", `%${searchTerm}%`)
-        .order('created_at', { ascending: false });
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       return data;
@@ -42,7 +44,7 @@ export const category = {
     try {
       const { count, error } = await supabase
         .from("problem")
-        .select("*", { count: 'exact' })
+        .select("*", { count: "exact" })
         .eq("category_id", categoryId);
 
       if (error) throw error;
@@ -86,11 +88,13 @@ export const category = {
     try {
       const { data, error } = await supabase
         .from("category")
-        .select(`
+        .select(
+          `
           *,
           problem_count:problem(count)
-        `)
-        .order('problem_count', { ascending: false })
+        `,
+        )
+        .order("problem_count", { ascending: false })
         .limit(limit);
 
       if (error) throw error;
@@ -99,5 +103,5 @@ export const category = {
       console.error(error);
       throw error;
     }
-  }
+  },
 };
