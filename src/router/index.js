@@ -5,12 +5,13 @@ import MyProblemSets from "@/pages/MyProblemSets.vue";
 import MyProblems from "@/pages/MyProblems.vue";
 import MyCustomProblems from "@/pages/MyCustomProblems.vue";
 import ProblemBoard from "@/pages/ProblemBoard.vue";
-import ProblemSetBoard from "@/pages/ProblemSetBoard.vue";
+import ProblemSetBoard from "@/pages/problem-set-board/ProblemSetBoard.vue";
 import ReviewBoard from "@/pages/ReviewBoard.vue";
 import ExamRoom from "@/pages/exam-room/ExamRoom.vue";
 import MainContent from "@/components/layout/MainContent.vue";
 import LandingPage from "@/pages/LandingPage.vue";
 import ExamHistory from "@/pages/ExamHistory.vue";
+import ProblemSetBoardDetail from "@/pages/ProblemSetBoardDetail.vue";
 
 const routes = [
   {
@@ -58,11 +59,15 @@ const routes = [
     name: "ExamRoom",
     component: ExamRoom,
   },
-
   {
     path: "/exam-history",
     name: ExamHistory,
     component: ExamHistory,
+  },
+  {
+    path: "/problem-set-board/:problemSetId",
+    name: "ProblemSetBoardDetail",
+    component: ProblemSetBoardDetail,
   },
 ];
 
