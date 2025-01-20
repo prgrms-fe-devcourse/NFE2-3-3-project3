@@ -24,7 +24,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <header class="bg-gray-100 shadow-md w-full">
+  <header class="bg-gray-100 shadow-md w-full fixed top-0 left-1">
     <div class="container mx-auto flex items-center pr-6 flex-wrap">
       <nav
         class="flex items-center space-x-3 text-gray-600 mt-2 lg:mt-0 lg:ml-auto p-4"
