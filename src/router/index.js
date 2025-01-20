@@ -8,13 +8,20 @@ import ProblemBoard from "@/pages/ProblemBoard.vue";
 import ProblemSetBoard from "@/pages/ProblemSetBoard.vue";
 import ReviewBoard from "@/pages/ReviewBoard.vue";
 import ExamRoom from "@/pages/exam-room/ExamRoom.vue";
-import RootPage from "@/pages/RootPage.vue";
+import MainContent from "@/components/layout/MainContent.vue";
+import LandingPage from "@/pages/LandingPage.vue";
+import ExamHistory from "@/pages/ExamHistory.vue";
 
 const routes = [
   {
-    path: "/",
+    path: "/", // 랜딩 페이지
+    name: "LandingPage",
+    component: LandingPage,
+  },
+  {
+    path: "/home", // 기존 홈 페이지
     name: "Home",
-    component: RootPage,
+    component: MainContent,
   },
   {
     path: "/my-problems",
@@ -50,6 +57,12 @@ const routes = [
     path: "/exam-room",
     name: "ExamRoom",
     component: ExamRoom,
+  },
+
+  {
+    path: "/exam-history",
+    name: ExamHistory,
+    component: ExamHistory,
   },
 ];
 

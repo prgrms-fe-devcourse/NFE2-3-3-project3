@@ -1,72 +1,78 @@
 <script setup>
 import { RouterLink } from "vue-router";
+const logoPath = new URL("@/assets/logos/logo.svg", import.meta.url).href;
 </script>
 
 <template>
-  <aside class="w-full lg:w-64 bg-gray-200 h-auto lg:h-full relative top-0 z-50">
-    <RouterLink
-      to="/"
-      class="p-6 text-xl font-bold text-gray-700 text-center inline-block no-underline"
-    >
-      LOGO
+  <aside class="w-[220px] bg-beige-2 h-full flex flex-col relative top-0 z-50 items-center py-6">
+    <!-- 로고 -->
+    <RouterLink to="/home" class="mb-[24px]">
+      <img :src="logoPath" alt="Pullgo" class="w-auto h-auto" />
     </RouterLink>
 
-    <div class="flex justify-center my-4">
-      <button
-        class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 border-none"
-      >
-        문제 만들기 +
-      </button>
-    </div>
-    <nav>
-      <div class="px-4 font-bold text-gray-700 uppercase text-sm">MY</div>
-      <div class="mt-2 space-y-2">
+    <!-- 버튼 -->
+    <button
+      class="bg-orange-1 text-white text-[18px] w-[188px] h-[48px] border-none rounded-[10px] hover:bg-orange-2 cursor-pointer mb-[24px] font-pretend"
+    >
+      새로운 문제 만들기
+    </button>
+
+    <!-- 내비게이션 -->
+    <nav class="w-full pl-4">
+      <!-- Library 섹션 -->
+      <div class="mb-[24px]">
+        <div class="text-[#4F4F4F] text-[14px] mb-[8px] font-pretend font-bold">
+          LIBRARY
+        </div>
         <RouterLink
           to="/my-problems"
-          class="block px-4 py-2 text-gray-700 hover:bg-gray-300 rounded no-underline"
+          class="block font-pretend text-[#B1B1B1] text-[16px] py-2 hover:bg-orange-2 rounded px-2 no-underline"
         >
-          내 문제 목록
+          보관한 문제
         </RouterLink>
         <RouterLink
           to="/my-problem-sets"
-          class="block px-4 py-2 text-gray-700 hover:bg-gray-300 rounded no-underline"
+          class="block font-pretend text-[#B1B1B1] text-[16px] py-2 hover:bg-orange-2 rounded px-2 no-underline mt-[8px]"
         >
-          내 문제집
-        </RouterLink>
-        <RouterLink
-          to="/my-custom-problems"
-          class="block px-4 py-2 text-gray-700 hover:bg-gray-300 rounded no-underline"
-        >
-          내 문제
+          보관한 문제집
         </RouterLink>
       </div>
-      <div class="px-4 mt-6 font-bold text-gray-700 uppercase text-sm">
-        게시판
-      </div>
-      <div class="mt-2 space-y-2">
+
+      <!-- Board 섹션 -->
+      <div class="mb-[24px]">
+        <div class="text-[#4F4F4F] text-[14px] mb-[8px] font-pretend font-bold">
+          BOARD
+        </div>
         <RouterLink
           to="/problem-board"
-          class="block px-4 py-2 text-gray-700 hover:bg-gray-300 rounded no-underline"
+          class="block font-pretend text-[#B1B1B1] text-[16px] py-2 hover:bg-orange-2 rounded px-2 no-underline"
         >
           문제 게시판
         </RouterLink>
         <RouterLink
           to="/problem-set-board"
-          class="block px-4 py-2 text-gray-700 hover:bg-gray-300 rounded no-underline"
+          class="block font-pretend text-[#B1B1B1] text-[16px] py-2 hover:bg-orange-2 rounded px-2 no-underline mt-[8px]"
         >
           문제집 게시판
         </RouterLink>
-        <RouterLink
-          to="/review-board"
-          class="block px-4 py-2 text-gray-700 hover:bg-gray-300 rounded no-underline"
-        >
-          다시 볼 문제
-        </RouterLink>
+      </div>
+
+      <!-- Test 섹션 -->
+      <div>
+        <div class="text-[#4F4F4F] text-[14px] mb-[8px] font-pretend font-bold">
+          TEST
+        </div>
         <RouterLink
           to="/exam-room"
-          class="block px-4 py-2 text-gray-700 hover:bg-gray-300 rounded no-underline"
+          class="block font-pretend text-[#B1B1B1] text-[16px] py-2 hover:bg-orange-2 rounded px-2 no-underline"
         >
           내 시험장
+        </RouterLink>
+        <RouterLink
+          to="/exam-history"
+          class="block font-pretend text-[#B1B1B1] text-[16px] py-2 hover:bg-orange-2 rounded px-2 no-underline mt-[8px]"
+        >
+          시험 내역
         </RouterLink>
       </div>
     </nav>
