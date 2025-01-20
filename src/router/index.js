@@ -7,7 +7,7 @@ import MyCustomProblems from "@/pages/MyCustomProblems.vue";
 import ProblemBoard from "@/pages/ProblemBoard.vue";
 import ProblemSetBoard from "@/pages/ProblemSetBoard.vue";
 import ReviewBoard from "@/pages/ReviewBoard.vue";
-import ExamRoom from "@/pages/ExamRoom.vue";
+import ExamRoom from "@/pages/exam-room/ExamRoom.vue";
 import RootPage from "@/pages/RootPage.vue";
 
 const routes = [
