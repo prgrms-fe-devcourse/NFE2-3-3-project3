@@ -1,7 +1,7 @@
 // stores/auth.js
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { auth } from '@/api/auth'
+import { authAPI } from '@/api/auth'
 
 export const useAuthStore = defineStore('auth', () => {
  const user = ref(null)
@@ -12,11 +12,11 @@ export const useAuthStore = defineStore('auth', () => {
  async function initializeAuth() {
    try {
      isLoading.value = true
-     const currentUser = await auth.getCurrentUser()
+     const currentUser = await authAPI.getCurrentUser()
      user.value = currentUser
      
      // Auth 상태 변경 감지
-     auth.onAuthStateChange((event, session) => {
+     authAPI.onAuthStateChange((event, session) => {
        if (event === 'SIGNED_IN') {
          user.value = session?.user || null
        } else if (event === 'SIGNED_OUT') {
@@ -33,8 +33,8 @@ export const useAuthStore = defineStore('auth', () => {
  async function loginWithGoogle() {
    try {
      isLoading.value = true
-     await auth.logInWithGoogle()
-     const currentUser = await auth.getCurrentUser()
+     await authAPI.logInWithGoogle()
+     const currentUser = await authAPI.getCurrentUser()
      user.value = currentUser
    } catch (error) {
      console.error('구글 로그인 실패:', error)
@@ -47,8 +47,8 @@ export const useAuthStore = defineStore('auth', () => {
  async function loginWithGithub() {
    try {
      isLoading.value = true
-     await auth.logInWithGithub()
-     const currentUser = await auth.getCurrentUser()
+     await authAPI.logInWithGithub()
+     const currentUser = await authAPI.getCurrentUser()
      user.value = currentUser
    } catch (error) {
      console.error('깃허브 로그인 실패:', error)
@@ -58,10 +58,24 @@ export const useAuthStore = defineStore('auth', () => {
    }
  }
 
+ async function logInWithKakao() {
+  try {
+    isLoading.value = true
+    await authAPI.logInWithKakao()
+    const currentUser = await authAPI.getCurrentUser()
+    user.value = currentUser
+  } catch (error) {
+    console.error('카카오 로그인 실패:', error)
+    throw error
+  } finally {
+    isLoading.value = false
+  }
+}
+
  async function logout() {
    try {
      isLoading.value = true
-     await auth.logOut()
+     await authAPI.logOut()
      user.value = null
    } catch (error) {
      console.error('로그아웃 실패:', error)
@@ -80,6 +94,7 @@ export const useAuthStore = defineStore('auth', () => {
    initializeAuth,
    loginWithGoogle,
    loginWithGithub,
+   logInWithKakao,
    logout
  }
 })

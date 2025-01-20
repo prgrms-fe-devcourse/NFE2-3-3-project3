@@ -1,7 +1,10 @@
 import { supabase } from "./index.js";
 
-export const category = {
-  // 모든 카테고리 조회 (사용 빈도순으로 정렬)
+export const categoryAPI = {
+  /**
+   * @description 모든 카테고리를 조회하고 생성일 기준 내림차순으로 정렬
+   * @returns {Array} 카테고리 목록과 각 카테고리에 속한 문제 수를 반환
+   */
   async getAll() {
     try {
       const { data, error } = await supabase
@@ -22,7 +25,11 @@ export const category = {
     }
   },
 
-  // 이름으로 검색 (부분 일치)
+  /**
+   * @description 카테고리 이름으로 검색하기 (부분 일치)
+   * @param {string} searchTerm - 검색할 카테고리 이름
+   * @returns {Array} 검색된 카테고리 목록을 생성일 기준 내림차순으로 반환
+   */
   async searchByName(searchTerm) {
     try {
       const { data, error } = await supabase
@@ -39,24 +46,14 @@ export const category = {
     }
   },
 
-  // 카테고리 사용 현황 조회
-  async getCategoryUsage(categoryId) {
-    try {
-      const { count, error } = await supabase
-        .from("problem")
-        .select("*", { count: "exact" })
-        .eq("category_id", categoryId);
-
-      if (error) throw error;
-      return count;
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  },
-
-  // 새 카테고리 생성 (중복 검사 포함)
-  async create(newData) {
+  /**
+   * @description 새로운 카테고리 생성 (중복 검사 포함)
+   * @param {object} newData - 새로 생성할 카테고리 데이터 
+   * @param {string} newData.name - 카테고리 이름
+   * @throws {Error} 동일한 이름의 카테고리가 이미 존재하는 경우 에러 반환
+   * @returns {Array} 생성된 카테고리 데이터
+   */
+  async createCategory(newData) {
     try {
       // 1. 중복 검사
       const { data: existing } = await supabase
@@ -74,28 +71,6 @@ export const category = {
         .from("category")
         .insert([newData])
         .select();
-
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  },
-
-  // 인기 카테고리 조회 (문제 수 기준)
-  async getPopularCategories(limit = 10) {
-    try {
-      const { data, error } = await supabase
-        .from("category")
-        .select(
-          `
-          *,
-          problem_count:problem(count)
-        `,
-        )
-        .order("problem_count", { ascending: false })
-        .limit(limit);
 
       if (error) throw error;
       return data;
