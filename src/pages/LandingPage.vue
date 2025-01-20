@@ -11,14 +11,14 @@ const logoPath = new URL("@/assets/logos/logo.svg", import.meta.url).href;
         <RouterLink to="/home">
           <img :src="logoPath" alt="Pullgo" class="w-auto h-auto" />
         </RouterLink>
-        <nav class="space-x-4">
+        <nav class="flex gap-4">
           <button
-            class="text-white bg-orange-1 border-none rounded-[4px] w-[68px] h-[40px] font-pretend hover:bg-orange-2"
+            class="text-white bg-orange-1 border-none text-sm rounded-[4px] px-4 py-2.5 font-sans hover:bg-orange-2"
           >
             로그인
           </button>
           <button
-            class="bg-orange-1 border-none text-white text-[14px] px-[16px] py-[10px] rounded-[4px] w-[88px] h-[40px] hover:bg-orange-2 font-pretend"
+            class="bg-orange-1 border-none text-white text-sm px-4 py-2.5 rounded-[4px] hover:bg-orange-2 font-pretend"
           >
             회원가입
           </button>
