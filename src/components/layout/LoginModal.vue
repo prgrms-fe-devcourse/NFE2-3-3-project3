@@ -58,7 +58,7 @@ const handleKakaoLogin = async () => {
           <div class="space-y-3">
             <button
               @click="handleGoogleLogin"
-              class="flex w-full items-center justify-center space-x-2 rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-700 hover:bg-gray-50 focus:outline-none   focus:ring-blue-500 "
+              class="flex w-full items-center justify-center space-x-2 rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               <img
                 src="https://www.svgrepo.com/show/475656/google-color.svg"
@@ -70,7 +70,7 @@ const handleKakaoLogin = async () => {
 
             <button
               @click="handleGithubLogin"
-              class="flex w-full items-center justify-center space-x-2 rounded-lg border border-gray-300 bg-gray-800 px-4 py-3 text-white hover:bg-gray-900 focus:outline-none   focus:ring-gray-500 "
+              class="flex w-full items-center justify-center space-x-2 rounded-lg border border-gray-300 bg-gray-800 px-4 py-3 text-white shadow-sm hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
             >
               <img
                 src="https://www.svgrepo.com/show/512317/github-142.svg"
@@ -82,7 +82,7 @@ const handleKakaoLogin = async () => {
 
             <button
               @click="handleKakaoLogin"
-              class="flex w-full items-center justify-center space-x-2 rounded-lg border border-[#FEE500] bg-[#FEE500] px-4 py-3 text-black hover:bg-[#FEE500]/90 focus:outline-none   focus:ring-[#FEE500] "
+              class="flex w-full items-center justify-center space-x-2 rounded-lg border border-[#FEE500] bg-[#FEE500] px-4 py-3 text-black hover:bg-[#FEE500]/90 focus:outline-none focus:ring-[#FEE500]"
             >
               <img
                 src="https://developers.kakao.com/assets/img/about/logos/kakaotalksharing/kakaotalk_sharing_btn_medium.png"
