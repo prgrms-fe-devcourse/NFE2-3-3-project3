@@ -14,7 +14,7 @@ const SORTS = ref([
 const sort = ref({ name: "최신순", value: "최신순" });
 </script>
 <template>
-  <section class="flex flex-col gap-16 w-[1000px] mx-auto mt-[72px]">
+  <div class="flex flex-col gap-14 relative">
     <h1 class="text-[42px] font-laundry">문제집 게시판</h1>
     <Search :show-status="false" />
     <section class="flex flex-col gap-[18px]">
@@ -37,6 +37,6 @@ const sort = ref({ name: "최신순", value: "최신순" });
       </div>
     </section>
     <Paginator :rows="10" :totalRecords="120"></Paginator>
-  </section>
+  </div>
 </template>
 <style scoped></style>
