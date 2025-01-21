@@ -14,6 +14,7 @@ import LandingPage from "@/pages/LandingPage.vue";
 import ExamHistory from "@/pages/exam-history/ExamHistory.vue";
 import ProblemSetBoardDetail from "@/pages/ProblemSetBoardDetail.vue";
 import ProblemBoardDetail from "@/pages/ProblemBoardDetail.vue";
+import ExamMake from "@/pages/ExamMake.vue";
 import MyProblemSetsDetail from "@/pages/MyProblemSetsDetail.vue";
 
 const routes = [
@@ -88,6 +89,11 @@ const routes = [
         path: "exam-history",
         name: "ExamHistory",
         component: ExamHistory,
+      },
+      {
+        path: "exam-make/:problemSetId",
+        name: "ExamMake",
+        component: ExamMake,
       },
       {
         path: "problem-set-board/:problemSetId",

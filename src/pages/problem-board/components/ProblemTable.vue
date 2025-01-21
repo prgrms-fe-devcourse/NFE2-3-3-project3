@@ -22,12 +22,17 @@ const SORTS = ref([
 ]);
 const sort = ref({ name: "최신순", value: "최신순" });
 
-const { problems } = defineProps({
+const props = defineProps({
   problems: {
-    type: Object,
+    type: Array,
     required: true,
   },
+  showCheckbox: {
+    type: Boolean,
+    default: true,
+  },
 });
+
 const selectedProblems = ref([]);
 
 const popup = ref();
@@ -85,16 +90,16 @@ onBeforeUnmount(() => {
 </script>
 <template>
   <section class="flex flex-col gap-[18px]">
-    <div class="flex justify-between items-center">
+    <div class="flex items-center justify-between">
       <div class="flex items-center gap-2">
-        <p class="font-semibold text-xl">{{ problems.length }} 문제</p>
+        <p class="text-xl font-semibold">{{ problems.length }} 문제</p>
         <Button
           label="다시 볼 문제"
           icon="pi pi-flag"
           icon-class="color: white;"
           size="small"
           severity="secondary"
-          class="bg-navy-4 text-white text-sm"
+          class="text-sm text-white bg-navy-4"
         />
       </div>
       <Select v-model="sort" :options="SORTS" optionLabel="name" class="w-40" />
@@ -110,7 +115,11 @@ onBeforeUnmount(() => {
       :rows="10"
     >
       <template #empty>검색된 문제가 없습니다...</template>
-      <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
+      <Column
+        v-if="showCheckbox"
+        selectionMode="multiple"
+        headerStyle="width: 3rem"
+      ></Column>
       <Column field="status" header="상태">
         <template #body="slotProps">
           <img
@@ -144,7 +153,7 @@ onBeforeUnmount(() => {
     </DataTable>
 
     <!-- 팝업 -->
-    <div ref="popup" class="absolute left-1/2 -translate-x-1/2 -bottom-32">
+    <div ref="popup" class="absolute -translate-x-1/2 left-1/2 -bottom-32">
       <Button
         v-if="selectedProblems.length"
         type="button"
@@ -180,7 +189,7 @@ onBeforeUnmount(() => {
         v-if="showAddProblemSet"
         class="w-64 absolute bottom-0 -right-[34rem]"
       >
-        <div class="flex flex-col gap-4 bg-white px-4 py-2 border rounded-lg">
+        <div class="flex flex-col gap-4 px-4 py-2 bg-white border rounded-lg">
           <div class="flex flex-col gap-2">
             <label for="title" class="text-sm">문제집 이름</label>
             <InputText
