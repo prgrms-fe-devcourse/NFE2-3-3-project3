@@ -14,9 +14,10 @@ import LandingPage from "@/pages/LandingPage.vue";
 import ExamHistory from "@/pages/exam-history/ExamHistory.vue";
 import ProblemSetBoardDetail from "@/pages/ProblemSetBoardDetail.vue";
 import ProblemBoardDetail from "@/pages/ProblemBoardDetail.vue";
+import MyProblemsDetail from "@/pages/MyProblemsDetail.vue";
 import ExamMake from "@/pages/ExamMake.vue";
 import MyProblemSetsDetail from "@/pages/MyProblemSetsDetail.vue";
-import MyProblemsDetail from "@/pages/MyProblemsDetail.vue";
+import ExamResult from "@/pages/ExamResult.vue";
 
 const routes = [
   // 레이아웃이 필요없는 페이지들
@@ -33,7 +34,7 @@ const routes = [
   {
     path: "/exam",
     name: "ExamEnvironment",
-    component: () => import("@/pages/ExamEnvironment.vue"),
+    component: () => import("@/pages/exam-environment/ExamEnvironment.vue"),
   },
 
   // DefaultLayout을 사용하는 페이지들
@@ -82,14 +83,14 @@ const routes = [
         component: ProblemSetBoard,
       },
       {
-        path: "review-board",
-        name: "ReviewBoard",
-        component: ReviewBoard,
-      },
-      {
         path: "exam-room",
         name: "ExamRoom",
         component: ExamRoom,
+      },
+      {
+        path: "exam-result/:examResultId",
+        name: "ExamResult",
+        component: ExamResult,
       },
       {
         path: "exam-history",
