@@ -1,11 +1,12 @@
-import "./assets/css/index.css";
 import { createApp } from "vue";
+import { createPinia } from "pinia";
+import "./assets/css/index.css";
 import App from "./App.vue";
 import router from "./router";
-import { createPinia } from "pinia";
 import PrimeVue from "primevue/config";
 import Aura from "@primevue/themes/aura";
 import "primeicons/primeicons.css"; // PrimeIcons 스타일 추가
+import Tooltip from "primevue/tooltip";
 
 const app = createApp(App);
 const pinia = createPinia();
@@ -21,4 +22,6 @@ app.use(PrimeVue, {
     },
   },
 });
+
+app.directive("tooltip", Tooltip);
 app.mount("#app");

@@ -3,7 +3,7 @@ import DefaultLayout from "@/components/layout/DefaultLayout.vue";
 
 // 페이지 컴포넌트 가져오기
 import MyProblemSets from "@/pages/MyProblemSets.vue";
-import MyProblems from "@/pages/MyProblems.vue";
+import MyProblems from "@/pages/my-problems/MyProblems.vue";
 import MyCustomProblems from "@/pages/MyCustomProblems.vue";
 import ProblemBoard from "@/pages/problem-board/ProblemBoard.vue";
 import ProblemSetBoard from "@/pages/problem-set-board/ProblemSetBoard.vue";
@@ -14,6 +14,7 @@ import LandingPage from "@/pages/LandingPage.vue";
 import ExamHistory from "@/pages/ExamHistory.vue";
 import ProblemSetBoardDetail from "@/pages/ProblemSetBoardDetail.vue";
 import ProblemBoardDetail from "@/pages/ProblemBoardDetail.vue";
+import MyProblemsDetail from "@/pages/MyProblemsDetail.vue";
 
 const routes = [
   // 레이아웃이 필요없는 페이지들
@@ -47,6 +48,11 @@ const routes = [
         path: "my-problems",
         name: "MyProblems",
         component: MyProblems,
+      },
+      {
+        path: "my-problems/:myProblemId",
+        name: "MyProblemsDetail",
+        component: MyProblemsDetail,
       },
       {
         path: "my-problem-sets",
