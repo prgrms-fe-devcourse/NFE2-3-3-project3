@@ -63,4 +63,3 @@
 </template>
 
 <style scoped></style>
-gi
