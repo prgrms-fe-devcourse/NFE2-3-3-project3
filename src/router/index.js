@@ -2,7 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router';
 import MainPage from '@/pages/MainPage.vue';
 import ErrorPage from '@/pages/ErrorPage.vue';
 import MainLayout from '@/layout/MainLayout.vue';
-import Test from '@/pages/test_api_page_hw/Test.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -26,8 +25,8 @@ const router = createRouter({
         {
           path: 'EditProfile',
           name: 'EditProfilePage',
-          component: () => import('@/pages/EditProfilePage.vue'),
-          meta: { showScrollTop: true },
+          component: () => import('@/pages/EditProfilePage/EditProfilePage.vue'),
+          meta: { showScrollTop: true, bg_color: 'bg-secondary-3' },
         },
         {
           path: 'UserPage',
