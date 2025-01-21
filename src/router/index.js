@@ -11,9 +11,10 @@ import ReviewBoard from "@/pages/ReviewBoard.vue";
 import ExamRoom from "@/pages/exam-room/ExamRoom.vue";
 import MainContent from "@/components/layout/MainContent.vue";
 import LandingPage from "@/pages/LandingPage.vue";
-import ExamHistory from "@/pages/ExamHistory.vue";
+import ExamHistory from "@/pages/exam-history/ExamHistory.vue";
 import ProblemSetBoardDetail from "@/pages/ProblemSetBoardDetail.vue";
 import ProblemBoardDetail from "@/pages/ProblemBoardDetail.vue";
+import MyProblemSetsDetail from "@/pages/MyProblemSetsDetail.vue";
 
 const routes = [
   // 레이아웃이 필요없는 페이지들
@@ -52,6 +53,11 @@ const routes = [
         path: "my-problem-sets",
         name: "MyProblemSets",
         component: MyProblemSets,
+      },
+      {
+        path: "my-problem-sets/:problemSetId",
+        name: "MyProblemSetsDetail",
+        component: MyProblemSetsDetail,
       },
       {
         path: "my-custom-problems",
