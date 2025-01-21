@@ -84,9 +84,37 @@ const deleteOne = async (id) => {
   }
 };
 
+/**
+ * @description 한 문제만 가져오기
+ * @param {*} id - 문제 id
+ * @returns 
+ */
+const getById = async (id) => {
+  try {
+    const { data, error } = await supabase
+      .from("problem")
+      .select(`
+        *,
+        category (
+          id,
+          name
+        )
+      `)
+      .eq("id", id)
+      .single();
+      
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
 export const problemAPI = {
   getAll,
   add,
   update,
   deleteOne,
+  getById
 };

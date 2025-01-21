@@ -50,25 +50,27 @@ onMounted(async () => {
 
 <template>
   <header class="w-full">
-    <nav class="flex items-center space-x-3 text-gray-600 justify-end py-6 px-16">
+    <nav
+      class="flex items-center space-x-3 text-gray-600 justify-end py-6 px-16"
+    >
       <a href="#" class="hover:text-gray-800 no-underline">다크 모드</a>
       <!-- 알림 및 포인트 -->
       <img :src="alertPath" alt="alert" />
 
       <div
-        class="flex items-center w-[53px] h-[24px] rounded-full font-pretend"
+        class="flex items-center px-2 py-1 h-[24px] bg-black-5 rounded-full font-pretend"
       >
         <!-- 별 아이콘 -->
-        <img :src="pointPath" alt="point" />
+        <img :src="pointPath" alt="point" class="mr-1" />
         <!-- 포인트 숫자 -->
-        <span class="text-sm font-bold text-gray-800 -ml-6">{{ points }}</span>
+        <span class="text-sm font-bold text-gray-800">{{ points }}</span>
       </div>
       <!-- 메뉴 트리거 -->
       <div
         @click="openMenu"
         class="flex items-center gap-2 cursor-pointer font-pretend"
       >
-        <span class="font-bold">안효태님</span>
+        <span class="font-medium">안효태님</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"

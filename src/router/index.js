@@ -11,10 +11,12 @@ import ReviewBoard from "@/pages/ReviewBoard.vue";
 import ExamRoom from "@/pages/exam-room/ExamRoom.vue";
 import MainContent from "@/components/layout/MainContent.vue";
 import LandingPage from "@/pages/LandingPage.vue";
-import ExamHistory from "@/pages/ExamHistory.vue";
+import ExamHistory from "@/pages/exam-history/ExamHistory.vue";
 import ProblemSetBoardDetail from "@/pages/ProblemSetBoardDetail.vue";
 import ProblemBoardDetail from "@/pages/ProblemBoardDetail.vue";
 import MyProblemsDetail from "@/pages/MyProblemsDetail.vue";
+import ExamMake from "@/pages/ExamMake.vue";
+import MyProblemSetsDetail from "@/pages/MyProblemSetsDetail.vue";
 
 const routes = [
   // 레이아웃이 필요없는 페이지들
@@ -24,9 +26,9 @@ const routes = [
     component: LandingPage,
   },
   {
-    path: "/editor",
-    name: "Editor",
-    component: () => import("@/pages/Editor.vue"),
+    path: "/problem-editor",
+    name: "ProblemEditor",
+    component: () => import("@/pages/problem-editor/ProblemEditor.vue"),
   },
   {
     path: "/exam",
@@ -60,6 +62,11 @@ const routes = [
         component: MyProblemSets,
       },
       {
+        path: "my-problem-sets/:problemSetId",
+        name: "MyProblemSetsDetail",
+        component: MyProblemSetsDetail,
+      },
+      {
         path: "my-custom-problems",
         name: "MyCustomProblems",
         component: MyCustomProblems,
@@ -90,6 +97,11 @@ const routes = [
         component: ExamHistory,
       },
       {
+        path: "exam-make/:problemSetId",
+        name: "ExamMake",
+        component: ExamMake,
+      },
+      {
         path: "problem-set-board/:problemSetId",
         name: "ProblemSetBoardDetail",
         component: ProblemSetBoardDetail,
@@ -98,7 +110,7 @@ const routes = [
         path: "problem-board/:problemId",
         name: "ProblemBoardDetail",
         component: ProblemBoardDetail,
-      },
+      }
     ],
   },
 ];
