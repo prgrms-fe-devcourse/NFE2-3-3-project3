@@ -92,7 +92,7 @@ const routes = [
         path: "problem-board/:problemId",
         name: "ProblemBoardDetail",
         component: ProblemBoardDetail,
-      },
+      }
     ],
   },
 ];
