@@ -2,9 +2,9 @@
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import dropdownDown from "@/assets/icons/problem-set-board/dropdown-down.svg";
 import search from "@/assets/icons/problem-set-board/search.svg";
-import { DatePicker } from "primevue";
+import { Checkbox, DatePicker } from "primevue";
 
-const STATUS = ["안 푼 문제", "푼 문제", "틀린 문제"];
+const STATUSES = ["안 푼 문제", "푼 문제", "틀린 문제"];
 const { showStatus } = defineProps({
   showStatus: {
     type: Boolean,
@@ -17,34 +17,25 @@ const isOpen = ref(false);
 const status = ref([]);
 const dropdown = ref(null);
 
-const startTime = ref();
-const endTime = ref();
+const startDate = ref();
+const endDate = ref();
 
 const handleSearch = () => {
   console.log(keyword.value);
 };
 
-const isChecked = (state) => status.value.includes(state);
 const toggleDropdown = () => {
   isOpen.value = !isOpen.value;
 };
-const selectItem = (state) => {
-  if (status.value.includes(state)) {
-    status.value = status.value.filter((value) => value !== state);
-  } else {
-    status.value.push(state);
-  }
-};
+
 const handleClickOutside = (event) => {
   if (dropdown.value && !dropdown.value.contains(event.target)) {
     isOpen.value = false;
   }
 };
-
 onMounted(() => {
   window.addEventListener("click", handleClickOutside);
 });
-
 onBeforeUnmount(() => {
   window.removeEventListener("click", handleClickOutside);
 });
@@ -52,7 +43,7 @@ onBeforeUnmount(() => {
 <template>
   <div class="flex flex-col gap-2">
     <div
-      class="flex justify-between items-center bg-beige-2 rounded-2xl h-12 p-4 border border-black-4"
+      class="flex justify-between items-center bg-beige-2 has-[:focus]:border-orange-1 rounded-2xl h-12 p-4 border border-black-4"
     >
       <input
         v-model="keyword"
@@ -65,11 +56,11 @@ onBeforeUnmount(() => {
       </button>
     </div>
     <div class="flex h-10 gap-6">
-      <div v-if="showStatus" class="relative" ref="dropdown">
+      <div v-if="showStatus" class="relative z-50" ref="dropdown">
         <button
           @click="toggleDropdown"
           :class="[
-            'flex justify-between items-center w-[210px] px-4 py-2 bg-beige-2 border border-black-4 rounded-lg',
+            'flex justify-between items-center w-[210px] px-4 py-2 bg-beige-2 border border-solid border-black-4 rounded-lg',
             isOpen ? 'border-orange-1' : '',
           ]"
         >
@@ -83,18 +74,19 @@ onBeforeUnmount(() => {
         >
           <ul>
             <li
-              v-for="state in STATUS"
-              :key="state"
-              class="px-4 py-2 hover:bg-beige-1 cursor-pointer transition-colors"
-              @click="selectItem(state)"
+              v-for="STATUS in STATUSES"
+              :key="STATUS"
+              class="flex items-center px-4 py-2 hover:bg-beige-1 cursor-pointer transition-colors"
             >
-              <input
-                type="checkbox"
-                class="mr-2 accent-black-2"
-                name="status"
-                :checked="isChecked(state)"
+              <Checkbox
+                v-model="status"
+                :inputId="STATUS"
+                :value="STATUS"
+                class="mr-2"
               />
-              {{ state }}
+              <label :for="STATUS" class="w-full h-full cursor-pointer">{{
+                STATUS
+              }}</label>
             </li>
           </ul>
         </div>
@@ -105,16 +97,17 @@ onBeforeUnmount(() => {
           <span>|</span>
           <span>시작일</span>
           <DatePicker
-            v-model="startTime"
+            v-model="startDate"
             class="w-[116px] h-6"
             id="startTime"
             dateFormat="yy-mm-dd"
           />
           <span>종료일</span>
           <DatePicker
-            v-model="endTime"
+            v-model="endDate"
             class="w-[116px] h-6"
             id="endTime"
+            :minDate="new Date(startDate)"
             dateFormat="yy-mm-dd"
           />
         </div>
