@@ -5,21 +5,21 @@ import previewIMG from "@/assets/icons/preview.png";
 <template>
   <div class="bg-white flex flex-col ">
     <!-- 랜딩 페이지 상단 -->
-    <header class="bg-beige-2 w-full fixed left-0 top-0 py-4">
+    <header class="bg-beige-2 w-full fixed left-0 top-0 py-2.5">
       <div
         class="w-full max-w-[1440px] mx-auto flex justify-between items-center px-4"
       >
         <RouterLink to="/home" class="item-middle">
-          <img :src="logoPath" alt="Pullgo" class="w-auto h-auto" />
+          <img :src="logoPath" alt="Pullgo" class="w-auto h-6" />
         </RouterLink>
         <nav class="flex gap-4 ">
           <button
-            class="text-white bg-orange-1 border-none text-sm rounded-[4px] px-4 py-2.5 font-sans hover:bg-orange-hover transition"
+            class="text-white bg-orange-1 border-none text-sm rounded-[4px] px-4 py-2 font-sans hover:bg-orange-hover transition"
           >
             로그인
           </button>
           <button
-            class="bg-orange-1 border-none text-white text-sm px-4 py-2.5 rounded-[4px] hover:bg-orange-hover transition"
+            class="bg-orange-1 border-none text-white text-sm px-4 py-2 rounded-[4px] hover:bg-orange-hover transition"
           >
             회원가입
           </button>
@@ -32,7 +32,7 @@ import previewIMG from "@/assets/icons/preview.png";
       <div class="w-full mx-auto text-center px-4">
         <h2 class="text-6xl font-laundry mb-6">풀고에서 풀고 또 풀자!</h2>
         <p
-          class="text-black text-lg max-w-3xl mx-auto text-[20px]"
+          class="text-black text-lg max-w-4xl mx-auto text-[20px]"
         >
           혹시 아직까지 워드로 문제를 만들고 계신가요? "풀고"에서는 문제
           제작부터 공유까지, 여러 플랫폼을 돌아다닐 필요 없이 한 번에 해결할 수

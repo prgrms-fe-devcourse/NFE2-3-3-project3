@@ -25,9 +25,9 @@ const routes = [
     component: LandingPage,
   },
   {
-    path: "/editor",
-    name: "Editor",
-    component: () => import("@/pages/Editor.vue"),
+    path: "/problem-editor",
+    name: "ProblemEditor",
+    component: () => import("@/pages/problem-editor/ProblemEditor.vue"),
   },
   {
     path: "/exam",
