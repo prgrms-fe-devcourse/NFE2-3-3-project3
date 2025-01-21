@@ -47,7 +47,7 @@ const pointPath = new URL("@/assets/icons/point.svg", import.meta.url).href;
 
   <!-- 하단 래핑 박스 -->
   <div class="flex flex-col gap-2 mx-auto pt-24">
-    <h2 class="text-2xl font-bold text-left font-pretend w-full">
+    <h2 class="text-xl font-semibold text-left font-pretend w-full">
       공부하러 가기
     </h2>
     <div class="grid grid-cols-3 gap-6 w-full pt-[16px]">
@@ -55,7 +55,7 @@ const pointPath = new URL("@/assets/icons/point.svg", import.meta.url).href;
       <div
         class="bg-beige-2 rounded-lg p-6 flex flex-col justify-between h-[261px]"
       >
-        <p class="font-bold mb-4 font-pretend text-left text-xl text-gray-2">문제 생성하기</p>
+        <p class="text-xl font-semibold mb-4 font-pretend text-left text-gray-2">문제 생성하기</p>
         <p class="text-gray-1 text-sm font-pretend text-left">
           새로운 문제를 만들고, 문제집에 추가하세요.
         </p>
@@ -65,7 +65,7 @@ const pointPath = new URL("@/assets/icons/point.svg", import.meta.url).href;
       <div
         class="bg-beige-2 rounded-lg p-6 flex flex-col justify-between h-[261px]"
       >
-        <p class="font-bold mb-4 font-pretend text-left text-xl text-gray-2">
+        <p class="font-semibold mb-4 font-pretend text-left text-xl text-gray-2">
           시험장 입실
         </p>
         <p class="text-gray-1 text-sm font-pretend text-left ">
@@ -77,7 +77,7 @@ const pointPath = new URL("@/assets/icons/point.svg", import.meta.url).href;
       <div
         class="bg-beige-2 rounded-lg p-6 flex flex-col justify-between h-[261px]"
       >
-        <p class="font-bold mb-4 font-pretend text-left text-xl text-gray-2">
+        <p class="font-semibold mb-4 font-pretend text-left text-xl text-gray-2">
           다시 볼 문제
         </p>
         <p class="text-gray-1 text-sm font-pretend text-left">

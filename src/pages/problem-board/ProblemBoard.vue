@@ -47,10 +47,10 @@ const problems = ref([
 ]);
 </script>
 <template>
-  <section class="flex flex-col gap-16 w-[1000px] mx-auto mt-[72px] relative">
+  <div class="flex flex-col gap-14 relative">
     <h1 class="text-[42px] font-laundry">문제 게시판</h1>
-    <Search :show-status="true" />
+    <Search :show-status="true" />z
     <ProblemTable :problems="problems" />
-  </section>
+  </div>
 </template>
 <style scoped></style>
