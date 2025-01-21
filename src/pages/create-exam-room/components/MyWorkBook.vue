@@ -12,7 +12,7 @@ defineProps({
     <div
       v-for="(book, index) in visibleMyBooks"
       :key="index"
-      class="w-[cal((100% - 4rem) / 3 )] h-[146px] p-4 bg-orange-3 rounded-lg flex flex-col justify-between"
+      class="w-[cal((100% - 4rem) / 3 )] h-[146px] p-4 bg-orange-3 rounded-lg flex flex-col justify-between cursor-pointer"
     >
       <div>
         <h3 class="font-medium">{{ book.title }}</h3>

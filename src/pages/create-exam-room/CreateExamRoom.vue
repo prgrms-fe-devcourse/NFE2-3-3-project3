@@ -1,10 +1,12 @@
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { EffectCards } from "swiper/modules";
 import SelectWorkbook from "./components/SelectWorkbook.vue";
 import SelectDateTime from "./components/SelectDateTime.vue";
 import SelectParticipants from "./components/SelectParticipants.vue";
+import leftArrow from "@/assets/icons/create-exam-room/left-arrow.svg";
+import rightArrow from "@/assets/icons/create-exam-room/right-arrow.svg";
 
 import "swiper/css";
 import "swiper/css/effect-cards";
@@ -18,6 +20,15 @@ const examData = ref({
   examDateTime: null,
   duration: null,
   participants: [],
+});
+
+// 완료 버튼 활성화 여부
+const isCompleteEnabled = computed(() => {
+  return (
+    examData.value.selectedWorkbook &&
+    examData.value.examDateTime &&
+    examData.value.duration
+  );
 });
 
 const tabs = [
@@ -79,19 +90,30 @@ const handleSubmit = () => {
         class="border-beige-2 border"
       >
         <div class="px-16 py-6 relative">
-          <SelectWorkbook v-model:selectedWorkbook="examData.selectedWorkbook" />
+          <SelectWorkbook
+            v-model:selectedWorkbook="examData.selectedWorkbook"
+          />
           <div
             class="absolute top-8 transition-all duration-300 z-20"
             :style="{ right: '-3rem' }"
             @click="setTab(0)"
           >
-            <div 
+            <div
               class="bg-orange-2 rounded-r-lg p-4 flex items-center gap-2 cursor-pointer"
               :class="{ 'bg-orange-500': currentTab === 0 }"
             >
               <i class="pi pi-book text-white"></i>
             </div>
           </div>
+        </div>
+        <div class="absolute bottom-6 right-6 flex gap-4">
+          <button
+            @click="nextSlide"
+            class="px-6 py-2 text-gray-3 rounded flex items-center gap-2 hover:text-gray-2 transition"
+          >
+            다음으로
+            <img :src="rightArrow" alt="다음으로 가기" />
+          </button>
         </div>
       </SwiperSlide>
 
@@ -110,13 +132,29 @@ const handleSubmit = () => {
             :style="{ right: '-3rem' }"
             @click="setTab(1)"
           >
-            <div 
+            <div
               class="bg-orange-2 rounded-r-lg p-4 flex items-center gap-2 cursor-pointer"
               :class="{ 'bg-orange-500': currentTab === 1 }"
             >
               <i class="pi pi-clock text-white"></i>
             </div>
           </div>
+        </div>
+        <div class="absolute bottom-6 right-6 flex gap-4">
+          <button
+            @click="prevSlide"
+            class="px-6 py-2 text-gray-3 rounded flex items-center gap-2 hover:text-gray-2 transition"
+          >
+            <img :src="leftArrow" alt="이전으로 가기" />
+            이전으로
+          </button>
+          <button
+            @click="nextSlide"
+            class="px-6 py-2 text-gray-3 rounded flex items-center gap-2 hover:text-gray-2 transition"
+          >
+            다음으로
+            <img :src="rightArrow" alt="다음으로 가기" />
+          </button>
         </div>
       </SwiperSlide>
 
@@ -132,13 +170,29 @@ const handleSubmit = () => {
             :style="{ right: '-3rem' }"
             @click="setTab(2)"
           >
-            <div 
+            <div
               class="bg-orange-2 rounded-r-lg p-4 flex items-center gap-2 cursor-pointer"
               :class="{ 'bg-orange-500': currentTab === 2 }"
             >
               <i class="pi pi-user-plus text-white"></i>
             </div>
           </div>
+        </div>
+        <div class="absolute bottom-6 right-6 flex gap-4">
+          <button
+            @click="prevSlide"
+            class="px-6 py-2 text-gray-3 rounded flex items-center gap-2 hover:text-gray-2 transition"
+          >
+            <img :src="leftArrow" alt="이전으로 가기" />
+            이전으로
+          </button>
+          <button
+            @click="handleSubmit"
+            :disabled="!isCompleteEnabled"
+            class="px-10 py-2 bg-orange-500 text-white rounded-full hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+          >
+            완료하기
+          </button>
         </div>
       </SwiperSlide>
     </Swiper>
