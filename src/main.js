@@ -1,12 +1,13 @@
-import "./assets/css/index.css";
 import { createApp } from "vue";
+import { createPinia } from "pinia";
+import "./assets/css/index.css";
 import App from "./App.vue";
 import router from "./router";
-import { createPinia } from "pinia";
 import PrimeVue from "primevue/config";
 import Aura from "@primevue/themes/aura";
 import "primeicons/primeicons.css";
 import ToastService from 'primevue/toastservice';
+import Tooltip from "primevue/tooltip";
 
 const app = createApp(App);
 const pinia = createPinia();
@@ -22,5 +23,6 @@ app.use(PrimeVue, {
     },
   },
 });
-app.use(ToastService); 
+app.use(ToastService);
+app.directive("tooltip", Tooltip);
 app.mount("#app");
