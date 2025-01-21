@@ -14,6 +14,7 @@ import LandingPage from "@/pages/LandingPage.vue";
 import ExamHistory from "@/pages/ExamHistory.vue";
 import ProblemSetBoardDetail from "@/pages/ProblemSetBoardDetail.vue";
 import ProblemBoardDetail from "@/pages/ProblemBoardDetail.vue";
+import ExamMake from "@/pages/ExamMake.vue";
 
 const routes = [
   // 레이아웃이 필요없는 페이지들
@@ -82,6 +83,11 @@ const routes = [
         path: "exam-history",
         name: "ExamHistory",
         component: ExamHistory,
+      },
+      {
+        path: "exam-make/:problemSetId",
+        name: "ExamMake",
+        component: ExamMake,
       },
       {
         path: "problem-set-board/:problemSetId",
