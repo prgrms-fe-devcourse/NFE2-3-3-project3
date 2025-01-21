@@ -5,6 +5,9 @@ module.exports = {
     extend: {
       colors: {
         //팀컬러
+        red: {
+          1: "#F60505",
+        },
         orange: {
           1: "#F1A140", // Orange-1
           2: "#F6C085", // Orange-2
@@ -22,6 +25,7 @@ module.exports = {
           3: "#1E2338",
           4: "#D4D4D4",
           5: "#E5E4E6",
+          6: "#F0F0F0",
         },
         navy: {
           1: "#1E2338",
