@@ -16,6 +16,7 @@ import ProblemSetBoardDetail from "@/pages/ProblemSetBoardDetail.vue";
 import ProblemBoardDetail from "@/pages/ProblemBoardDetail.vue";
 import ExamMake from "@/pages/ExamMake.vue";
 import MyProblemSetsDetail from "@/pages/MyProblemSetsDetail.vue";
+import MyProblemsDetail from "@/pages/MyProblemsDetail.vue";
 
 const routes = [
   // 레이아웃이 필요없는 페이지들
