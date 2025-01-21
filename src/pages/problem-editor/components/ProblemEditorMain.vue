@@ -1,8 +1,10 @@
 <script setup>
 </script>
 <template>
-  
+  <main>
+    body
+  </main>
 </template>
-<style scoped>
+<style>
   
 </style>
