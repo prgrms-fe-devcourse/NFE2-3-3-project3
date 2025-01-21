@@ -13,6 +13,7 @@ import MainContent from "@/components/layout/MainContent.vue";
 import LandingPage from "@/pages/LandingPage.vue";
 import ExamHistory from "@/pages/exam-history/ExamHistory.vue";
 import ProblemSetBoardDetail from "@/pages/ProblemSetBoardDetail.vue";
+import CreateExamRoom from "@/pages/create-exam-room/CreateExamRoom.vue";
 import ProblemBoardDetail from "@/pages/ProblemBoardDetail.vue";
 import MyProblemsDetail from "@/pages/MyProblemsDetail.vue";
 import ExamMake from "@/pages/ExamMake.vue";
@@ -86,6 +87,11 @@ const routes = [
         path: "exam-room",
         name: "ExamRoom",
         component: ExamRoom,
+      },
+      {
+        path: 'create-exam-room',
+        name: 'CreateExamRoom',
+        component: CreateExamRoom,
       },
       {
         path: "exam-result/:examResultId",
