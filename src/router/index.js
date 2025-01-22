@@ -18,7 +18,7 @@ import ProblemBoardDetail from "@/pages/ProblemBoardDetail.vue";
 import MyProblemsDetail from "@/pages/MyProblemsDetail.vue";
 import ExamMake from "@/pages/ExamMake.vue";
 import MyProblemSetsDetail from "@/pages/MyProblemSetsDetail.vue";
-import ExamResult from "@/pages/ExamResult.vue";
+import ExamResult from "@/pages/exam-result/ExamResult.vue";
 
 const routes = [
   // 레이아웃이 필요없는 페이지들
@@ -36,6 +36,11 @@ const routes = [
     path: "/exam",
     name: "ExamEnvironment",
     component: () => import("@/pages/exam-environment/ExamEnvironment.vue"),
+  },
+  {
+    path: "/exam-result",
+    name: "ExamResult",
+    component: () => import("@/pages/exam-result/ExamResult.vue"),
   },
 
   // DefaultLayout을 사용하는 페이지들
@@ -89,14 +94,9 @@ const routes = [
         component: ExamRoom,
       },
       {
-        path: 'create-exam-room',
-        name: 'CreateExamRoom',
+        path: "create-exam-room",
+        name: "CreateExamRoom",
         component: CreateExamRoom,
-      },
-      {
-        path: "exam-result/:examResultId",
-        name: "ExamResult",
-        component: ExamResult,
       },
       {
         path: "exam-history",
@@ -104,7 +104,7 @@ const routes = [
         component: ExamHistory,
       },
       {
-        path: "exam-make/:problemSetId",
+        path: "exam-make",
         name: "ExamMake",
         component: ExamMake,
       },
