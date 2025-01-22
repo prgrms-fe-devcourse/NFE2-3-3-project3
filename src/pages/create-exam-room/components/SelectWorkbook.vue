@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watchEffect } from "vue";
+import { ref, watchEffect, computed } from "vue";
 import SearchBar from "@/components/layout/SearchBar.vue";
 import MyWorkBook from "./MyWorkBook.vue";
 import { Paginator } from "primevue";
@@ -12,6 +12,11 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+});
+
+const workbookChip = computed(() => {
+  if (!props.selectedWorkbook) return '';
+  return `${props.selectedWorkbook.title || '제목 없음'} (${props.selectedWorkbook?.problem_count || 0}문제)`;
 });
 
 const emit = defineEmits(["update:selectedWorkbook"]);
@@ -82,22 +87,6 @@ watchEffect(async () => {
         @select-workbook="handleWorkbookSelect"
       />
 
-      <!-- 선택 표시 오버레이 -->
-      <div
-        v-if="selectedWorkbook"
-        v-for="workbook in workbooks"
-        :key="workbook.id"
-        :class="{
-          'absolute top-0 left-0 w-[204px] h-[146px] rounded-lg border-2': true,
-          'border-orange-500 bg-orange-50/20':
-            selectedWorkbook.id === workbook.id,
-        }"
-        :style="{
-          transform: `translate(${((workbook.id - 1) % 4) * 220}px, ${
-            Math.floor((workbook.id - 1) / 4) * 162
-          }px)`,
-        }"
-      />
     </div>
 
     <!-- 페이지네이션 -->

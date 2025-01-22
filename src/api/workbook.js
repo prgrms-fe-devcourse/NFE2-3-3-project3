@@ -16,7 +16,7 @@ const getAll = async () => {
 const getUid = async (uid) => {
   const { data, error } = await supabase
     .from("workbook")
-    .select("title, description, created_at")
+    .select("*")
     .eq("uid", uid);
   if (error) throw error;
   return data;
