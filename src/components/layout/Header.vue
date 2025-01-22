@@ -3,6 +3,10 @@ import { ref, onMounted } from "vue";
 import { useAuthStore } from "../../store/authStore";
 import LoginModal from "./LoginModal.vue";
 import Menu from "primevue/menu";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+
 const alertPath = new URL("@/assets/icons/alert.svg", import.meta.url).href;
 const pointPath = new URL("@/assets/icons/point.svg", import.meta.url).href;
 
@@ -11,6 +15,9 @@ const menuItems = [
   {
     label: "프로필",
     icon: "pi pi-user",
+    command: () => {
+      router.push("/mypage");
+    },
   },
   {
     label: "로그아웃",
@@ -92,7 +99,7 @@ onMounted(async () => {
         ref="menu"
         popup
         appendTo="body"
-        class="p-menu w-[200px] font-pretend"
+        class="p-menu w-[200px]"
       />
     </nav>
 
