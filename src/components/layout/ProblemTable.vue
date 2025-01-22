@@ -250,7 +250,13 @@ onBeforeUnmount(() => {
         <Column field="title" header="제목">
           <template #body="slotProps">
             <div class="flex items-center justify-between w-full">
-              <RouterLink :to="`${route.path}/${slotProps.data.id}`">
+              <RouterLink
+                :to="`${
+                  slotProps.data.id === user?.id
+                    ? '/my-problems'
+                    : '/problem-board'
+                }/${slotProps.data.id}`"
+              >
                 <span class="cursor-pointer w-full">{{
                   slotProps.data.title
                 }}</span>
