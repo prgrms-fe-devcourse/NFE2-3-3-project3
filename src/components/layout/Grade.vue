@@ -1,15 +1,17 @@
 <script setup>
+import { getCurrentGradeInfo } from "@/utils/getCurrentGradeInfo";
 import { ProgressBar } from "primevue";
+import { ref, onMounted } from "vue";
 
-const { points, gradeInfo } = defineProps({
-  points: {
-    type: Number,
-    required: true,
-  },
-  gradeInfo: {
-    type: Object,
-    required: true,
-  },
+const points = ref(0);
+const gradeInfo = ref();
+
+onMounted(() => {
+  points.value = 0;
+  setTimeout(() => {
+    points.value = 40;
+    gradeInfo.value = getCurrentGradeInfo(40);
+  }, 100);
 });
 </script>
 <template>

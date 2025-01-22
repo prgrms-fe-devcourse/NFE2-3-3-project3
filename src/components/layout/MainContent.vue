@@ -3,21 +3,8 @@ import { RouterLink } from "vue-router";
 import Profile from "./Profile.vue";
 import ExampleProfileImg from "@/assets/harp seal.jpg";
 import Grade from "./Grade.vue";
-import { onMounted, ref } from "vue";
-import { getCurrentGradeInfo } from "@/utils/getCurrentGradeInfo";
 const alertPath = new URL("@/assets/icons/alert.svg", import.meta.url).href;
 const pointPath = new URL("@/assets/icons/point.svg", import.meta.url).href;
-
-const points = ref(0);
-const gradeInfo = ref();
-
-onMounted(() => {
-  points.value = 0;
-  setTimeout(() => {
-    points.value = 40;
-    gradeInfo.value = getCurrentGradeInfo(40);
-  }, 100);
-});
 </script>
 
 <template>
@@ -34,7 +21,7 @@ onMounted(() => {
       />
 
       <!-- 등급 카드 -->
-      <Grade :points="points" :gradeInfo="gradeInfo" />
+      <Grade />
     </div>
   </div>
 
