@@ -18,7 +18,7 @@ const route = useRoute();
         <section
           class="max-w-[1200px] min-h-[400rem] py-8 pl-80 -mr-8 relative"
         >
-          <ExamResultBody class="absolute max-w-[712px]" />
+          <ExamResultBody class="absolute top-[-56px] max-w-[712px]" />
         </section>
       </main>
     </div>

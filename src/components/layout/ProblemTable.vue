@@ -254,7 +254,7 @@ onBeforeUnmount(() => {
                 }}</span>
               </RouterLink>
               <img
-                v-if="slotProps.data.uid === user.id"
+                v-if="slotProps.data.uid === user?.id"
                 :src="checkedMyProblem"
                 alt="checkedMyProblemIcon"
                 class="h-5 w-5"

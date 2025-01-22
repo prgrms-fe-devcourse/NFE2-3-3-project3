@@ -3,7 +3,7 @@ import profile from "@/assets/harp seal.jpg";
 import close from "@/assets/icons/exam-result/close.svg";
 </script>
 <template>
-  <header class="w-full pl-44 pt-20 pb-10">
+  <header class="w-full pl-44 pt-20 pb-10 relative">
     <div class="flex items-center gap-8">
       <div class="flex flex-col items-center justify-center space-y-1">
         <img
@@ -21,7 +21,7 @@ import close from "@/assets/icons/exam-result/close.svg";
           시험 결과 리포트는 지난 시험에서 다시 확인 할 수 있습니다.
         </p>
       </div>
-      <div class="absolute top-10 right-10">
+      <div class="absolute right-8 top-8">
         <img :src="close" alt="닫기버튼" />
       </div>
     </div>

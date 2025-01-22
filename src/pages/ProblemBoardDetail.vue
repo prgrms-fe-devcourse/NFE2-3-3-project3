@@ -50,9 +50,9 @@ onMounted(() => {
   loadProblem();
 });
 
-// 메뉴 아이템 정의
+//메뉴 아이템 정의
 const menuItems = [
-{
+  {
     label: "수정하기",
     icon: "pi pi-pencil",
     command: () => {

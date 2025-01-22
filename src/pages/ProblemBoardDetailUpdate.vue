@@ -7,8 +7,8 @@ import Badge from "primevue/badge";
 import Accordion from "primevue/accordion";
 import AccordionTab from "primevue/accordiontab";
 import { useConfirm } from "primevue/useconfirm";
-import ConfirmDialog from 'primevue/confirmdialog';
-import ToggleButton from 'primevue/togglebutton';
+import ConfirmDialog from "primevue/confirmdialog";
+import ToggleButton from "primevue/togglebutton";
 import shareIcon from "@/assets/icons/problem-board/fi-rr-share.svg";
 import { ToggleSwitch } from "primevue";
 
@@ -19,7 +19,6 @@ const problem = ref(null);
 
 // 수정된 데이터를 관리할 상태
 const editedProblem = ref({
-  title: "",
   question: "",
   shared: false,
   problem_type: "",

@@ -6,6 +6,7 @@ import ExamResultChart from "./ExamResultChart.vue";
 import ExamResultTable from "./ExamResultTable.vue";
 import { dummyData } from "./DummyData";
 import { ref, onMounted } from "vue";
+import ExamResultProblems from "./ExamResultProblems.vue";
 
 const isCollapsed = ref(true);
 
@@ -87,7 +88,7 @@ onMounted(() => {
         </div>
       </div>
     </div>
-    <div class="border border-[#D4D4D4] rounded-[16px] mt-8 p-4">
+    <div class="border border-[#D4D4D4] rounded-2xl mt-8 p-4">
       <ExamResultChart />
     </div>
     <!-- 문제 테이블 -->
@@ -149,8 +150,8 @@ onMounted(() => {
     </div>
 
     <!-- 선택한 문제 보여주기 -->
-    <div class="mt-8">
-      <h1>문제지 나오면 넣자.. 흐ㅠ귷</h1>
+    <div class="rounded-2xl border border-gray-300 mt-8 p-2">
+      <ExamResultProblems />
     </div>
 
     <!-- 다른 사용자 점수 보기 -->
