@@ -20,7 +20,7 @@ defineProps({
       </div>
       <div class="flex justify-between items-center mt-2">
         <img :src="shareIcon" alt="share" />
-        <p class="text-sm font-medium">{{ book.count }}문제</p>
+        <p class="text-sm font-medium">{{ book.count ?? 0 }} 문제</p>
       </div>
     </div>
   </div>

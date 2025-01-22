@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, watchEffect } from "vue";
 import SearchBar from "@/components/layout/SearchBar.vue";
 import MyWorkBook from "./MyWorkBook.vue";
 import { Paginator } from "primevue";
@@ -45,8 +45,10 @@ const handleWorkbookSelect = (workbook) => {
   emit("update:selectedWorkbook", workbook);
 };
 
-onMounted(() => {
-  fetchWorkbooks();
+watchEffect(async () => {
+  if (authStore.isAuthenticated && authStore.user?.id) {
+    await fetchWorkbooks();
+  }
 });
 </script>
 
