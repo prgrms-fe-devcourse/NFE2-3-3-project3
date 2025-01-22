@@ -19,6 +19,7 @@ import ExamMake from "@/pages/ExamMake.vue";
 import MyProblemSetsDetail from "@/pages/MyProblemSetsDetail.vue";
 import ExamResult from "@/pages/ExamResult.vue";
 import MyProblemSetsUpdate from "@/pages/MyProblemSetsUpdate.vue";
+import Mypage from "@/pages/Mypage/Mypage.vue";
 
 const routes = [
   // 레이아웃이 필요없는 페이지들
@@ -47,6 +48,11 @@ const routes = [
         path: "home",
         name: "Home",
         component: MainContent,
+      },
+      {
+        path: "mypage",
+        name: "mypage",
+        component: Mypage,
       },
       {
         path: "my-problems",
