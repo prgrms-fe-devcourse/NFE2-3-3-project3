@@ -19,6 +19,7 @@ import ExamMake from "@/pages/ExamMake.vue";
 import MyProblemSetsDetail from "@/pages/MyProblemSetsDetail.vue";
 import ExamResult from "@/pages/ExamResult.vue";
 import MyProblemSetsUpdate from "@/pages/MyProblemSetsUpdate.vue";
+import Mypage from "@/pages/Mypage/Mypage.vue";
 import ProblemBoardDetailUpdate from "@/pages/ProblemBoardDetailUpdate.vue";
 
 const routes = [
@@ -50,6 +51,11 @@ const routes = [
         component: MainContent,
       },
       {
+        path: "mypage",
+        name: "mypage",
+        component: Mypage,
+      },
+      {
         path: "my-problems",
         name: "MyProblems",
         component: MyProblems,
@@ -66,7 +72,7 @@ const routes = [
       },
       {
         path: "my-problem-sets-update/:problemSetId",
-        name: "MyProblemSets",
+        name: "MyProblemSetsUpdate",
         component: MyProblemSetsUpdate,
       },
       {
