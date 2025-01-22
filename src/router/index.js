@@ -19,6 +19,7 @@ import ExamMake from "@/pages/ExamMake.vue";
 import MyProblemSetsDetail from "@/pages/MyProblemSetsDetail.vue";
 import ExamResult from "@/pages/ExamResult.vue";
 import MyProblemSetsUpdate from "@/pages/MyProblemSetsUpdate.vue";
+import ProblemBoardDetailUpdate from "@/pages/ProblemBoardDetailUpdate.vue";
 
 const routes = [
   // 레이아웃이 필요없는 페이지들
@@ -122,6 +123,11 @@ const routes = [
         path: "problem-board/:problemId",
         name: "ProblemBoardDetail",
         component: ProblemBoardDetail,
+      },
+      {
+        path: "problem-board-update/:problemId",
+        name: "ProblemBoardDetailUpdate",
+        component: ProblemBoardDetailUpdate,
       },
     ],
   },
