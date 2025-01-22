@@ -10,7 +10,7 @@ import {
   Textarea,
 } from "primevue";
 import { RouterLink } from "vue-router";
-import { ref, onMounted, onBeforeUnmount, defineProps } from "vue";
+import { ref, onMounted, onBeforeUnmount, defineProps, computed } from "vue";
 import statusSolved from "@/assets/icons/problem-board/status-solved.svg";
 import statusWrong from "@/assets/icons/problem-board/status-wrong.svg";
 import minus from "@/assets/icons/problem-board/minus.svg";
@@ -20,7 +20,9 @@ import { storeToRefs } from "pinia";
 import checkedMyProblem from "@/assets/icons/my-problems/color-my-problems.svg";
 import seeMyProblems from "@/assets/icons/my-problems/see-my-problems.svg";
 import sharedIcon from "@/assets/icons/my-problem-sets/share.svg";
+import { useRoute } from "vue-router";
 
+const route = useRoute();
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
 const emit = defineEmits(["open-dialog"]);
@@ -248,13 +250,19 @@ onBeforeUnmount(() => {
         <Column field="title" header="제목">
           <template #body="slotProps">
             <div class="flex items-center justify-between w-full">
-              <RouterLink :to="`/my-problems/${slotProps.data.id}`">
+              <RouterLink
+                :to="`${
+                  slotProps.data.id === user?.id
+                    ? '/my-problems'
+                    : '/problem-board'
+                }/${slotProps.data.id}`"
+              >
                 <span class="cursor-pointer w-full">{{
                   slotProps.data.title
                 }}</span>
               </RouterLink>
               <img
-                v-if="slotProps.data.uid === user.id"
+                v-if="slotProps.data.uid === user?.id"
                 :src="checkedMyProblem"
                 alt="checkedMyProblemIcon"
                 class="h-5 w-5"

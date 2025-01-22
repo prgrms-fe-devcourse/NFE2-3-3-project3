@@ -4,11 +4,9 @@ import DefaultLayout from "@/components/layout/DefaultLayout.vue";
 // 페이지 컴포넌트 가져오기
 import MyProblemSets from "@/pages/MyProblemSets.vue";
 import MyProblems from "@/pages/my-problems/MyProblems.vue";
-import MyCustomProblems from "@/pages/MyCustomProblems.vue";
 import ProblemBoard from "@/pages/problem-board/ProblemBoard.vue";
 import ProblemSetBoard from "@/pages/problem-set-board/ProblemSetBoard.vue";
 import ExamRoom from "@/pages/exam-room/ExamRoom.vue";
-import MainContent from "@/components/layout/MainContent.vue";
 import LandingPage from "@/pages/LandingPage.vue";
 import ExamHistory from "@/pages/exam-history/ExamHistory.vue";
 import ProblemSetBoardDetail from "@/pages/ProblemSetBoardDetail.vue";
@@ -22,6 +20,7 @@ import MyProblemSetsUpdate from "@/pages/MyProblemSetsUpdate.vue";
 import Mypage from "@/pages/Mypage/Mypage.vue";
 import ProblemBoardDetailUpdate from "@/pages/ProblemBoardDetailUpdate.vue";
 import UserProfile from "@/pages/user-profile/UserProfile.vue";
+import Home from "@/pages/Home.vue";
 
 const routes = [
   // 레이아웃이 필요없는 페이지들
@@ -49,7 +48,7 @@ const routes = [
       {
         path: "home",
         name: "Home",
-        component: MainContent,
+        component: Home,
       },
       {
         path: "mypage",
@@ -80,11 +79,6 @@ const routes = [
         path: "my-problem-sets/:problemSetId",
         name: "MyProblemSetsDetail",
         component: MyProblemSetsDetail,
-      },
-      {
-        path: "my-custom-problems",
-        name: "MyCustomProblems",
-        component: MyCustomProblems,
       },
       {
         path: "problem-board",
@@ -139,8 +133,8 @@ const routes = [
       {
         path: "users/:userId",
         name: "UserProfile",
-        component: UserProfile
-      }
+        component: UserProfile,
+      },
     ],
   },
 ];
