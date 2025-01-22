@@ -21,6 +21,7 @@ import ExamResult from "@/pages/ExamResult.vue";
 import MyProblemSetsUpdate from "@/pages/MyProblemSetsUpdate.vue";
 import Mypage from "@/pages/Mypage/Mypage.vue";
 import ProblemBoardDetailUpdate from "@/pages/ProblemBoardDetailUpdate.vue";
+import UserProfile from "@/pages/user-profile/UserProfile.vue";
 
 const routes = [
   // 레이아웃이 필요없는 페이지들
@@ -135,6 +136,11 @@ const routes = [
         name: "ProblemBoardDetailUpdate",
         component: ProblemBoardDetailUpdate,
       },
+      {
+        path: "users/:userId",
+        name: "UserProfile",
+        component: UserProfile
+      }
     ],
   },
 ];
