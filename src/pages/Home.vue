@@ -10,14 +10,11 @@ const pointPath = new URL("@/assets/icons/point.svg", import.meta.url).href;
 
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
-const click = async () => {
-  await authStore.loginWithGoogle();
-};
 </script>
 
 <template>
   <div class="flex flex-col w-full">
-    <h1 @click="click" class="text-5xl font-laundry text-left pb-24">
+    <h1 class="text-5xl font-laundry text-left pb-24">
       {{ user?.user_metadata.full_name }}님, 다시 만나 반가워요!
     </h1>
     <div class="flex items-center justify-between w-full h-[226px] gap-4">
