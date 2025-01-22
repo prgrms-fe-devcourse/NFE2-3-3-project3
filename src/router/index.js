@@ -7,7 +7,6 @@ import MyProblems from "@/pages/my-problems/MyProblems.vue";
 import MyCustomProblems from "@/pages/MyCustomProblems.vue";
 import ProblemBoard from "@/pages/problem-board/ProblemBoard.vue";
 import ProblemSetBoard from "@/pages/problem-set-board/ProblemSetBoard.vue";
-import ReviewBoard from "@/pages/ReviewBoard.vue";
 import ExamRoom from "@/pages/exam-room/ExamRoom.vue";
 import MainContent from "@/components/layout/MainContent.vue";
 import LandingPage from "@/pages/LandingPage.vue";
@@ -18,7 +17,10 @@ import ProblemBoardDetail from "@/pages/ProblemBoardDetail.vue";
 import MyProblemsDetail from "@/pages/MyProblemsDetail.vue";
 import ExamMake from "@/pages/ExamMake.vue";
 import MyProblemSetsDetail from "@/pages/MyProblemSetsDetail.vue";
-import ExamResult from "@/pages/exam-result/ExamResult.vue";
+import MyProblemSetsUpdate from "@/pages/MyProblemSetsUpdate.vue";
+import Mypage from "@/pages/Mypage/Mypage.vue";
+import ProblemBoardDetailUpdate from "@/pages/ProblemBoardDetailUpdate.vue";
+import UserProfile from "@/pages/user-profile/UserProfile.vue";
 
 const routes = [
   // 레이아웃이 필요없는 페이지들
@@ -54,6 +56,11 @@ const routes = [
         component: MainContent,
       },
       {
+        path: "mypage",
+        name: "mypage",
+        component: Mypage,
+      },
+      {
         path: "my-problems",
         name: "MyProblems",
         component: MyProblems,
@@ -67,6 +74,11 @@ const routes = [
         path: "my-problem-sets",
         name: "MyProblemSets",
         component: MyProblemSets,
+      },
+      {
+        path: "my-problem-sets-update/:problemSetId",
+        name: "MyProblemSetsUpdate",
+        component: MyProblemSetsUpdate,
       },
       {
         path: "my-problem-sets/:problemSetId",
@@ -117,6 +129,17 @@ const routes = [
         path: "problem-board/:problemId",
         name: "ProblemBoardDetail",
         component: ProblemBoardDetail,
+      },
+
+      {
+        path: "problem-board-update/:problemId",
+        name: "ProblemBoardDetailUpdate",
+        component: ProblemBoardDetailUpdate,
+      },
+      {
+        path: "users/:userId",
+        name: "UserProfile",
+        component: UserProfile,
       },
     ],
   },

@@ -1,6 +1,6 @@
 <script setup>
+import ProblemTable from "@/components/layout/ProblemTable.vue";
 import Search from "@/components/layout/Search.vue";
-import MyProblemsTable from "./components/MyProblemsTable.vue";
 import { ref } from "vue";
 
 const problems = ref([
@@ -55,7 +55,7 @@ const problems = ref([
   <section class="flex flex-col gap-16 w-[1000px] mx-auto mt-[72px] relative">
     <h1 class="text-[42px] font-laundry">보관한 문제</h1>
     <Search :show-status="true" />
-    <MyProblemsTable :problems="problems" />
+    <ProblemTable :problems="problems" />
   </section>
 </template>
 <style scoped></style>
