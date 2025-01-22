@@ -1,19 +1,19 @@
 <script setup>
 import { userAPI } from "@/api/user";
-import { useAuthStore } from "@/store/authStore";
 import { getCurrentGradeInfo } from "@/utils/getCurrentGradeInfo";
-import { storeToRefs } from "pinia";
 import { ProgressBar } from "primevue";
 import { ref, watchEffect } from "vue";
 
-const authStore = useAuthStore();
-const { user } = storeToRefs(authStore);
+const { userId } = defineProps({
+  userId: String,
+});
+
 const points = ref(0);
 const gradeInfo = ref();
 
 const getUserPoint = async () => {
-  if (!user.value) return;
-  const { total_points } = await userAPI.getOne(user.value.id);
+  if (!userId) return;
+  const { total_points } = await userAPI.getOne(userId);
   points.value = total_points;
   gradeInfo.value = getCurrentGradeInfo(total_points);
 };

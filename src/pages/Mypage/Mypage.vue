@@ -2,17 +2,22 @@
 import Profile from "@/components/layout/Profile.vue";
 import MypageTabs from "./components/MypageTabs.vue";
 import Grade from "@/components/layout/Grade.vue";
+import { useAuthStore } from "@/store/authStore";
+import { storeToRefs } from "pinia";
+
+const authStore = useAuthStore();
+const { user } = storeToRefs(authStore);
 </script>
 <template>
   <div class="flex flex-col gap-16">
     <h1 class="text-[42px] leading-none font-laundry">내 정보</h1>
     <section class="flex h-56 gap-5">
       <Profile
-        img-src="https://www.gravatar.com/avatar/05dfd4b41340d09cae045235eb0893c3?d=mp"
-        name="김세빈"
-        email="rlatpqls13@gmail.com"
+        :name="user?.user_metadata.full_name"
+        :email="user?.email"
+        :img-src="user?.user_metadata?.avatar_url"
       />
-      <Grade />
+      <Grade :user-id="user?.id" />
     </section>
     <MypageTabs />
   </div>

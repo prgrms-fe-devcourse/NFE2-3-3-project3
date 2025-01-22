@@ -1,9 +1,9 @@
 <script setup>
-import { useAuthStore } from "@/store/authStore";
-import { storeToRefs } from "pinia";
-
-const authStore = useAuthStore();
-const { user } = storeToRefs(authStore);
+const { imgSrc, name, email } = defineProps({
+  imgSrc: String,
+  name: String,
+  email: String,
+});
 </script>
 <template>
   <article
@@ -11,15 +11,15 @@ const { user } = storeToRefs(authStore);
   >
     <img
       class="w-32 h-32 rounded-full border border-black-4 object-cover"
-      :src="user?.user_metadata.avatar_url"
+      :src="imgSrc"
       alt="내 프로필 이미지"
     />
     <div class="flex flex-col items-center">
       <p class="font-semibold text-xl">
-        {{ user?.user_metadata.full_name }}
+        {{ name }}
       </p>
       <p class="font-medium text-gray-3 text-sm">
-        {{ user?.user_metadata.email }}
+        {{ email }}
       </p>
     </div>
   </article>

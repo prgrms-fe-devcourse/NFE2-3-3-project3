@@ -19,10 +19,14 @@ const { user } = storeToRefs(authStore);
     </h1>
     <div class="flex items-center justify-between w-full h-[226px] gap-4">
       <!-- 프로필 카드 -->
-      <Profile />
+      <Profile
+        :name="user?.user_metadata.full_name"
+        :email="user?.email"
+        :img-src="user?.user_metadata?.avatar_url"
+      />
 
       <!-- 등급 카드 -->
-      <Grade />
+      <Grade :user-id="user?.id" />
     </div>
   </div>
 
