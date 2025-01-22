@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer {
+@layer utilities {
   .item-middle {
     display: flex;
     justify-content: center;

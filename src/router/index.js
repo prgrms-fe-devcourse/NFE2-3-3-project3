@@ -7,7 +7,6 @@ import MyProblems from "@/pages/my-problems/MyProblems.vue";
 import MyCustomProblems from "@/pages/MyCustomProblems.vue";
 import ProblemBoard from "@/pages/problem-board/ProblemBoard.vue";
 import ProblemSetBoard from "@/pages/problem-set-board/ProblemSetBoard.vue";
-import ReviewBoard from "@/pages/ReviewBoard.vue";
 import ExamRoom from "@/pages/exam-room/ExamRoom.vue";
 import MainContent from "@/components/layout/MainContent.vue";
 import LandingPage from "@/pages/LandingPage.vue";
@@ -19,6 +18,7 @@ import MyProblemsDetail from "@/pages/MyProblemsDetail.vue";
 import ExamMake from "@/pages/ExamMake.vue";
 import MyProblemSetsDetail from "@/pages/MyProblemSetsDetail.vue";
 import ExamResult from "@/pages/ExamResult.vue";
+import MyProblemSetsUpdate from "@/pages/MyProblemSetsUpdate.vue";
 
 const routes = [
   // 레이아웃이 필요없는 페이지들
@@ -64,6 +64,11 @@ const routes = [
         component: MyProblemSets,
       },
       {
+        path: "my-problem-sets-update/:problemSetId",
+        name: "MyProblemSets",
+        component: MyProblemSetsUpdate,
+      },
+      {
         path: "my-problem-sets/:problemSetId",
         name: "MyProblemSetsDetail",
         component: MyProblemSetsDetail,
@@ -89,8 +94,8 @@ const routes = [
         component: ExamRoom,
       },
       {
-        path: 'create-exam-room',
-        name: 'CreateExamRoom',
+        path: "create-exam-room",
+        name: "CreateExamRoom",
         component: CreateExamRoom,
       },
       {
@@ -117,7 +122,7 @@ const routes = [
         path: "problem-board/:problemId",
         name: "ProblemBoardDetail",
         component: ProblemBoardDetail,
-      }
+      },
     ],
   },
 ];

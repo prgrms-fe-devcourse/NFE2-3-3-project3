@@ -20,7 +20,7 @@ const { comments } = defineProps({
 
     <div>
       <textarea
-        class="w-full h-[133px] resize-none pt-3 pl-6 rounded-lg pretend text-[14px] bg-[#f0f0f0] border-[#d4d4d4]"
+        class="w-full h-[133px] resize-none pt-3 px-6 rounded-lg pretend text-[14px] bg-[#f0f0f0] border-[#d4d4d4]"
         placeholder="문제집에 대해 어떻게 생각하시나요?"
       ></textarea>
     </div>

@@ -1,7 +1,4 @@
 <script setup>
-import { RouterLink } from "vue-router";
-import statusSolved from "@/assets/icons/problem-board/status-solved.svg";
-import statusWrong from "@/assets/icons/problem-board/status-wrong.svg";
 import {
   Button,
   Column,
@@ -12,7 +9,19 @@ import {
   Listbox,
   Textarea,
 } from "primevue";
+import { RouterLink } from "vue-router";
 import { ref, onMounted, onBeforeUnmount, defineProps } from "vue";
+
+import statusSolved from "@/assets/icons/problem-board/status-solved.svg";
+import statusWrong from "@/assets/icons/problem-board/status-wrong.svg";
+import minus from "@/assets/icons/problem-board/minus.svg";
+import plus from "@/assets/icons/problem-board/plus.svg";
+
+const emit = defineEmits(["open-dialog"]);
+
+const handleAddClick = () => {
+  emit("open-dialog");
+};
 
 const SORTS = ref([
   { name: "최신순", value: "최신순" },
@@ -28,6 +37,34 @@ const props = defineProps({
     required: true,
   },
   showCheckbox: {
+    type: Boolean,
+    default: true,
+  },
+  showMinus: {
+    type: Boolean,
+    default: false,
+  },
+  showProblem: {
+    type: Boolean,
+    default: true,
+  },
+  showAdd: {
+    type: Boolean,
+    default: false,
+  },
+  showCategory: {
+    type: Boolean,
+    default: true,
+  },
+  showPlus: {
+    type: Boolean,
+    default: false,
+  },
+  showSelect: {
+    type: Boolean,
+    default: true,
+  },
+  showCount: {
     type: Boolean,
     default: true,
   },
@@ -92,7 +129,9 @@ onBeforeUnmount(() => {
   <section class="flex flex-col gap-[18px]">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-2">
-        <p class="text-xl font-semibold">{{ problems.length }} 문제</p>
+        <p class="text-xl font-semibold" v-if="showCount">
+          {{ problems.length }} 문제
+        </p>
         <Button
           label="다시 볼 문제"
           icon="pi pi-flag"
@@ -100,9 +139,23 @@ onBeforeUnmount(() => {
           size="small"
           severity="secondary"
           class="text-sm text-white bg-navy-4"
+          v-if="showProblem"
         />
+        <button
+          v-if="showAdd"
+          @click="handleAddClick"
+          class="bg-navy-4 text-white rounded-3xl w-[74px] h-6 item-middle"
+        >
+          추가하기
+        </button>
       </div>
-      <Select v-model="sort" :options="SORTS" optionLabel="name" class="w-40" />
+      <Select
+        v-model="sort"
+        :options="SORTS"
+        optionLabel="name"
+        class="w-40"
+        v-if="showSelect"
+      />
     </div>
 
     <!-- 테이블 -->
@@ -120,6 +173,20 @@ onBeforeUnmount(() => {
         selectionMode="multiple"
         headerStyle="width: 3rem"
       ></Column>
+      <Column v-if="showMinus" header="제거" field="minus">
+        <template #body="slotProps">
+          <button @click="minusProblem(slotProps.data.id)">
+            <img :src="minus" alt="문제 제거" />
+          </button>
+        </template>
+      </Column>
+      <Column v-if="showPlus" header="추가" field="plus">
+        <template #body="slotProps">
+          <button @click="plusProblem(slotProps.data.id)">
+            <img :src="plus" alt="문제 추가" />
+          </button>
+        </template>
+      </Column>
       <Column field="status" header="상태">
         <template #body="slotProps">
           <img
@@ -136,7 +203,7 @@ onBeforeUnmount(() => {
           }}</RouterLink>
         </template>
       </Column>
-      <Column field="problem_type" header="문제 유형">
+      <Column field="problem_type" header="문제 유형" v-if="showCategory">
         <template #body="slotProps">
           <Tag
             v-if="getProblemType(slotProps.data.problem_type) === '4지선다'"
