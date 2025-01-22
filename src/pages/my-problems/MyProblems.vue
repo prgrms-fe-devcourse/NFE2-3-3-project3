@@ -6,7 +6,7 @@ import { ref } from "vue";
 const problems = ref([
   {
     id: 1,
-    status: "correct",
+    status: "corrected",
     title: "정수 삼각형",
     category: "알고리즘",
     origin_source: "프로그래머스",
@@ -15,7 +15,7 @@ const problems = ref([
   },
   {
     id: 2,
-    status: "incorrect",
+    status: "wrong",
     title: "숫자 게임",
     category: "알고리즘",
     origin_source: "프로그래머스",
@@ -33,7 +33,7 @@ const problems = ref([
   },
   {
     id: 4,
-    status: "incorrect",
+    status: "wrong",
     title: "소방경력공무원 관계법규 개념 예제 문제 ",
     category: "소방경력공무원 기출",
     origin_source: "소방경력공무원 CBT",
@@ -42,7 +42,7 @@ const problems = ref([
   },
   {
     id: 5,
-    status: "incorrect",
+    status: "wrong",
     title: "Group Anagrams ",
     category: "알고리즘",
     origin_source: "LeetCode",
