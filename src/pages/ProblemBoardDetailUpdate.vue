@@ -7,8 +7,10 @@ import Badge from "primevue/badge";
 import Accordion from "primevue/accordion";
 import AccordionTab from "primevue/accordiontab";
 import { useConfirm } from "primevue/useconfirm";
+import ConfirmDialog from 'primevue/confirmdialog';
+import ToggleButton from 'primevue/togglebutton';
 import shareIcon from "@/assets/icons/problem-board/fi-rr-share.svg";
-import { ConfirmDialog } from "primevue";
+import { ToggleSwitch } from "primevue";
 
 const router = useRouter();
 const route = useRoute();
@@ -95,7 +97,9 @@ onMounted(() => {
             <strong aria-label="닉네임">닉네임</strong>
             <Badge value="등급" severity="secondary" class="ml-2" />
           </p>
-          <span class="text-gray-500 text-sm" aria-label="최종 수정일">2025.01.15.</span>
+          <span class="text-gray-500 text-sm" aria-label="최종 수정일"
+            >2025.01.15.</span
+          >
         </div>
       </div>
 
@@ -107,19 +111,28 @@ onMounted(() => {
             rows="1"
           ></textarea>
           <div class="flex items-center gap-2 text-sm text-gray-500">
-            <span class="bg-gray-100 px-2 py-1 rounded">{{ editedProblem.category?.name }}</span>
+            <span class="bg-gray-100 px-2 py-1 rounded">{{
+              editedProblem.category?.name
+            }}</span>
             <!-- 공개 여부 표시 -->
-            <div class="flex items-center gap-1">
+            <div class="flex items-center gap-2">
               <img :src="shareIcon" alt="공유 아이콘" class="w-4 h-4" />
-              <span>{{ editedProblem.shared ? "공개됨" : "미공개" }}</span>
+              <span>공유 여부</span>
+              <ToggleSwitch
+                v-model="editedProblem.shared"
+                onLabel="공개됨"
+                offLabel="미공개"
+                class="w-[70px] h-[29px]"
+              />
             </div>
           </div>
         </div>
 
         <div class="w-[128px] h-[29px] flex justify-between">
-          <button 
+          <button
             @click="handleSave"
-            class="w-[60px] bg-black-5 rounded-3xl item-middle">
+            class="w-[60px] bg-black-5 rounded-3xl item-middle"
+          >
             완료
           </button>
           <button
@@ -149,10 +162,16 @@ onMounted(() => {
       </div>
 
       <!-- 객관식 보기 -->
-      <div v-if="editedProblem.problem_type === 'multiple_choice'" class="space-y-4">
+      <div
+        v-if="editedProblem.problem_type === 'multiple_choice'"
+        class="space-y-4"
+      >
         <ol class="list-decimal space-y-2 text-gray-700">
           <li class="flex items-center gap-2">
-            <strong class="text-xs rounded-full bg-black-6 w-7 h-7 font-normal item-middle">1</strong>
+            <strong
+              class="text-xs rounded-full bg-black-6 w-7 h-7 font-normal item-middle"
+              >1</strong
+            >
             <textarea
               v-model="editedProblem.option_one"
               class="w-full text-gray-700 resize-none border rounded-lg border-black-4 px-4 py-2"
@@ -160,7 +179,10 @@ onMounted(() => {
             ></textarea>
           </li>
           <li class="flex items-center gap-2">
-            <strong class="text-xs rounded-full bg-black-6 w-7 h-7 font-normal item-middle">2</strong>
+            <strong
+              class="text-xs rounded-full bg-black-6 w-7 h-7 font-normal item-middle"
+              >2</strong
+            >
             <textarea
               v-model="editedProblem.option_two"
               class="w-full text-gray-700 resize-none border rounded-lg border-black-4 px-4 py-2"
@@ -168,7 +190,10 @@ onMounted(() => {
             ></textarea>
           </li>
           <li class="flex items-center gap-2">
-            <strong class="text-xs rounded-full bg-black-6 w-7 h-7 font-normal item-middle">3</strong>
+            <strong
+              class="text-xs rounded-full bg-black-6 w-7 h-7 font-normal item-middle"
+              >3</strong
+            >
             <textarea
               v-model="editedProblem.option_three"
               class="w-full text-gray-700 resize-none border rounded-lg border-black-4 px-4 py-2"
@@ -176,7 +201,10 @@ onMounted(() => {
             ></textarea>
           </li>
           <li class="flex items-center gap-2">
-            <strong class="text-xs rounded-full bg-black-6 w-7 h-7 font-normal item-middle">4</strong>
+            <strong
+              class="text-xs rounded-full bg-black-6 w-7 h-7 font-normal item-middle"
+              >4</strong
+            >
             <textarea
               v-model="editedProblem.option_four"
               class="w-full text-gray-700 resize-none border rounded-lg border-black-4 px-4 py-2"
@@ -190,7 +218,10 @@ onMounted(() => {
       <div v-if="editedProblem.problem_type === 'OX'" class="space-y-4">
         <ul>
           <li class="flex items-center gap-2 rounded border border-gray-200">
-            <strong class="text-lg font-normal item-middle inline-block border-gray-200 h-full border-r px-4 py-2 bg-black-6">O</strong>
+            <strong
+              class="text-lg font-normal item-middle inline-block border-gray-200 h-full border-r px-4 py-2 bg-black-6"
+              >O</strong
+            >
             <textarea
               v-model="editedProblem.O_option"
               class="w-full text-gray-700 resize-none px-4 py-2"
@@ -198,7 +229,10 @@ onMounted(() => {
             ></textarea>
           </li>
           <li class="flex items-center gap-2 rounded border border-gray-200">
-            <strong class="text-lg font-normal item-middle inline-block border-gray-200 h-full border-r px-4 py-2 bg-black-6">X</strong>
+            <strong
+              class="text-lg font-normal item-middle inline-block border-gray-200 h-full border-r px-4 py-2 bg-black-6"
+              >X</strong
+            >
             <textarea
               v-model="editedProblem.X_option"
               class="w-full text-gray-700 resize-none px-4 py-2"
@@ -238,7 +272,9 @@ onMounted(() => {
       </div>
 
       <!-- 출처 -->
-      <div class="text-sm text-gray-500 mb-10 bg-black-6 p-4 rounded-lg flex gap-2 items-center">
+      <div
+        class="text-sm text-gray-500 mb-10 bg-black-6 p-4 rounded-lg flex gap-2 items-center"
+      >
         <span class="shrink-0">출처: </span>
         <textarea
           v-model="editedProblem.origin_source"
@@ -298,14 +334,58 @@ onMounted(() => {
   background-color: #ffffff;
 }
 
-:deep(.p-accordion .p-accordion-header:not(.p-disabled).p-highlight .p-accordion-header-link) {
+:deep(
+    .p-accordion
+      .p-accordion-header:not(.p-disabled).p-highlight
+      .p-accordion-header-link
+  ) {
   background-color: #f3f4f6;
   color: #4f4f4f;
   border: none;
 }
 
-:deep(.p-accordion .p-accordion-header:not(.p-highlight):not(.p-disabled):hover .p-accordion-header-link) {
+:deep(
+    .p-accordion
+      .p-accordion-header:not(.p-highlight):not(.p-disabled):hover
+      .p-accordion-header-link
+  ) {
   background-color: #e5e7eb;
   border: none;
+}
+
+:deep(.p-togglebutton) {
+  /* 기본 스타일 */
+  background: #f3f4f6 !important;
+  border: none !important;
+  font-size: 12px !important;
+  height: 29px !important;
+  width: 70px !important;
+}
+
+:deep(.p-togglebutton.p-highlight) {
+  /* 활성화 상태 스타일 */
+  background: #4f4f4f !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+:deep(.p-togglebutton:not(.p-disabled):not(.p-highlight):hover) {
+  /* 비활성화 상태 호버 스타일 */
+  background: #e5e7eb !important;
+  color: #4f4f4f !important;
+  border: none !important;
+}
+
+:deep(.p-togglebutton.p-highlight:hover) {
+  /* 활성화 상태 호버 스타일 */
+  background: #374151 !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+:deep(.p-togglebutton .p-button-label) {
+  /* 텍스트 스타일 */
+  font-size: 12px !important;
+  line-height: 1 !important;
 }
 </style>
