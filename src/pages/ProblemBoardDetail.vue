@@ -1,17 +1,18 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { useRoute } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { problemAPI } from "@/api/problem";
 import Menu from "primevue/menu";
 import Avatar from "primevue/avatar";
 import Badge from "primevue/badge";
 import Button from "primevue/button";
-import Textarea from "primevue/textarea";
 import Dialog from "primevue/dialog";
 import Accordion from "primevue/accordion";
 import AccordionTab from "primevue/accordiontab";
 import shareIcon from "@/assets/icons/problem-board/fi-rr-share.svg";
 import thumbsUpIcon from "@/assets/icons/problem-board/fi-rr-thumbs-up.svg";
+import CommentList from "@/components/CommentList.vue";
+import router from "@/router";
 
 // 더보기 메뉴 상태 관리
 const menu = ref();
@@ -51,11 +52,11 @@ onMounted(() => {
 
 // 메뉴 아이템 정의
 const menuItems = [
-  {
+{
     label: "수정하기",
     icon: "pi pi-pencil",
     command: () => {
-      // 수정 로직
+      router.push(`/problem-board-update/${route.params.problemId}`);
     },
   },
   {
@@ -67,6 +68,33 @@ const menuItems = [
   },
 ];
 
+const comments = ref([
+  {
+    id: 1,
+    author: "김내현",
+    contents: "소방경력공무원 관계법규 개념 예제 문제 ",
+    date: "1일전",
+  },
+  {
+    id: 2,
+    author: "김내현",
+    contents: "소방경력공무원 관계법규 개념 예제 문제 ",
+    date: "1일전",
+  },
+  {
+    id: 3,
+    author: "김내현",
+    contents: "소방경력공무원 관계법규 개념 예제 문제 ",
+    date: "1일전",
+  },
+  {
+    id: 4,
+    author: "김내현",
+    contents: "소방경력공무원 관계법규 개념 예제 문제 ",
+    date: "1일전",
+  },
+]);
+
 const toggleMenu = (event) => {
   menu.value.toggle(event);
 };
@@ -75,7 +103,7 @@ const toggleMenu = (event) => {
 <template>
   <div class="max-w-4xl mx-auto p-6">
     <!-- 헤더 영역 -->
-    <div class="flex justify-between flex-col gap-6">
+    <div class="flex justify-between flex-col gap-10">
       <div class="flex gap-2 items-center">
         <Avatar
           image="https://via.placeholder.com/40"
@@ -93,7 +121,7 @@ const toggleMenu = (event) => {
         </div>
       </div>
 
-      <div class="flex items-center gap-4 mb-4">
+      <div class="flex items-center gap-4 mb-10">
         <div class="flex-1">
           <h1 class="text-4xl font-bold mb-4">{{ problem?.title }}</h1>
           <div class="flex items-center gap-2 text-sm text-gray-500">
@@ -129,10 +157,10 @@ const toggleMenu = (event) => {
 
     <!-- 본문 영역 -->
     <div class="mb-8">
-      <p class="text-gray-700 mb-4">{{ problem?.question }}</p>
+      <p class="text-gray-700 mb-10">{{ problem?.question }}</p>
 
       <!-- 이미지 섹션 -->
-      <div v-if="problem?.image_src" class="mb-6">
+      <div v-if="problem?.image_src" class="mb-10">
         <img
           :src="problem.image_src"
           alt="문제 이미지"
@@ -145,28 +173,28 @@ const toggleMenu = (event) => {
         <ol class="list-decimal space-y-2 text-gray-700">
           <li v-if="problem.option_one" class="flex items-center gap-2">
             <strong
-              class="text-xs rounded-full bg-gray-200 px-2.5 py-1 font-normal"
+              class="text-xs rounded-full bg-black-6 w-7 h-7 font-normal item-middle"
               >1</strong
             >
             <span> {{ problem.option_one }}</span>
           </li>
           <li v-if="problem.option_two" class="flex items-center gap-2">
             <strong
-              class="text-xs rounded-full bg-gray-200 px-2.5 py-1 font-normal"
+              class="text-xs rounded-full bg-black-6 w-7 h-7 font-normal item-middle"
               >2</strong
             >
             <span> {{ problem.option_two }}</span>
           </li>
           <li v-if="problem.option_three" class="flex items-center gap-2">
             <strong
-              class="text-xs rounded-full bg-gray-200 px-2.5 py-1 font-normal"
+              class="text-xs rounded-full bg-black-6 w-7 h-7 font-normal item-middle"
               >3</strong
             >
             <span> {{ problem.option_three }}</span>
           </li>
           <li v-if="problem.option_four" class="flex items-center gap-2">
             <strong
-              class="text-xs rounded-full bg-gray-200 px-2.5 py-1 font-normal"
+              class="text-xs rounded-full bg-black-6 w-7 h-7 font-normal item-middle"
               >4</strong
             >
             <span> {{ problem.option_four }}</span>
@@ -175,22 +203,49 @@ const toggleMenu = (event) => {
       </div>
     </div>
 
+    <!-- OX 보기 -->
+    <div v-if="problem?.problem_type === 'OX'" class="space-y-4">
+      <ul>
+        <li
+          v-if="O"
+          class="flex items-center gap-2 rounded border border-gray-200"
+        >
+          <strong
+            class="text-lg font-normal item-middle inline-block border-gray-200 h-full border-r px-4 py-2 bg-black-6"
+            >O</strong
+          >
+          <span class="inline-block px-4 py-2"> {{ problem.option_four }}</span>
+        </li>
+        <li
+          v-if="X"
+          class="flex items-center gap-2 rounded border border-gray-200"
+        >
+          <strong
+            class="text-lg font-normal item-middle inline-block border-gray-200 h-full border-r px-4 py-2 bg-black-6"
+            >O</strong
+          >
+          <span class="inline-block px-4 py-2"> {{ problem.option_four }}</span>
+        </li>
+      </ul>
+    </div>
+
     <!-- 풀이와 답 보기 -->
     <div class="mb-8">
       <Accordion class="w-full">
-        <AccordionTab header="풀이 보기">
-          <div class="p-4">
-            <h4 class="text-xl font-semibold mb-4">문제 해설</h4>
-            <p class="text-gray-700">
-              {{ problem?.explanation || "해설이 없습니다." }}
-            </p>
-          </div>
-        </AccordionTab>
-        <AccordionTab header="답 보기">
-          <div class="p-4">
-            <h4 class="text-xl font-semibold mb-4">정답</h4>
+        <AccordionTab>
+          <template #header>
+            <span class="text-lg font-semibold">풀이와 답 보기</span>
+          </template>
+          <div class="p-4 border-b border-gray-200">
+            <h4 class="text-lg font-semibold mb-4">정답</h4>
             <p class="text-gray-700">
               {{ problem?.answer || "답이 없습니다." }}
+            </p>
+          </div>
+          <div class="p-4">
+            <h4 class="text-lg font-semibold mb-4">문제 해설</h4>
+            <p class="text-gray-700">
+              {{ problem?.explanation || "해설이 없습니다." }}
             </p>
           </div>
         </AccordionTab>
@@ -198,23 +253,14 @@ const toggleMenu = (event) => {
     </div>
 
     <!-- 출처 -->
-    <div class="mb-8">
-      <p class="text-sm text-gray-500">출처: {{ problem?.origin_source }}</p>
-    </div>
+    <p class="text-sm text-gray-500 mb-10 bg-black-6 p-4 rounded-lg">
+      출처: {{ problem?.origin_source }}
+    </p>
 
-    <!-- 댓글 입력 영역 -->
-    <div class="mb-6">
-      <h3 class="text-xl font-bold mb-4">댓글</h3>
-      <form>
-        <Textarea
-          v-model="commentText"
-          placeholder="문제에 대해 어떻게 생각하시나요?"
-          :autoResize="true"
-          rows="5"
-          class="w-full"
-        />
-      </form>
-    </div>
+    <hr class="w-full mb-10 border border-slate-100" />
+
+    <!--  댓글 리스트 + 입력창 -->
+    <CommentList :comments="comments" />
 
     <!-- 삭제 확인 다이얼로그 -->
     <Dialog
