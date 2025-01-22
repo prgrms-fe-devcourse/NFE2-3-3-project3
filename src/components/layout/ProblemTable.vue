@@ -11,12 +11,18 @@ import {
 } from "primevue";
 import { RouterLink } from "vue-router";
 import { ref, onMounted, onBeforeUnmount, defineProps } from "vue";
-
 import statusSolved from "@/assets/icons/problem-board/status-solved.svg";
 import statusWrong from "@/assets/icons/problem-board/status-wrong.svg";
 import minus from "@/assets/icons/problem-board/minus.svg";
 import plus from "@/assets/icons/problem-board/plus.svg";
+import { useAuthStore } from "@/store/authStore";
+import { storeToRefs } from "pinia";
+import checkedMyProblem from "@/assets/icons/my-problems/color-my-problems.svg";
+import seeMyProblems from "@/assets/icons/my-problems/see-my-problems.svg";
+import sharedIcon from "@/assets/icons/my-problem-sets/share.svg";
 
+const authStore = useAuthStore();
+const { user } = storeToRefs(authStore);
 const emit = defineEmits(["open-dialog"]);
 
 const handleAddClick = () => {
@@ -72,7 +78,7 @@ const props = defineProps({
 
 const selectedProblems = ref([]);
 
-const popup = ref();
+const popup = ref(null);
 const showProblemSet = ref(false);
 const ShowProblemSetPopup = () => {
   showProblemSet.value = true;
@@ -112,21 +118,31 @@ const getProblemType = (problemType) => {
   }
 };
 
+const messageStatus = (status) => {
+  switch (status) {
+    case "corrected":
+      return "맞힌 문제";
+    case "wrong":
+      return "틀린 문제";
+    default:
+      return "없음";
+  }
+};
 const handleClickOutside = (event) => {
-  if (popup.value && !popup.value.contains(event.target)) {
-    showProblemSet.value = false;
-    showAddProblemSet.value = false;
+  if (popup?.value && !popup?.value.contains(event.target)) {
+    if (showProblemSet.value) showProblemSet.value = false;
+    if (showAddProblemSet.value) showAddProblemSet.value = false;
   }
 };
 onMounted(() => {
-  window.addEventListener("click", handleClickOutside);
+  popup?.value?.addEventListener("click", handleClickOutside);
 });
 onBeforeUnmount(() => {
-  window.removeEventListener("click", handleClickOutside);
+  popup?.value?.removeEventListener("click", handleClickOutside);
 });
 </script>
 <template>
-  <section class="flex flex-col gap-[18px]">
+  <section class="flex flex-col gap-[18px] w-full relative">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-2">
         <p class="text-xl font-semibold" v-if="showCount">
@@ -141,6 +157,26 @@ onBeforeUnmount(() => {
           class="text-sm text-white bg-navy-4"
           v-if="showProblem"
         />
+        <Button
+          label="내 문제만 보기"
+          size="small"
+          severity="secondary"
+          class="bg-navy-4 text-white text-sm"
+        >
+          <template #icon>
+            <img :src="seeMyProblems" alt="seeMyProblemsIcon" class="h-5 w-5" />
+          </template>
+        </Button>
+        <Button
+          label="공유한 문제"
+          size="small"
+          severity="secondary"
+          class="bg-navy-4 text-white text-sm"
+        >
+          <template #icon>
+            <img :src="sharedIcon" alt="sharedIcon" class="h-5 w-5" />
+          </template>
+        </Button>
         <button
           v-if="showAdd"
           @click="handleAddClick"
@@ -150,77 +186,101 @@ onBeforeUnmount(() => {
         </button>
       </div>
       <Select
+        v-if="showSelect"
         v-model="sort"
         :options="SORTS"
         optionLabel="name"
         class="w-40"
-        v-if="showSelect"
       />
     </div>
 
     <!-- 테이블 -->
-    <DataTable
-      v-model:selection="selectedProblems"
-      :value="problems"
-      dataKey="id"
-      tableStyle="min-width: 50rem"
-      paginator
-      :rows="10"
-    >
-      <template #empty>검색된 문제가 없습니다...</template>
-      <Column
-        v-if="showCheckbox"
-        selectionMode="multiple"
-        headerStyle="width: 3rem"
-      ></Column>
-      <Column v-if="showMinus" header="제거" field="minus">
-        <template #body="slotProps">
-          <button @click="minusProblem(slotProps.data.id)">
-            <img :src="minus" alt="문제 제거" />
-          </button>
+    <div class="border border-black-5 rounded-2xl overflow-hidden">
+      <DataTable
+        v-model:selection="selectedProblems"
+        :value="problems"
+        dataKey="id"
+        tableStyle="min-width: 50rem"
+        paginator
+        :rows="10"
+      >
+        <!-- 검색 결과가 없는 경우 -->
+        <template #empty>
+          <div class="flex items-center justify-center p-6 text-gray-500">
+            검색된 문제가 없습니다...
+          </div>
         </template>
-      </Column>
-      <Column v-if="showPlus" header="추가" field="plus">
-        <template #body="slotProps">
-          <button @click="plusProblem(slotProps.data.id)">
-            <img :src="plus" alt="문제 추가" />
-          </button>
-        </template>
-      </Column>
-      <Column field="status" header="상태">
-        <template #body="slotProps">
-          <img
-            v-if="getStatus(slotProps.data.status) !== ''"
-            :src="getStatus(slotProps.data.status)"
-            alt="상태 아이콘"
-          />
-        </template>
-      </Column>
-      <Column field="title" header="제목">
-        <template #body="slotProps">
-          <RouterLink :to="`/problem-board/${slotProps.data.id}`">{{
-            slotProps.data.title
-          }}</RouterLink>
-        </template>
-      </Column>
-      <Column field="problem_type" header="문제 유형" v-if="showCategory">
-        <template #body="slotProps">
-          <Tag
-            v-if="getProblemType(slotProps.data.problem_type) === '4지선다'"
-            severity="secondary"
-            value="4지선다"
-            class="!font-normal"
-            rounded
-          ></Tag>
-          <Tag v-else value="O / X" class="!font-normal" rounded></Tag>
-        </template>
-      </Column>
-      <Column field="category" header="카테고리"></Column>
-      <Column field="origin_source" header="출처"></Column>
-    </DataTable>
+
+        <!-- 체크박스 선택 -->
+        <Column
+          v-if="showCheckbox"
+          selectionMode="multiple"
+          headerStyle="width: 3rem"
+        ></Column>
+        <Column v-if="showMinus" header="제거" field="minus">
+          <template #body="slotProps">
+            <button @click="minusProblem(slotProps.data.id)">
+              <img :src="minus" alt="문제 제거" />
+            </button>
+          </template>
+        </Column>
+        <Column v-if="showPlus" header="추가" field="plus">
+          <template #body="slotProps">
+            <button @click="plusProblem(slotProps.data.id)">
+              <img :src="plus" alt="문제 추가" />
+            </button>
+          </template>
+        </Column>
+        <Column field="status" header="상태">
+          <template #body="slotProps">
+            <div
+              class="flex justify-center"
+              v-tooltip.top="messageStatus(slotProps.data.status)"
+            >
+              <img
+                v-if="getStatus(slotProps.data.status) !== ''"
+                :src="getStatus(slotProps.data.status)"
+                alt="상태 아이콘"
+              />
+            </div>
+          </template>
+        </Column>
+        <Column field="title" header="제목">
+          <template #body="slotProps">
+            <div class="flex items-center justify-between w-full">
+              <RouterLink :to="`/my-problems/${slotProps.data.id}`">
+                <span class="cursor-pointer w-full">{{
+                  slotProps.data.title
+                }}</span>
+              </RouterLink>
+              <img
+                v-if="slotProps.data.uid === user.id"
+                :src="checkedMyProblem"
+                alt="checkedMyProblemIcon"
+                class="h-5 w-5"
+                v-tooltip.top="'내가 만든 문제'"
+              />
+            </div>
+          </template>
+        </Column>
+        <Column field="problem_type" header="문제 유형" v-if="showCategory">
+          <template #body="slotProps">
+            <Tag
+              v-if="getProblemType(slotProps.data.problem_type) === '4지선다'"
+              severity="secondary"
+              value="4지선다"
+            ></Tag>
+            <Tag v-else value="O / X" severity="secondary"></Tag>
+          </template>
+        </Column>
+        <Column field="category" header="카테고리"></Column>
+        <Column field="origin_source" header="출처"></Column>
+      </DataTable>
+    </div>
 
     <!-- 팝업 -->
-    <div ref="popup" class="absolute -translate-x-1/2 left-1/2 -bottom-32">
+    <div class="h-24"></div>
+    <div ref="popup" class="absolute -translate-x-1/2 left-1/2 bottom-0">
       <Button
         v-if="selectedProblems.length"
         type="button"
@@ -229,7 +289,7 @@ onBeforeUnmount(() => {
         @click="ShowProblemSetPopup"
       />
 
-      <div v-if="showProblemSet" class="w-64 absolute bottom-0 -right-[17rem]">
+      <div v-if="showProblemSet" class="w-64 absolute -bottom-0 -right-[17rem]">
         <Listbox
           v-model="selectedProblemSet"
           :options="problemSets"
@@ -282,3 +342,8 @@ onBeforeUnmount(() => {
     </div>
   </section>
 </template>
+<style scoped>
+::v-deep(.p-tag-secondary) {
+  font-weight: 400;
+}
+</style>

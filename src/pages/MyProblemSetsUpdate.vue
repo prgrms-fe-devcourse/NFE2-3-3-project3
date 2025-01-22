@@ -4,10 +4,9 @@ import { Dialog, ToggleSwitch } from "primevue";
 import { useRouter } from "vue-router";
 
 import Search from "@/components/layout/Search.vue";
-import ProblemTable from "./problem-board/components/ProblemTable.vue";
-
 import pen from "@/assets/icons/my-problem-sets-update/pen.svg";
 import share from "@/assets/icons/my-problem-sets-update/share.svg";
+import ProblemTable from "@/components/layout/ProblemTable.vue";
 
 const dialogVisible = ref(false);
 

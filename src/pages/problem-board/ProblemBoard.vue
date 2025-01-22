@@ -1,6 +1,6 @@
 <script setup>
+import ProblemTable from "@/components/layout/ProblemTable.vue";
 import Search from "@/components/layout/Search.vue";
-import ProblemTable from "./components/ProblemTable.vue";
 import { ref } from "vue";
 
 const problems = ref([

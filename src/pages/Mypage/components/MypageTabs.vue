@@ -4,7 +4,10 @@ import { Column, DataTable } from "primevue";
 import { GRADES } from "@/const/grades";
 import { ref } from "vue";
 import { formatDate } from "@/utils/formatDate";
-import { PointType } from "@/const/pointType";
+import { PointType } from "@/const/PointType";
+import { useRoute } from "vue-router";
+
+const route = useRoute();
 
 const USERS = [
   {
@@ -75,7 +78,7 @@ const POINT_HISTORIES = [
 ];
 const TABS = ["팔로잉 목록", "팔로워 목록", "포인트 내역"];
 
-const currentTab = ref(TABS[0]);
+const currentTab = ref(route.query.tab || TABS[0]);
 const changeTab = (event) => {
   currentTab.value = event.target.innerText;
 };
@@ -98,26 +101,27 @@ const getMessageFromPointType = (pointType) => {
 <template>
   <section class="flex flex-col gap-6">
     <div class="flex gap-8 text-black-2 font-semibold text-xl">
-      <button
+      <RouterLink
         v-for="tab in TABS"
+        :to="`${route.path}?tab=${tab}`"
         :key="tab"
-        type="button"
         :class="
           currentTab === tab
             ? 'text-orange-1'
             : 'hover:text-gray-1 transition-colors'
         "
         @click="changeTab"
+        replace
       >
         {{ tab }}
-      </button>
+      </RouterLink>
     </div>
 
     <!-- 팔로잉 목록 탭 -->
     <div v-if="currentTab === '팔로잉 목록'" class="grid grid-cols-6 gap-4">
       <RouterLink
         v-for="following in USERS"
-        :to="`/user/${following.id}`"
+        :to="`/users/${following.id}`"
         class="flex flex-col justify-center items-center gap-4 w-36 h-40 px-2 py-5 bg-black-6/20 rounded-lg"
       >
         <img
@@ -141,7 +145,7 @@ const getMessageFromPointType = (pointType) => {
     >
       <RouterLink
         v-for="follower in USERS"
-        :to="`/user/${follower.id}`"
+        :to="`/users/${follower.id}`"
         class="flex flex-col justify-center items-center gap-4 w-36 h-40 px-2 py-5 bg-black-6/20 rounded-lg"
       >
         <img
