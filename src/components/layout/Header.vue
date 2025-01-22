@@ -10,20 +10,7 @@ const router = useRouter();
 const alertPath = new URL("@/assets/icons/alert.svg", import.meta.url).href;
 const pointPath = new URL("@/assets/icons/point.svg", import.meta.url).href;
 
-// 메뉴 항목 정의
-const menuItems = [
-  {
-    label: "프로필",
-    icon: "pi pi-user",
-    command: () => {
-      router.push("/mypage");
-    },
-  },
-  {
-    label: "로그아웃",
-    icon: "pi pi-sign-out",
-  },
-];
+
 
 // Menu 참조
 const menu = ref(null);
@@ -45,6 +32,22 @@ const handleLogout = async () => {
     console.error("Logout failed:", error);
   }
 };
+
+// 메뉴 항목 정의
+const menuItems = [
+  {
+    label: "프로필",
+    icon: "pi pi-user",
+    command: () => {
+      router.push("/mypage");
+    },
+  },
+  {
+    label: "로그아웃",
+    icon: "pi pi-sign-out",
+    command: handleLogout
+  },
+];
 
 const handleLoginSuccess = () => {
   showLoginModal.value = false;

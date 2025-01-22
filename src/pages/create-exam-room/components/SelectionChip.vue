@@ -9,37 +9,30 @@ defineProps({
   },
   icon: {
     type: String,
-    default: "pi pi-check",
-  },
-  show: {
-    type: Boolean,
-    default: true,
+    required: true
   },
   removable: {
     type: Boolean,
-    default: false,
-  },
+    default: false
+  }
 });
 
-defineEmits(["remove"]);
+const emit = defineEmits(['remove']);
 </script>
 
 <template>
-  <div v-if="show" class="flex items-center gap-2 mb-2">
-    <Chip
-      :label="label"
-      :removable="removable"
-      @remove="$emit('remove')"
-      class="bg-orange-50 text-orange-500 border border-orange-200 !py-1"
-    >
-      <template #content>
-        <span class="flex items-center gap-2">
-          <i :class="icon" class="text-orange-500"></i>
-          {{ label }}
-        </span>
-      </template>
-    </Chip>
-  </div>
+  <Chip
+    :removable="removable"
+    @remove="$emit('remove')"
+    class="bg-orange-50 text-orange-500 border border-orange-200 !py-1"
+  >
+    <template #content>
+      <span class="flex items-center gap-2">
+        <i :class="icon" class="text-orange-500"></i>
+        {{ label }}
+      </span>
+    </template>
+  </Chip>
 </template>
 
 <style scoped>
