@@ -4,13 +4,12 @@ import { useRoute } from "vue-router";
 import { useRouter } from "vue-router";
 import { Menu } from "primevue";
 
-import ProblemTable from "./problem-board/components/ProblemTable.vue";
-
 import CommentList from "@/components/CommentList.vue";
 import addOption from "@/assets/icons/problem-set-board-detail/add-option.svg";
 import thumbsUp from "@/assets/icons/problem-set-board-detail/thumbs-up.svg";
 import testCenterEnter from "@/assets/icons/problem-set-board-detail/test-center-enter.svg";
 import like from "@/assets/icons/problem-set-board-detail/like.svg";
+import ProblemTable from "@/components/layout/ProblemTable.vue";
 
 const route = useRoute();
 const router = useRouter();

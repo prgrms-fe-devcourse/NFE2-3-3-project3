@@ -78,7 +78,7 @@ const props = defineProps({
 
 const selectedProblems = ref([]);
 
-const popup = ref();
+const popup = ref(null);
 const showProblemSet = ref(false);
 const ShowProblemSetPopup = () => {
   showProblemSet.value = true;
@@ -129,16 +129,16 @@ const messageStatus = (status) => {
   }
 };
 const handleClickOutside = (event) => {
-  if (popup.value && !popup.value.contains(event.target)) {
-    showProblemSet.value = false;
-    showAddProblemSet.value = false;
+  if (popup?.value && !popup?.value.contains(event.target)) {
+    if (showProblemSet.value) showProblemSet.value = false;
+    if (showAddProblemSet.value) showAddProblemSet.value = false;
   }
 };
 onMounted(() => {
-  window.addEventListener("click", handleClickOutside);
+  popup?.value?.addEventListener("click", handleClickOutside);
 });
 onBeforeUnmount(() => {
-  window.removeEventListener("click", handleClickOutside);
+  popup?.value?.removeEventListener("click", handleClickOutside);
 });
 </script>
 <template>
