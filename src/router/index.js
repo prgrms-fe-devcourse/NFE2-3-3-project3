@@ -13,7 +13,7 @@ import LandingPage from "@/pages/LandingPage.vue";
 import ExamHistory from "@/pages/exam-history/ExamHistory.vue";
 import ProblemSetBoardDetail from "@/pages/ProblemSetBoardDetail.vue";
 import CreateExamRoom from "@/pages/create-exam-room/CreateExamRoom.vue";
-import ProblemBoardDetail from "@/pages/ProblemBoardDetail.vue";
+import ProblemBoardDetail from "@/pages/problem-detail/ProblemBoardDetail.vue";
 import MyProblemsDetail from "@/pages/MyProblemsDetail.vue";
 import ExamMake from "@/pages/ExamMake.vue";
 import MyProblemSetsDetail from "@/pages/MyProblemSetsDetail.vue";
