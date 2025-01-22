@@ -1,8 +1,8 @@
 <script setup>
 import { RouterLink } from "vue-router";
-import Profile from "./Profile.vue";
 import ExampleProfileImg from "@/assets/harp seal.jpg";
-import Grade from "./Grade.vue";
+import Profile from "@/components/layout/Profile.vue";
+import Grade from "@/components/layout/Grade.vue";
 const alertPath = new URL("@/assets/icons/alert.svg", import.meta.url).href;
 const pointPath = new URL("@/assets/icons/point.svg", import.meta.url).href;
 </script>
