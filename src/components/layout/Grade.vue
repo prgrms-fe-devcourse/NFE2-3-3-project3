@@ -42,8 +42,8 @@ watchEffect(() => {
         </p>
         <ProgressBar
           class="min-w-[30rem] min-h-10"
-          :value="(points / 500) * 100"
-          v-tooltip.top="`${points} / ${500}`"
+          :value="(points / gradeInfo?.next?.point) * 100"
+          v-tooltip.top="`${points} / ${gradeInfo?.next?.point}`"
           type="text"
         >
           {{}}
