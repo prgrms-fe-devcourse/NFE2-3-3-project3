@@ -2,6 +2,9 @@
 import { ref, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { problemAPI } from "@/api/problem";
+import { userAPI } from "@/api/user";
+import { problemLikeAPI } from "@/api/problemLike";
+import { useAuthStore } from "@/store/authStore";
 import Menu from "primevue/menu";
 import Avatar from "primevue/avatar";
 import Badge from "primevue/badge";
@@ -14,45 +17,80 @@ import thumbsUpIcon from "@/assets/icons/problem-board/fi-rr-thumbs-up.svg";
 import CommentList from "@/components/CommentList.vue";
 import router from "@/router";
 
-// 더보기 메뉴 상태 관리
+// 상태 관리
 const menu = ref();
 const showConfirmDialog = ref(false);
 const route = useRoute();
 const problem = ref(null);
-
-// 댓글 입력 상태 관리
+const author = ref(null);
+const authStore = useAuthStore();
+const hasLiked = ref(false);
+const likeCount = ref(0);
 const commentText = ref("");
+
+// 좋아요 상태 확인
+const checkLikeStatus = async () => {
+  try {
+    if (!authStore.user?.id) return;
+    
+    const response = await problemLikeAPI.getUid(authStore.user.id);
+    if (response?.data) {
+      hasLiked.value = response.data.some(like => 
+        like.problem_id === parseInt(route.params.problemId)
+      );
+    }
+  } catch (error) {
+    console.error("좋아요 상태 확인 실패:", error);
+  }
+};
+
+// 좋아요 토글
+const toggleLike = async () => {
+  try {
+    if (!authStore.user?.id) {
+      alert("로그인이 필요한 기능입니다.");
+      return;
+    }
+
+    await problemLikeAPI.add(
+      authStore.user.id,
+      parseInt(route.params.problemId)
+    );
+
+    hasLiked.value = !hasLiked.value;
+    likeCount.value = hasLiked.value ? likeCount.value + 1 : likeCount.value - 1;
+  } catch (error) {
+    console.error("좋아요 토글 실패:", error);
+  }
+};
 
 // 문제 데이터 로드
 const loadProblem = async () => {
   try {
-    console.log("현재 route params:", route.params); // 라우트 파라미터 확인
-
     if (!route.params.problemId) {
       console.log("ID가 없습니다");
       return;
     }
 
-    // getAll 대신 getById 사용
-    console.log("문제 로딩 시작:", route.params.problemId);
     const data = await problemAPI.getById(route.params.problemId);
-    console.log("받아온 데이터:", data);
-
     if (data) {
       problem.value = data;
+      likeCount.value = data.problem_like?.length || 0;
+      await checkLikeStatus();
+      
+      if (data.uid) {
+        const userData = await userAPI.getOne(data.uid);
+        author.value = userData;
+      }
     }
   } catch (error) {
-    console.error("문제 로딩 실패:", error);
+    console.error("데이터 로딩 실패:", error);
   }
 };
 
-onMounted(() => {
-  loadProblem();
-});
-
 // 메뉴 아이템 정의
 const menuItems = [
-{
+  {
     label: "수정하기",
     icon: "pi pi-pencil",
     command: () => {
@@ -98,6 +136,10 @@ const comments = ref([
 const toggleMenu = (event) => {
   menu.value.toggle(event);
 };
+
+onMounted(() => {
+  loadProblem();
+});
 </script>
 
 <template>
@@ -106,18 +148,18 @@ const toggleMenu = (event) => {
     <div class="flex justify-between flex-col gap-10">
       <div class="flex gap-2 items-center">
         <Avatar
-          image="https://via.placeholder.com/40"
+          :image="author?.avatar_url || 'https://via.placeholder.com/40'"
           shape="circle"
           size="large"
         />
         <div>
           <p>
-            <strong aria-label="닉네임">닉네임</strong>
+            <strong aria-label="닉네임">{{ author?.name || "닉네임" }}</strong>
             <Badge value="등급" severity="secondary" class="ml-2" />
           </p>
-          <span class="text-gray-500 text-sm" aria-label="최종 수정일"
-            >2025.01.15.</span
-          >
+          <span class="text-gray-500 text-sm" aria-label="최종 수정일">
+            {{ new Date(problem?.updated_at).toLocaleDateString() }}
+          </span>
         </div>
       </div>
 
@@ -134,10 +176,21 @@ const toggleMenu = (event) => {
               <span>{{ problem?.shared ? "공개됨" : "미공개" }}</span>
             </div>
             <!-- 좋아요 수 표시 -->
-            <div class="flex items-center gap-1">
-              <img :src="thumbsUpIcon" alt="좋아요 아이콘" class="w-4 h-4" />
-              <span>{{ problem?.problem_like?.length || 0 }}</span>
-            </div>
+            <button
+              @click="toggleLike"
+              class="flex items-center gap-1 px-2 py-1 rounded-full transition"
+              :class="
+                hasLiked ? 'bg-orange-100 text-orange-500' : 'hover:bg-gray-100'
+              "
+            >
+              <img
+                :src="thumbsUpIcon"
+                alt="좋아요 아이콘"
+                class="w-4 h-4"
+                :class="{ 'opacity-50': !hasLiked }"
+              />
+              <span>{{ likeCount }}</span>
+            </button>
           </div>
         </div>
 
@@ -160,11 +213,11 @@ const toggleMenu = (event) => {
       <p class="text-gray-700 mb-10">{{ problem?.question }}</p>
 
       <!-- 이미지 섹션 -->
-      <div v-if="problem?.image_src" class="mb-10">
+      <div v-if="problem?.image_src" class="mb-10 item-middle">
         <img
           :src="problem.image_src"
           alt="문제 이미지"
-          class="w-full rounded-lg"
+          class="rounded-lg max-h-[400px]"
         />
       </div>
 
@@ -272,14 +325,12 @@ const toggleMenu = (event) => {
       <template #footer>
         <Button
           label="취소"
-          icon="pi pi-times"
+          severity="secondary"
           @click="showConfirmDialog = false"
-          text
         />
         <Button
           label="삭제"
-          icon="pi pi-trash"
-          severity="danger"
+          severity="primary"
           @click="showConfirmDialog = false"
         />
       </template>

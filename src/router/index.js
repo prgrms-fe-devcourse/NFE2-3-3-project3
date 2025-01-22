@@ -66,7 +66,7 @@ const routes = [
       },
       {
         path: "my-problem-sets-update/:problemSetId",
-        name: "MyProblemSets",
+        name: "MyProblemSetsUpdate",
         component: MyProblemSetsUpdate,
       },
       {
