@@ -154,12 +154,4 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach((to, from, next) => {
-  if (window.location.hash.includes("access_token")) {
-    const cleanUrl = window.location.origin + window.location.pathname;
-    window.history.replaceState({}, document.title, cleanUrl);
-  }
-  next();
-});
-
 export default router;
