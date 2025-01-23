@@ -1,128 +1,17 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, watchEffect } from "vue";
 import ExamCard from "@/pages/exam-room/components/ExamCard.vue";
 import InvitedExamCard from "./components/InvitedExamCard.vue";
 import createIcon from "@/assets/icons/exam-room/edit_square.svg";
 import { RouterLink } from "vue-router";
+import { testCenterAPI } from "@/api/testCenter";
+import { useAuthStore } from "@/store/authStore";
+import { inviteAPI } from "@/api/invite";
 
-// 시험 데이터 (나중에 API로 대체)
-const myExams = ref([
-  {
-    id: 1,
-    title: "기본 시험",
-    participants: 2,
-    category: "정보처리기사 문제집",
-    examDate: "2025.01.18 15:00",
-    duration: "1시간",
-    questionCount: 40,
-  },
-  {
-    id: 2,
-    title: "기본 시험",
-    participants: 2,
-    category: "정보처리기사 문제집",
-    examDate: "2025.01.18 15:00",
-    duration: "1시간",
-    questionCount: 40,
-  },
-  {
-    id: 3,
-    title: "기본 시험",
-    participants: 2,
-    category: "정보처리기사 문제집",
-    examDate: "2025.01.18 15:00",
-    duration: "1시간",
-    questionCount: 40,
-  },
-  {
-    id: 4,
-    title: "기본 시험",
-    participants: 2,
-    category: "정보처리기사 문제집",
-    examDate: "2025.01.18 15:00",
-    duration: "1시간",
-    questionCount: 40,
-  },
-  {
-    id: 5,
-    title: "기본 시험",
-    participants: 2,
-    category: "정보처리기사 문제집",
-    examDate: "2025.01.18 15:00",
-    duration: "1시간",
-    questionCount: 40,
-  },
-  {
-    id: 6,
-    title: "기본 시험",
-    participants: 2,
-    category: "정보처리기사 문제집",
-    examDate: "2025.01.18 15:00",
-    duration: "1시간",
-    questionCount: 40,
-  },
-  {
-    id: 7,
-    title: "기본 시험",
-    participants: 2,
-    category: "정보처리기사 문제집",
-    examDate: "2025.01.18 15:00",
-    duration: "1시간",
-    questionCount: 40,
-  },
-  {
-    id: 8,
-    title: "기본 시험",
-    participants: 2,
-    category: "정보처리기사 문제집",
-    examDate: "2025.01.18 15:00",
-    duration: "1시간",
-    questionCount: 40,
-  },
-]);
-
-const invitedExams = ref([
-  {
-    id: 1,
-    title: "기본 초대된 시험",
-    participants: "닉네임",
-    category: "정보처리기사 문제집",
-    examDate: "2025.01.18 15:00",
-    duration: "1시간 20분",
-  },
-  {
-    id: 2,
-    title: "기본 초대된 시험",
-    participants: "닉네임",
-    category: "정보처리기사 문제집",
-    examDate: "2025.01.18 15:00",
-    duration: "1시간 20분",
-  },
-  {
-    id: 3,
-    title: "기본 초대된 시험",
-    participants: "닉네임",
-    category: "정보처리기사 문제집",
-    examDate: "2025.01.18 15:00",
-    duration: "1시간 20분",
-  },
-  {
-    id: 4,
-    title: "기본 초대된 시험",
-    participants: "닉네임",
-    category: "정보처리기사 문제집",
-    examDate: "2025.01.18 15:00",
-    duration: "1시간 20분",
-  },
-  {
-    id: 5,
-    title: "기본 초대된 시험",
-    participants: "닉네임",
-    category: "정보처리기사 문제집",
-    examDate: "2025.01.18 15:00",
-    duration: "1시간 20분",
-  },
-]);
+const authStore = useAuthStore();
+const ongoingExams = ref([]);
+const myExams = ref([]);
+const invitedExams = ref([]);
 
 // 각 섹션별 표시 개수 관리를 분리
 const ongoingExamsDisplayCount = ref(4);
@@ -137,7 +26,7 @@ const isInvitedExamsExpanded = ref(false);
 const toggleOngoingExamsDisplay = () => {
   isOngoingExamsExpanded.value = !isOngoingExamsExpanded.value;
   ongoingExamsDisplayCount.value = isOngoingExamsExpanded.value
-    ? myExams.value.length
+    ? ongoingExams.value.length
     : 4;
 };
 
@@ -157,9 +46,8 @@ const toggleInvitedExamsDisplay = () => {
     : 4;
 };
 
-// 현재 표시되는 진행중인 시험 목록
 const visibleOngoingExams = computed(() => {
-  return myExams.value.slice(0, ongoingExamsDisplayCount.value);
+  return ongoingExams.value.slice(0, ongoingExamsDisplayCount.value);
 });
 
 // 현재 표시되는 내가 만든 시험 목록
@@ -174,7 +62,7 @@ const visibleInvitedExams = computed(() => {
 
 // 진행중인 시험 더보기 버튼 표시 여부
 const showOngoingExamsMoreButton = computed(() => {
-  return myExams.value.length > 4;
+  return ongoingExams.value.length > 4;
 });
 
 // 내가 만든 시험의 더보기 버튼 표시 여부
@@ -186,6 +74,41 @@ const showMyExamsMoreButton = computed(() => {
 const showInvitedExamsMoreButton = computed(() => {
   return invitedExams.value.length > 4;
 });
+
+// 데이터 로딩 함수
+const fetchExams = async () => {
+  if (!authStore.user?.id) return;
+
+  const now = new Date();
+  const response = await testCenterAPI.getAllFields(authStore.user.id);
+
+  if (response) {
+    // 진행중인 시험 필터링
+    ongoingExams.value = response.filter((exam) => {
+      const startDate = new Date(exam.start_date);
+      const endDate = new Date(exam.end_date);
+      return now >= startDate && now <= endDate;
+    });
+
+    // 내가 만든 시험 (진행중인 시험 제외)
+    const ongoingExamIds = ongoingExams.value.map((exam) => exam.id);
+    myExams.value = response.filter(
+      (exam) => !ongoingExamIds.includes(exam.id),
+    );
+  }
+
+  // 초대된 시험 로딩
+  const inviteResponse = await inviteAPI.getAll(authStore.user.id);
+  if (inviteResponse) {
+    invitedExams.value = inviteResponse.filter((invite) => {
+      const endDate = new Date(invite.test_center.end_date);
+      return !invite.participate && now <= endDate;
+    });
+  }
+};
+
+// 초기 데이터 로딩
+watchEffect(fetchExams);
 </script>
 
 <template>
@@ -205,9 +128,18 @@ const showInvitedExamsMoreButton = computed(() => {
           {{ isOngoingExamsExpanded ? "접기" : "전체보기 +" }}
         </button>
       </div>
-      <ul class="flex flex-wrap gap-6">
+
+      <!-- 조건부 렌더링 -->
+      <div
+        v-if="ongoingExams.length === 0"
+        class="text-gray-500 w-full py-10 item-middle"
+      >
+        현재 진행중인 시험이 없습니다.
+      </div>
+
+      <ul v-else class="flex flex-wrap gap-6">
         <li
-          v-for="exam in visibleOngoingExams"
+          v-for="exam in ongoingExams"
           :key="exam.id"
           class="basis-[calc(25%-1.2rem)]"
         >
@@ -229,7 +161,16 @@ const showInvitedExamsMoreButton = computed(() => {
           {{ isMyExamsExpanded ? "접기" : "전체보기 +" }}
         </button>
       </div>
-      <ul class="flex flex-wrap gap-6">
+
+      <!-- 조건부 렌더링 -->
+      <div
+        v-if="myExams.length === 0"
+        class="text-gray-500 w-full py-10 item-middle"
+      >
+        시험장 정보가 없습니다.
+      </div>
+
+      <ul v-else class="flex flex-wrap gap-6">
         <li
           v-for="exam in visibleMyExams"
           :key="exam.id"
@@ -253,7 +194,16 @@ const showInvitedExamsMoreButton = computed(() => {
           {{ isInvitedExamsExpanded ? "접기" : "전체보기 +" }}
         </button>
       </div>
-      <ul class="flex flex-wrap gap-6">
+
+      <!-- 조건부 렌더링 -->
+      <div
+        v-if="invitedExams.length === 0"
+        class="text-gray-500 w-full py-10 item-middle"
+      >
+        초대된 시험이 없습니다.
+      </div>
+
+      <ul v-else class="flex flex-wrap gap-6">
         <li
           v-for="exam in visibleInvitedExams"
           :key="exam.id"

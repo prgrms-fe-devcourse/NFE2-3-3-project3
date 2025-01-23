@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from "vue";
-
+const logoPath = new URL("@/assets/logos/logo.svg", import.meta.url).href;
 import LoginModal from "@/components/layout/LoginModal.vue";
 import previewIMG from "@/assets/icons/preview.png";
 
