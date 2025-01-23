@@ -164,8 +164,6 @@ const sortedProblems = computed(() => {
   if (!props.problems) return [];
 
   const problems = [...props.problems];
-  console.log(problems);
-
   switch (sort.value.value) {
     case "최신순":
       return problems.sort(
