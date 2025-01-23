@@ -1,5 +1,4 @@
 import { supabase } from "./index.js";
-const url = window.location.href;
 export const authAPI = {
   // GitHub 로그인
   async logInWithGithub() {
@@ -7,7 +6,7 @@ export const authAPI = {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "github",
         options: {
-          redirectTo: `${url}home`,
+          redirectTo: `${import.meta.env.VITE_SITE_URL}/home`,
         },
       });
       if (error) throw error;
@@ -24,7 +23,7 @@ export const authAPI = {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${url}home`,
+          redirectTo: `${import.meta.env.VITE_SITE_URL}/home`,
         },
       });
 
@@ -42,7 +41,7 @@ export const authAPI = {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "kakao",
         options: {
-          redirectTo: `${url}home`,
+          redirectTo: `${import.meta.env.VITE_SITE_URL}/home`,
         },
       });
       if (error) throw error;
