@@ -1,4 +1,5 @@
 <script setup>
+import { onMounted } from "vue";
 import { RouterLink } from "vue-router";
 import ExampleProfileImg from "@/assets/harp seal.jpg";
 import Profile from "@/components/layout/Profile.vue";
@@ -10,11 +11,18 @@ const pointPath = new URL("@/assets/icons/point.svg", import.meta.url).href;
 
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
+
+onMounted(() => {
+  if (window.location.hash.includes("access_token")) {
+    const cleanUrl = window.location.origin + window.location.pathname;
+    window.history.replaceState({}, document.title, cleanUrl);
+  }
+});
 </script>
 
 <template>
   <div class="flex flex-col w-full">
-    <h1 class="text-5xl font-laundry text-left pb-24">
+    <h1 class="pb-24 text-5xl text-left font-laundry">
       {{ user?.user_metadata.full_name }}님, 다시 만나 반가워요!
     </h1>
     <div class="flex items-center justify-between w-full h-[226px] gap-4">
@@ -31,8 +39,8 @@ const { user } = storeToRefs(authStore);
   </div>
 
   <!-- 하단 래핑 박스 -->
-  <div class="flex flex-col gap-2 mx-auto pt-24">
-    <h2 class="text-xl font-semibold text-left font-pretend w-full">
+  <div class="flex flex-col gap-2 pt-24 mx-auto">
+    <h2 class="w-full text-xl font-semibold text-left font-pretend">
       공부하러 가기
     </h2>
     <div class="grid grid-cols-3 gap-6 w-full pt-[16px]">
@@ -42,11 +50,11 @@ const { user } = storeToRefs(authStore);
         class="bg-beige-2 rounded-lg p-6 flex flex-col justify-between h-[261px]"
       >
         <p
-          class="text-xl font-semibold mb-4 font-pretend text-left text-gray-2"
+          class="mb-4 text-xl font-semibold text-left font-pretend text-gray-2"
         >
           문제 생성하기
         </p>
-        <p class="text-gray-1 text-sm font-pretend text-left">
+        <p class="text-sm text-left text-gray-1 font-pretend">
           새로운 문제를 만들고, 문제집에 추가하세요.
         </p>
       </RouterLink>
@@ -57,11 +65,11 @@ const { user } = storeToRefs(authStore);
         class="bg-beige-2 rounded-lg p-6 flex flex-col justify-between h-[261px]"
       >
         <p
-          class="font-semibold mb-4 font-pretend text-left text-xl text-gray-2"
+          class="mb-4 text-xl font-semibold text-left font-pretend text-gray-2"
         >
           시험장 입실
         </p>
-        <p class="text-gray-1 text-sm font-pretend text-left">
+        <p class="text-sm text-left text-gray-1 font-pretend">
           친구들과 함께 시험을 보고 결과를 공유하세요.
         </p>
       </RouterLink>
@@ -72,11 +80,11 @@ const { user } = storeToRefs(authStore);
         class="bg-beige-2 rounded-lg p-6 flex flex-col justify-between h-[261px]"
       >
         <p
-          class="font-semibold mb-4 font-pretend text-left text-xl text-gray-2"
+          class="mb-4 text-xl font-semibold text-left font-pretend text-gray-2"
         >
           다시 볼 문제
         </p>
-        <p class="text-gray-1 text-sm font-pretend text-left">
+        <p class="text-sm text-left text-gray-1 font-pretend">
           틀렸거나, 다시 보고 싶은 문제를 다시 한번 공부해보세요.
         </p>
       </RouterLink>

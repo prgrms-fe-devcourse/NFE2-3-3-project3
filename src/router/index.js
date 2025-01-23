@@ -1,4 +1,3 @@
-import { supabase } from "../api";
 import { createRouter, createWebHistory } from "vue-router";
 import DefaultLayout from "@/components/layout/DefaultLayout.vue";
 
@@ -22,6 +21,7 @@ import ProblemBoardDetailUpdate from "@/pages/ProblemBoardDetailUpdate.vue";
 import UserProfile from "@/pages/user-profile/UserProfile.vue";
 import Home from "@/pages/Home.vue";
 import NotFound from "@/pages/NotFound.vue";
+import { authAPI } from "@/api/auth";
 
 const routes = [
   // 레이아웃이 필요없는 페이지들
@@ -29,6 +29,7 @@ const routes = [
     path: "/",
     name: "LandingPage",
     component: LandingPage,
+    meta: { landing: true },
   },
   {
     path: "/problem-editor",
@@ -63,87 +64,104 @@ const routes = [
         path: "home",
         name: "Home",
         component: Home,
+        meta: { requiresAuth: true },
       },
       {
         path: "mypage",
         name: "mypage",
         component: Mypage,
+        meta: { requiresAuth: true },
       },
       {
         path: "my-problems",
         name: "MyProblems",
         component: MyProblems,
+        meta: { requiresAuth: true },
       },
       {
         path: "my-problems/:myProblemId",
         name: "MyProblemsDetail",
         component: MyProblemsDetail,
+        meta: { requiresAuth: true },
       },
       {
         path: "my-problem-sets",
         name: "MyProblemSets",
         component: MyProblemSets,
+        meta: { requiresAuth: true },
       },
       {
         path: "my-problem-sets-update/:problemSetId",
         name: "MyProblemSetsUpdate",
         component: MyProblemSetsUpdate,
+        meta: { requiresAuth: true },
       },
       {
         path: "my-problem-sets/:problemSetId",
         name: "MyProblemSetsDetail",
         component: MyProblemSetsDetail,
+        meta: { requiresAuth: true },
       },
       {
         path: "problem-board",
         name: "ProblemBoard",
         component: ProblemBoard,
+        meta: { requiresAuth: true },
       },
       {
         path: "problem-set-board",
         name: "ProblemSetBoard",
         component: ProblemSetBoard,
+        meta: { requiresAuth: true },
       },
       {
         path: "exam-room",
         name: "ExamRoom",
         component: ExamRoom,
+        meta: { requiresAuth: true },
       },
       {
         path: "create-exam-room",
         name: "CreateExamRoom",
         component: CreateExamRoom,
+        meta: { requiresAuth: true },
       },
       {
         path: "exam-history",
         name: "ExamHistory",
         component: ExamHistory,
+        meta: { requiresAuth: true },
       },
       {
         path: "exam-make/:problemSetId",
         name: "ExamMake",
         component: ExamMake,
+        meta: { requiresAuth: true },
       },
       {
         path: "problem-set-board/:problemSetId",
         name: "ProblemSetBoardDetail",
         component: ProblemSetBoardDetail,
+        meta: { requiresAuth: true },
       },
       {
         path: "problem-board/:problemId",
         name: "ProblemBoardDetail",
         component: ProblemBoardDetail,
+        meta: { requiresAuth: true },
       },
 
       {
         path: "problem-board-update/:problemId",
         name: "ProblemBoardDetailUpdate",
         component: ProblemBoardDetailUpdate,
+        meta: { requiresAuth: true },
       },
       {
         path: "users/:userId",
         name: "UserProfile",
         component: UserProfile,
+        meta: { requiresAuth: true },
       },
     ],
   },
@@ -154,4 +172,16 @@ const router = createRouter({
   routes,
 });
 
+router.beforeEach(async (to, _, next) => {
+  const session = await authAPI.getSession();
+  console.log(session);
+
+  if (!session && to.meta.requiresAuth) {
+    next("/");
+  } else if (session && to.meta.landing) {
+    next("/home");
+  } else {
+    next();
+  }
+});
 export default router;
