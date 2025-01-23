@@ -1,0 +1,48 @@
+<script setup>
+import { ref } from "vue";
+import Chart from "primevue/chart";
+
+// 차트 데이터
+const chartData = ref({
+  labels: ["내 점수", "평균 점수"],
+  datasets: [
+    {
+      backgroundColor: ["#F6C085", "#8992B5"],
+      data: [56, 28], // 내 점수와 평균 점수
+    },
+  ],
+});
+
+// 차트 옵션
+const chartOptions = ref({
+  responsive: true, // 부모 래핑 박스 크기에 맞춤
+  maintainAspectRatio: false,
+  indexAxis: "y",
+  plugins: {
+    legend: {
+      display: false,
+    },
+  },
+  scales: {
+    x: {
+      beginAtZero: true,
+      max: 60, // 최대 점수
+      grid: {
+        display: false,
+      },
+    },
+    y: {
+      grid: {
+        display: false,
+      },
+    },
+  },
+});
+</script>
+
+<template>
+  <div class="w-full h-full">
+    <!-- Bar Chart -->
+    <Chart type="bar" :data="chartData" :options="chartOptions" />
+  </div>
+</template>

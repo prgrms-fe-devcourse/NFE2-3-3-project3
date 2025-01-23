@@ -15,7 +15,6 @@ import ProblemBoardDetail from "@/pages/problem-detail/ProblemBoardDetail.vue";
 import MyProblemsDetail from "@/pages/MyProblemsDetail.vue";
 import ExamMake from "@/pages/ExamMake.vue";
 import MyProblemSetsDetail from "@/pages/MyProblemSetsDetail.vue";
-import ExamResult from "@/pages/ExamResult.vue";
 import MyProblemSetsUpdate from "@/pages/MyProblemSetsUpdate.vue";
 import Mypage from "@/pages/Mypage/Mypage.vue";
 import ProblemBoardDetailUpdate from "@/pages/ProblemBoardDetailUpdate.vue";
@@ -38,6 +37,11 @@ const routes = [
     path: "/exam",
     name: "ExamEnvironment",
     component: () => import("@/pages/exam-environment/ExamEnvironment.vue"),
+  },
+  {
+    path: "/exam-result/:examResultId",
+    name: "ExamResult",
+    component: () => import("@/pages/exam-result/ExamResult.vue"),
   },
 
   // DefaultLayout을 사용하는 페이지들
@@ -101,16 +105,11 @@ const routes = [
         component: CreateExamRoom,
       },
       {
-        path: "exam-result/:examResultId",
-        name: "ExamResult",
-        component: ExamResult,
-      },
-      {
         path: "exam-history",
         name: "ExamHistory",
         component: ExamHistory,
       },
-      {
+       {
         path: "exam-make/:problemSetId",
         name: "ExamMake",
         component: ExamMake,
@@ -125,6 +124,7 @@ const routes = [
         name: "ProblemBoardDetail",
         component: ProblemBoardDetail,
       },
+
       {
         path: "problem-board-update/:problemId",
         name: "ProblemBoardDetailUpdate",
