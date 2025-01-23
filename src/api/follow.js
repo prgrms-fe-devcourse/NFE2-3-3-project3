@@ -70,7 +70,7 @@ export const followAPI = {
     try {
       const { data, error } = await supabase
         .from("follow")
-        .select(`followings: user_info!target_uid(*)`)
+        .select(`following: user_info!target_uid(*)`)
         .eq("uid", uid);
 
       if (error) throw error;
@@ -90,7 +90,7 @@ export const followAPI = {
     try {
       const { data, error } = await supabase
         .from("follow")
-        .select(`followers: user_info!uid(*)`)
+        .select(`follower: user_info!uid(*)`)
         .eq("target_uid", uid);
 
       if (error) throw error;
