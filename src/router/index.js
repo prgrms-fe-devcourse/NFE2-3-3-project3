@@ -39,7 +39,7 @@ const routes = [
     component: () => import("@/pages/exam-environment/ExamEnvironment.vue"),
   },
   {
-    path: "/exam-result",
+    path: "/exam-result/:examResultId",
     name: "ExamResult",
     component: () => import("@/pages/exam-result/ExamResult.vue"),
   },
