@@ -1,11 +1,13 @@
 import { supabase } from "./index.js";
-
 export const authAPI = {
   // GitHub 로그인
   async logInWithGithub() {
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "github",
+        options: {
+          redirectTo: `${import.meta.env.VITE_SITE_URL}/home`,
+        },
       });
       if (error) throw error;
       return data;
@@ -20,7 +22,11 @@ export const authAPI = {
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
+        options: {
+          redirectTo: `${import.meta.env.VITE_SITE_URL}/home`,
+        },
       });
+
       if (error) throw error;
       return data;
     } catch (error) {
@@ -34,6 +40,9 @@ export const authAPI = {
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "kakao",
+        options: {
+          redirectTo: `${import.meta.env.VITE_SITE_URL}/home`,
+        },
       });
       if (error) throw error;
       return data;

@@ -47,7 +47,7 @@ const problems = ref([
 ]);
 </script>
 <template>
-  <div class="flex flex-col gap-14 relative">
+  <div class="relative flex flex-col gap-14">
     <h1 class="text-[42px] font-laundry">문제 게시판</h1>
     <Search :show-status="true" />
     <ProblemTable :problems="problems" />
