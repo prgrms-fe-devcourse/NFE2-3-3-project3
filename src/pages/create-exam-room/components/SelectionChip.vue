@@ -1,36 +1,36 @@
-// SelectionChip.vue
 <script setup>
-import { Chip } from "primevue";
+import { Chip } from 'primevue';
 
 defineProps({
   label: {
     type: String,
-    required: true,
+    required: true
   },
   icon: {
     type: String,
-    default: "pi pi-check",
+    default: 'pi pi-check'
   },
   show: {
     type: Boolean,
-    default: true,
+    default: true
   },
   removable: {
     type: Boolean,
-    default: false,
-  },
+    default: false
+  }
 });
 
-defineEmits(["remove"]);
+defineEmits(['remove']);
 </script>
 
+
 <template>
-  <div v-if="show" class="flex items-center gap-2 mb-2">
+  <div v-if="show" class="flex gap-2 items-center my-4">
     <Chip
       :label="label"
       :removable="removable"
       @remove="$emit('remove')"
-      class="bg-orange-50 text-orange-500 border border-orange-200 !py-1"
+      class="bg-orange-50 text-orange-500 border border-orange-200"
     >
       <template #content>
         <span class="flex items-center gap-2">
@@ -41,6 +41,7 @@ defineEmits(["remove"]);
     </Chip>
   </div>
 </template>
+
 
 <style scoped>
 :deep(.p-chip) {

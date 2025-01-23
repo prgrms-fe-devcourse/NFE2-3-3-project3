@@ -9,4 +9,7 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"), // @를 src 디렉토리로 매핑
     },
   },
+  define: {
+    __VUE_PROD_DEVTOOLS__: true // 개발자 도구 활성화
+  }
 });

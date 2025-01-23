@@ -2,80 +2,22 @@
 import { RouterLink } from "vue-router";
 import { Column, DataTable } from "primevue";
 import { GRADES } from "@/const/grades";
-import { ref } from "vue";
+import { ref, watchEffect } from "vue";
 import { formatDate } from "@/utils/formatDate";
 import { PointType } from "@/const/PointType";
 import { useRoute } from "vue-router";
+import { pointAPI } from "@/api/point";
+import { useAuthStore } from "@/store/authStore";
+import { storeToRefs } from "pinia";
+import { followAPI } from "@/api/follow";
 
 const route = useRoute();
+const authStore = useAuthStore();
+const { user } = storeToRefs(authStore);
 
-const USERS = [
-  {
-    id: 1,
-    name: "김세빈",
-    email: "rlatpqls13@gmail.com",
-    avatar_url:
-      "https://www.gravatar.com/avatar/05dfd4b41340d09cae045235eb0893c3?d=mp",
-  },
-  {
-    id: 2,
-    name: "김세빈",
-    email: "rlatpqls13@gmail.com",
-    avatar_url:
-      "https://www.gravatar.com/avatar/05dfd4b41340d09cae045235eb0893c3?d=mp",
-  },
-  {
-    id: 3,
-    name: "김세빈",
-    email: "rlatpqls13@gmail.com",
-    avatar_url:
-      "https://www.gravatar.com/avatar/05dfd4b41340d09cae045235eb0893c3?d=mp",
-  },
-  {
-    id: 4,
-    name: "김세빈",
-    email: "rlatpqls13@gmail.com",
-    avatar_url:
-      "https://www.gravatar.com/avatar/05dfd4b41340d09cae045235eb0893c3?d=mp",
-  },
-  {
-    id: 5,
-    name: "김세빈",
-    email: "rlatpqls13@gmail.com",
-    avatar_url:
-      "https://www.gravatar.com/avatar/05dfd4b41340d09cae045235eb0893c3?d=mp",
-  },
-  {
-    id: 6,
-    name: "김세빈",
-    email: "rlatpqls13@gmail.com",
-    avatar_url:
-      "https://www.gravatar.com/avatar/05dfd4b41340d09cae045235eb0893c3?d=mp",
-  },
-  {
-    id: 7,
-    name: "김세빈",
-    email: "rlatpqls13@gmail.com",
-    avatar_url:
-      "https://www.gravatar.com/avatar/05dfd4b41340d09cae045235eb0893c3?d=mp",
-  },
-];
-const POINT_HISTORIES = [
-  {
-    id: 1,
-    change_value: 5,
-    total: 5,
-    point_type: "problem",
-    created_at: formatDate(new Date()),
-  },
-  {
-    id: 2,
-    change_value: 10,
-    total: 15,
-    point_type: "test_correct_all",
-    created_at: formatDate(new Date()),
-  },
-];
+const pointHistories = ref([]);
+const followers = ref([]);
+const followings = ref([]);
 const TABS = ["팔로잉 목록", "팔로워 목록", "포인트 내역"];
 
 const currentTab = ref(route.query.tab || TABS[0]);
@@ -97,6 +39,22 @@ const getMessageFromPointType = (pointType) => {
       break;
   }
 };
+
+watchEffect(async () => {
+  if (!user.value) return;
+  const pointPromise = pointAPI.getAll(user.value.id);
+  const followerPromise = followAPI.getFollowers(user.value.id);
+  const followingPromise = followAPI.getFollowing(user.value.id);
+  const [pointData, followerData, followingData] = await Promise.all([
+    pointPromise,
+    followerPromise,
+    followingPromise,
+  ]);
+
+  pointHistories.value = pointData;
+  followers.value = followerData;
+  followings.value = followingData;
+});
 </script>
 <template>
   <section class="flex flex-col gap-6">
@@ -120,19 +78,20 @@ const getMessageFromPointType = (pointType) => {
     <!-- 팔로잉 목록 탭 -->
     <div v-if="currentTab === '팔로잉 목록'" class="grid grid-cols-6 gap-4">
       <RouterLink
-        v-for="following in USERS"
-        :to="`/users/${following.id}`"
+        v-for="{ followings } in followings"
+        :to="`/users/${followings.id}`"
         class="flex flex-col justify-center items-center gap-4 w-36 h-40 px-2 py-5 bg-black-6/20 rounded-lg"
       >
+        <p v-if="!followings" class="">아직 팔로잉한 사람이 없어요...</p>
         <img
           class="w-16 h-16 rounded-full border border-black-4"
-          :src="following.avatar_url"
+          :src="followings.avatar_url"
           alt="프로필 이미지"
         />
         <div class="flex flex-col items-center gap-1">
-          <p class="text-sm font-semibold">{{ following.name }}</p>
+          <p class="text-sm font-semibold">{{ followings.name }}</p>
           <p class="text-xs font-medium text-black-3">
-            {{ following.email }}
+            {{ followings.email }}
           </p>
         </div>
       </RouterLink>
@@ -144,18 +103,18 @@ const getMessageFromPointType = (pointType) => {
       class="grid grid-cols-6 gap-4"
     >
       <RouterLink
-        v-for="follower in USERS"
-        :to="`/users/${follower.id}`"
+        v-for="{ followers } in followers"
+        :to="`/users/${followers.id}`"
         class="flex flex-col justify-center items-center gap-4 w-36 h-40 px-2 py-5 bg-black-6/20 rounded-lg"
       >
         <img
           class="w-16 h-16 rounded-full border border-black-4"
-          :src="follower.avatar_url"
+          :src="followers.avatar_url"
           alt="프로필 이미지"
         />
         <div class="flex flex-col items-center gap-1">
-          <p class="text-sm font-semibold">{{ follower.name }}</p>
-          <p class="text-xs font-medium text-black-3">{{ follower.email }}</p>
+          <p class="text-sm font-semibold">{{ followers.name }}</p>
+          <p class="text-xs font-medium text-black-3">{{ followers.email }}</p>
         </div>
       </RouterLink>
     </div>
@@ -224,7 +183,7 @@ const getMessageFromPointType = (pointType) => {
         </div>
       </div>
       <DataTable
-        :value="POINT_HISTORIES"
+        :value="pointHistories"
         dataKey="id"
         tableStyle="min-width: 50rem;"
         showGridlines
@@ -261,7 +220,11 @@ const getMessageFromPointType = (pointType) => {
         </Column>
         <Column field="change_value" header="획득 포인트"></Column>
         <Column field="total" header="총 포인트"></Column>
-        <Column field="created_at" header="날짜"> </Column>
+        <Column field="created_at" header="날짜">
+          <template #body="slotProps">
+            {{ formatDate(new Date(slotProps.data.created_at)) }}
+          </template>
+        </Column>
       </DataTable>
     </div>
   </section>

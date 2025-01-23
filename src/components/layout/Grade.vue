@@ -1,19 +1,19 @@
 <script setup>
 import { userAPI } from "@/api/user";
-import { useAuthStore } from "@/store/authStore";
 import { getCurrentGradeInfo } from "@/utils/getCurrentGradeInfo";
-import { storeToRefs } from "pinia";
 import { ProgressBar } from "primevue";
 import { ref, watchEffect } from "vue";
 
-const authStore = useAuthStore();
-const { user } = storeToRefs(authStore);
+const { userId } = defineProps({
+  userId: String,
+});
+
 const points = ref(0);
 const gradeInfo = ref();
 
 const getUserPoint = async () => {
-  if (!user.value) return;
-  const { total_points } = await userAPI.getOne(user.value.id);
+  if (!userId) return;
+  const { total_points } = await userAPI.getOne(userId);
   points.value = total_points;
   gradeInfo.value = getCurrentGradeInfo(total_points);
 };
@@ -42,8 +42,8 @@ watchEffect(() => {
         </p>
         <ProgressBar
           class="min-w-[30rem] min-h-10"
-          :value="(points / 500) * 100"
-          v-tooltip.top="`${points} / ${500}`"
+          :value="(points / gradeInfo?.next?.point) * 100"
+          v-tooltip.top="`${points} / ${gradeInfo?.next?.point}`"
           type="text"
         >
           {{}}

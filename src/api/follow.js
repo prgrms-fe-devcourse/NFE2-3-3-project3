@@ -70,15 +70,7 @@ export const followAPI = {
     try {
       const { data, error } = await supabase
         .from("follow")
-        .select(
-          `
-          *,
-          following:auth.users!follow_id(
-            id,
-            email
-          )
-        `
-        )
+        .select(`followings: user_info!target_uid(*)`)
         .eq("uid", uid);
 
       if (error) throw error;
@@ -98,16 +90,8 @@ export const followAPI = {
     try {
       const { data, error } = await supabase
         .from("follow")
-        .select(
-          `
-          *,
-          follower:auth.users!uid(
-            id,
-            email
-          )
-        `
-        )
-        .eq("follow_id", uid);
+        .select(`followers: user_info!uid(*)`)
+        .eq("target_uid", uid);
 
       if (error) throw error;
       return data;
@@ -116,7 +100,7 @@ export const followAPI = {
       throw error;
     }
   },
-  
+
   /**
    * @description 특정 사용자의 팔로우/팔로워 수 조회
    * @param {string} uid - 조회할 사용자 ID
