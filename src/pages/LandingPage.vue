@@ -3,6 +3,7 @@ import { ref } from "vue";
 
 import LoginModal from "@/components/layout/LoginModal.vue";
 import previewIMG from "@/assets/icons/preview.png";
+import logoPath from "@/assets/logos/logo.svg";
 
 const showLoginModal = ref(false);
 
