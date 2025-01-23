@@ -10,7 +10,7 @@ import {
   Textarea,
 } from "primevue";
 import { RouterLink } from "vue-router";
-import { ref, onMounted, onBeforeUnmount, defineProps, computed } from "vue";
+import { ref, onMounted, onBeforeUnmount, computed } from "vue";
 import statusSolved from "@/assets/icons/problem-board/status-solved.svg";
 import statusWrong from "@/assets/icons/problem-board/status-wrong.svg";
 import minus from "@/assets/icons/problem-board/minus.svg";

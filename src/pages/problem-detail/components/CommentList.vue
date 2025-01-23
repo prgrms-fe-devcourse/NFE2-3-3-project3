@@ -1,5 +1,4 @@
 <script setup>
-import { defineProps, defineEmits } from "vue";
 import Comment from "@/components/layout/Comment.vue";
 import { Paginator } from "primevue";
 

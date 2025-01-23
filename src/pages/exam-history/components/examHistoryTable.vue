@@ -1,6 +1,6 @@
 <script setup>
 import { Avatar, AvatarGroup, Column, DataTable } from "primevue";
-import { defineProps, readonly } from "vue";
+import { readonly } from "vue";
 import { formatMsToHourMinute } from "@/utils/formatMsToHour";
 import { formatDate } from "@/utils/formatDate";
 import { RouterLink } from "vue-router";
