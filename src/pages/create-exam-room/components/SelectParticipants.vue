@@ -35,14 +35,20 @@ const fetchFollowing = async () => {
   try {
     if (authStore.user?.id) {
       const followData = await followAPI.getFollowing(authStore.user.id);
+
+      // 데이터 확인
+      // console.log("followData:", followData);
+
+      // followingUsers 값 생성
       followingUsers.value = followData.map((item) => ({
-        email: item.followings.email,
-        nickname: item.followings.name || item.followings.email.split("@")[0],
-        profileImage: item.followings.avatar_url,
+        email: item.following.email,
+        nickname: item.following.name || item.following.email.split("@")[0],
+        profileImage: item.following.avatar_url,
       }));
     }
   } catch (error) {
     console.error("팔로잉 목록 불러오기 실패:", error);
+    followingUsers.value = []; // 에러 발생 시 빈 배열로 초기화
     toast.add({
       severity: "error",
       summary: "불러오기 실패",
