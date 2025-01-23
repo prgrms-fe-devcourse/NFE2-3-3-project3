@@ -10,7 +10,7 @@ import {
   Textarea,
 } from "primevue";
 import { RouterLink } from "vue-router";
-import { ref, onMounted, onBeforeUnmount, computed } from "vue";
+import { ref, onMounted, onBeforeUnmount, defineProps, watchEffect } from "vue";
 import statusSolved from "@/assets/icons/problem-board/status-solved.svg";
 import statusWrong from "@/assets/icons/problem-board/status-wrong.svg";
 import minus from "@/assets/icons/problem-board/minus.svg";
@@ -20,9 +20,9 @@ import { storeToRefs } from "pinia";
 import checkedMyProblem from "@/assets/icons/my-problems/color-my-problems.svg";
 import seeMyProblems from "@/assets/icons/my-problems/see-my-problems.svg";
 import sharedIcon from "@/assets/icons/my-problem-sets/share.svg";
-import { useRoute } from "vue-router";
+import { workbookAPI } from "@/api/workbook";
+import { problemAPI } from "@/api/problem";
 
-const route = useRoute();
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
 const emit = defineEmits(["open-dialog"]);
@@ -56,6 +56,14 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  showMyProblem: {
+    type: Boolean,
+    default: true,
+  },
+  showSharedProblem: {
+    type: Boolean,
+    default: true,
+  },
   showAdd: {
     type: Boolean,
     default: false,
@@ -79,24 +87,30 @@ const props = defineProps({
 });
 
 const selectedProblems = ref([]);
+const title = ref("");
+const description = ref("");
 
 const popup = ref(null);
+const problemSets = ref([]);
 const showProblemSet = ref(false);
 const ShowProblemSetPopup = () => {
   showProblemSet.value = true;
 };
-const problemSets = ref([
-  { id: 11, title: "예제 문제집1" },
-  { id: 12, title: "예제 문제집2" },
-  { id: 13, title: "예제 문제집3" },
-  { id: 14, title: "예제 문제집4" },
-  { id: 15, title: "예제 문제집5" },
-]);
-const selectedProblemSet = ref();
 
 const showAddProblemSet = ref(false);
 const showAddProblemSetPopup = () => {
   showAddProblemSet.value = true;
+};
+
+const addProblemToProblemSet = async (problemSetId, problems) => {
+  const problemIds = problems.map((problem) => problem.id);
+  await problemAPI.addMultiple(problemSetId, problemIds);
+  alert(`해당 문제집에 문제 ${problems.length}개가 추가되었습니다.`);
+};
+const addProblemSet = async () => {
+  const problemSet = await workbookAPI.add(title.value, description.value);
+  problemSets.value = [...problemSets.value, problemSet];
+  showAddProblemSet.value = false;
 };
 
 const getStatus = (status) => {
@@ -136,11 +150,16 @@ const handleClickOutside = (event) => {
     if (showAddProblemSet.value) showAddProblemSet.value = false;
   }
 };
+watchEffect(async () => {
+  if (!user.value) return;
+  problemSets.value = await workbookAPI.getAll(user.value.id);
+});
+
 onMounted(() => {
-  popup?.value?.addEventListener("click", handleClickOutside);
+  window.addEventListener("click", handleClickOutside);
 });
 onBeforeUnmount(() => {
-  popup?.value?.removeEventListener("click", handleClickOutside);
+  window.removeEventListener("click", handleClickOutside);
 });
 </script>
 <template>
@@ -151,15 +170,16 @@ onBeforeUnmount(() => {
           {{ problems.length }} 문제
         </p>
         <Button
+          v-if="showProblem"
           label="다시 볼 문제"
           icon="pi pi-flag"
           icon-class="color: white;"
           size="small"
           severity="secondary"
           class="text-sm text-white bg-navy-4"
-          v-if="showProblem"
         />
         <Button
+          v-if="showMyProblem"
           label="내 문제만 보기"
           size="small"
           severity="secondary"
@@ -170,6 +190,7 @@ onBeforeUnmount(() => {
           </template>
         </Button>
         <Button
+          v-if="showSharedProblem"
           label="공유한 문제"
           size="small"
           severity="secondary"
@@ -235,10 +256,7 @@ onBeforeUnmount(() => {
         </Column>
         <Column field="status" header="상태">
           <template #body="slotProps">
-            <div
-              class="flex justify-center"
-              v-tooltip.top="messageStatus(slotProps.data.status)"
-            >
+            <div v-tooltip.top="messageStatus(slotProps.data.status)">
               <img
                 v-if="getStatus(slotProps.data.status) !== ''"
                 :src="getStatus(slotProps.data.status)"
@@ -249,7 +267,7 @@ onBeforeUnmount(() => {
         </Column>
         <Column field="title" header="제목">
           <template #body="slotProps">
-            <div class="flex items-center justify-between w-full">
+            <div class="flex justify-between w-full">
               <RouterLink
                 :to="`${
                   slotProps.data.id === user?.id
@@ -299,14 +317,19 @@ onBeforeUnmount(() => {
 
       <div v-if="showProblemSet" class="w-64 absolute -bottom-0 -right-[17rem]">
         <Listbox
-          v-model="selectedProblemSet"
+          :key="problemSets.length"
           :options="problemSets"
           filter
           optionLabel="title"
           listStyle="max-height: 14rem"
         >
           <template #option="slotProps">
-            <div class="flex items-center gap-2">
+            <div
+              class="flex items-center w-full gap-2"
+              @click="
+                addProblemToProblemSet(slotProps.option.id, selectedProblems)
+              "
+            >
               <i class="pi pi-folder"></i>
               <div>{{ slotProps.option.title }}</div>
             </div>
@@ -329,14 +352,14 @@ onBeforeUnmount(() => {
             <label for="title" class="text-sm">문제집 이름</label>
             <InputText
               id="title"
-              v-model="value"
+              v-model="title"
               placeholder="문제집 이름을 입력해주세요"
             />
           </div>
           <div class="flex flex-col gap-2">
             <label for="description" class="text-sm">문제집 설명</label>
             <Textarea
-              v-model="value"
+              v-model="description"
               id="description"
               class="border rounded-md resize-none font-sans px-2 py-1.5"
               rows="5"
@@ -345,7 +368,12 @@ onBeforeUnmount(() => {
             />
           </div>
         </div>
-        <Button label="문제집 추가하기" icon="pi pi-plus" class="w-[14.4rem]" />
+        <Button
+          @click="addProblemSet"
+          label="문제집 추가하기"
+          icon="pi pi-plus"
+          class="w-[14.4rem]"
+        />
       </div>
     </div>
   </section>

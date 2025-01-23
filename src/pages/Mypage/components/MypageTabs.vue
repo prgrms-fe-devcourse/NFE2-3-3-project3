@@ -78,20 +78,20 @@ watchEffect(async () => {
     <!-- 팔로잉 목록 탭 -->
     <div v-if="currentTab === '팔로잉 목록'" class="grid grid-cols-6 gap-4">
       <RouterLink
-        v-for="{ followings } in followings"
-        :to="`/users/${followings.id}`"
+        v-for="{ following } in followings"
+        :to="`/users/${following.id}`"
         class="flex flex-col justify-center items-center gap-4 w-36 h-40 px-2 py-5 bg-black-6/20 rounded-lg"
       >
-        <p v-if="!followings" class="">아직 팔로잉한 사람이 없어요...</p>
+        <p v-if="!following" class="">아직 팔로잉한 사람이 없어요...</p>
         <img
           class="w-16 h-16 rounded-full border border-black-4"
-          :src="followings.avatar_url"
+          :src="following.avatar_url"
           alt="프로필 이미지"
         />
         <div class="flex flex-col items-center gap-1">
-          <p class="text-sm font-semibold">{{ followings.name }}</p>
+          <p class="text-sm font-semibold">{{ following.name }}</p>
           <p class="text-xs font-medium text-black-3">
-            {{ followings.email }}
+            {{ following.email }}
           </p>
         </div>
       </RouterLink>
@@ -103,18 +103,18 @@ watchEffect(async () => {
       class="grid grid-cols-6 gap-4"
     >
       <RouterLink
-        v-for="{ followers } in followers"
-        :to="`/users/${followers.id}`"
+        v-for="{ follower } in followers"
+        :to="`/users/${follower.id}`"
         class="flex flex-col justify-center items-center gap-4 w-36 h-40 px-2 py-5 bg-black-6/20 rounded-lg"
       >
         <img
           class="w-16 h-16 rounded-full border border-black-4"
-          :src="followers.avatar_url"
+          :src="follower.avatar_url"
           alt="프로필 이미지"
         />
         <div class="flex flex-col items-center gap-1">
-          <p class="text-sm font-semibold">{{ followers.name }}</p>
-          <p class="text-xs font-medium text-black-3">{{ followers.email }}</p>
+          <p class="text-sm font-semibold">{{ follower.name }}</p>
+          <p class="text-xs font-medium text-black-3">{{ follower.email }}</p>
         </div>
       </RouterLink>
     </div>

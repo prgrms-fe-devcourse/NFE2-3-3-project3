@@ -1,16 +1,25 @@
 import { supabase } from ".";
 
 // CREATE
-const add = async (uid, title, description) => {
-  await supabase
+const add = async (title, description) => {
+  const { data, error } = await supabase
     .from("workbook")
-    .insert([{ uid, title, description }])
-    .select();
+    .insert([{ title, description }])
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
 };
 
 // READ
-const getAll = async () => {
-  await supabase.from("workbook").select("title, description, created_at");
+const getAll = async (uid) => {
+  const { data, error } = await supabase
+    .from("workbook")
+    .select("*")
+    .eq("uid", uid);
+  if (error) throw error;
+  return data;
 };
 
 const getUid = async (uid) => {
@@ -20,6 +29,32 @@ const getUid = async (uid) => {
     .eq("uid", uid);
   if (error) throw error;
   return data;
+};
+
+const getAllSharedByUserId = async (uid) => {
+  try {
+    const { data, error } = await supabase
+      .from("workbook")
+      .select(
+        `
+        *,
+        user: user_info!uid(*),
+        problems: workbook_problem(*)
+      `,
+      )
+      .eq("uid", uid)
+      .eq("shared", true);
+
+    const result = data.map((workbook) => ({
+      ...workbook,
+      count: workbook.problems.length,
+    }));
+
+    if (error) throw error;
+    return result;
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 // UPDATE
@@ -60,6 +95,7 @@ const checkWorkbookInsert = async () => {
 export const workbookAPI = {
   add,
   getAll,
+  getAllShare: getAllSharedByUserId,
   getUid,
   updateTilte,
   updateDescription,
