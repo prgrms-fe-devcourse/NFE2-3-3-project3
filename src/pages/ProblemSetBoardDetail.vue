@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from "vue";
-import { useRoute } from "vue-router";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { Menu } from "primevue";
 
 import CommentList from "@/components/CommentList.vue";
