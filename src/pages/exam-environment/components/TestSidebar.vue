@@ -1,6 +1,5 @@
 <script setup>
 import { Button } from "primevue";
-import { defineProps } from "vue";
 
 const { userAnswers, showWarning } = defineProps({
   userAnswers: {

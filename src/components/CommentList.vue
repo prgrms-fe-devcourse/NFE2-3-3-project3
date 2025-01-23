@@ -1,6 +1,4 @@
 <script setup>
-import { defineProps } from "vue";
-
 import Comment from "@/components/layout/Comment.vue";
 
 const { comments } = defineProps({
