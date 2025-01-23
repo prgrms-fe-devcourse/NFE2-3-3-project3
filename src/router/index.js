@@ -1,3 +1,4 @@
+import { supabase } from "../api";
 import { createRouter, createWebHistory } from "vue-router";
 import DefaultLayout from "@/components/layout/DefaultLayout.vue";
 
@@ -20,6 +21,7 @@ import Mypage from "@/pages/Mypage/Mypage.vue";
 import ProblemBoardDetailUpdate from "@/pages/ProblemBoardDetailUpdate.vue";
 import UserProfile from "@/pages/user-profile/UserProfile.vue";
 import Home from "@/pages/Home.vue";
+import NotFound from "@/pages/NotFound.vue";
 
 const routes = [
   // 레이아웃이 필요없는 페이지들
@@ -42,6 +44,14 @@ const routes = [
     path: "/exam-result/:examResultId",
     name: "ExamResult",
     component: () => import("@/pages/exam-result/ExamResult.vue"),
+    path: "/:pathMatch(.*)*",
+    name: "NotFound",
+    component: NotFound,
+  },
+  {
+    path: "/not-found",
+    name: "NotFound",
+    component: NotFound,
   },
 
   // DefaultLayout을 사용하는 페이지들
@@ -142,6 +152,14 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+router.beforeEach((to, from, next) => {
+  if (window.location.hash.includes("access_token")) {
+    const cleanUrl = window.location.origin + window.location.pathname;
+    window.history.replaceState({}, document.title, cleanUrl);
+  }
+  next();
 });
 
 export default router;

@@ -1,16 +1,20 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { useAuthStore } from "../../store/authStore";
-import LoginModal from "./LoginModal.vue";
-import Menu from "primevue/menu";
 import { useRouter } from "vue-router";
+import Menu from "primevue/menu";
 
-const router = useRouter();
+import LoginModal from "./LoginModal.vue";
+
+import { authAPI } from "@/api/auth";
+
+import { useAuthStore } from "../../store/authStore";
+import { tokenDelete } from "@/api/token";
+
+import { supabase } from "@/api";
 
 const alertPath = new URL("@/assets/icons/alert.svg", import.meta.url).href;
 const pointPath = new URL("@/assets/icons/point.svg", import.meta.url).href;
-
-
+const router = useRouter();
 
 // Menu 참조
 const menu = ref(null);
@@ -27,7 +31,9 @@ const showLoginModal = ref(false);
 
 const handleLogout = async () => {
   try {
-    await authStore.logout();
+    const { error } = await supabase.auth.signOut();
+    // tokenDelete();
+    router.push("/");
   } catch (error) {
     console.error("Logout failed:", error);
   }
@@ -45,7 +51,7 @@ const menuItems = [
   {
     label: "로그아웃",
     icon: "pi pi-sign-out",
-    command: handleLogout
+    command: handleLogout,
   },
 ];
 
@@ -53,17 +59,27 @@ const handleLoginSuccess = () => {
   showLoginModal.value = false;
 };
 
+const name = ref(null);
+
 onMounted(async () => {
   await authStore.initializeAuth();
+  authAPI
+    .getCurrentUser()
+    .then((data) => {
+      name.value = data["user_metadata"]["name"];
+    })
+    .catch((error) => {
+      console.error("Error fetching user info:", error);
+    });
 });
 </script>
 
 <template>
   <header class="w-full">
     <nav
-      class="flex items-center space-x-3 text-gray-600 justify-end py-6 px-16"
+      class="flex items-center justify-end px-16 py-6 space-x-3 text-gray-600"
     >
-      <a href="#" class="hover:text-gray-800 no-underline">다크 모드</a>
+      <a href="#" class="no-underline hover:text-gray-800">다크 모드</a>
       <!-- 알림 및 포인트 -->
       <img :src="alertPath" alt="alert" />
 
@@ -80,7 +96,7 @@ onMounted(async () => {
         @click="openMenu"
         class="flex items-center gap-2 cursor-pointer font-pretend"
       >
-        <span class="font-medium">안효태님</span>
+        <span class="font-medium">{{ name }}님</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -107,6 +123,9 @@ onMounted(async () => {
     </nav>
 
     <!-- 로그인 모달 -->
-    <LoginModal v-model="showLoginModal" @login-success="handleLoginSuccess" />
+    <LoginModal
+      :modalValue="showLoginModal"
+      @login-success="handleLoginSuccess"
+    />
   </header>
 </template>
