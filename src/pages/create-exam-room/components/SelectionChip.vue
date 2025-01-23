@@ -25,7 +25,7 @@ defineEmits(['remove']);
 
 
 <template>
-  <div v-if="show" class="flex gap-2 items-center my-4">
+  <div v-if="show" class="flex items-center">
     <Chip
       :label="label"
       :removable="removable"
@@ -33,7 +33,7 @@ defineEmits(['remove']);
       class="bg-orange-50 text-orange-500 border border-orange-200"
     >
       <template #content>
-        <span class="flex items-center gap-2">
+        <span class="flex items-center">
           <i :class="icon" class="text-orange-500"></i>
           {{ label }}
         </span>

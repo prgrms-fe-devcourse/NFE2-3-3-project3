@@ -3,7 +3,6 @@ import { ref, watchEffect, computed } from "vue";
 import SearchBar from "@/components/layout/SearchBar.vue";
 import MyWorkBook from "./MyWorkBook.vue";
 import { Paginator } from "primevue";
-import SelectionChip from "./SelectionChip.vue";
 import { workbookAPI } from '@/api/workbook';
 import { useAuthStore } from '@/store/authStore';
 
@@ -12,11 +11,6 @@ const props = defineProps({
     type: Object,
     default: null,
   },
-});
-
-const workbookChip = computed(() => {
-  if (!props.selectedWorkbook) return '';
-  return `${props.selectedWorkbook.title || '제목 없음'} (${props.selectedWorkbook?.problem_count || 0}문제)`;
 });
 
 const emit = defineEmits(["update:selectedWorkbook"]);
@@ -58,14 +52,6 @@ watchEffect(async () => {
 </script>
 
 <template>
-  <!-- 문제집 선택 완료 -> 선택한 문제집 이름 보여주기 -->
-  <SelectionChip
-    v-if="selectedWorkbook"
-    :label="workbookChip"
-    icon="pi pi-book"
-    @remove="$emit('update:selectedWorkbook', null)"
-    removable
-  />
 
   <h2 class="text-2xl text-black-1 font-medium mb-6">문제집 선택하기</h2>
 

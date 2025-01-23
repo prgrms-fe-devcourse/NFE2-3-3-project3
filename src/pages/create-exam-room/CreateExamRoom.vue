@@ -15,53 +15,42 @@ import "swiper/css/effect-cards";
 const swiperInstance = ref(null);
 const currentTab = ref(0);
 
-// 통합된 상태 관리
+const tabs = [
+  { label: "문제집", icon: "pi pi-book" },
+  { label: "시간", icon: "pi pi-clock" },
+  { label: "초대", icon: "pi pi-user-plus" },
+];
+
+// 시험 생성에 필요한 데이터
 const examData = ref({
-  workbook: null,
+  selectedWorkbook: null,
   examDateTime: null,
   duration: null,
   participants: [],
-  shareOption: 'share'
+  shareOption: 'share',
 });
-
-// 각 단계별 chip 표시 여부와 내용을 계산
-const chips = computed(() => ({
-  workbook: examData.value.workbook ? {
-    label: examData.value.workbook.title,
-    icon: "pi pi-book"
-  } : null,
-  
-  dateTime: examData.value.examDateTime && examData.value.duration ? {
-    label: `${new Date(examData.value.examDateTime).toLocaleString()} (${examData.value.duration}분)`,
-    icon: "pi pi-clock"
-  } : null,
-  
-  participants: examData.value.participants.length ? {
-    label: `참가자 ${examData.value.participants.length}명`,
-    icon: "pi pi-users"
-  } : null
-}));
-
-const handleChipRemove = (key) => {
-  switch (key) {
-    case 'workbook':
-      examData.value.workbook = null;
-      break;
-    case 'dateTime':
-      examData.value.examDateTime = null;
-      examData.value.duration = null;
-      break;
-    case 'participants':
-      examData.value.participants = [];
-      break;
-  }
-};
 
 // 완료 버튼 활성화 여부
 const isCompleteEnabled = computed(() => {
-  return examData.value.workbook && 
-         examData.value.examDateTime && 
-         examData.value.duration;
+  return (
+    examData.value.selectedWorkbook &&
+    examData.value.examDateTime &&
+    examData.value.duration
+  );
+});
+
+const dateTimeChip = computed(() => {
+  if (!examData.value.examDateTime) return "";
+  const startDate = new Date(examData.value.examDateTime);
+  const durationInMs = examData.value.duration * 60 * 1000;
+  const endDate = new Date(startDate.getTime() + durationInMs);
+  return `${startDate.toLocaleString()} ~ ${endDate.toLocaleString()}`;
+});
+
+const participantsChip = computed(() => {
+  const participants = examData.value.participants;
+  if (!participants.length) return "";
+  return `${examData.value.shareOption === "share" ? "공유함" : "공유하지 않음"}, 시험 인원 ${participants.length}명`;
 });
 
 const onSwiper = (swiper) => {
@@ -88,132 +77,225 @@ const prevSlide = () => {
 };
 
 const nextSlide = () => {
-  if (swiperInstance.value && currentTab.value < 2) {
+  if (swiperInstance.value && currentTab.value < tabs.length - 1) {
     swiperInstance.value.slideNext();
   }
 };
 
+const resetDateTime = () => {
+  examData.value.examDateTime = null;
+  examData.value.duration = null;
+};
+
 const handleSubmit = () => {
-  // TODO: API 호출
-  console.log('최종 시험 데이터:', examData.value);
+  console.log("최종 시험 데이터:", examData.value);
+  // API 호출 등 최종 처리
 };
 </script>
 
 <template>
-  <div class="w-full">
-    <h1 class="font-laundry mb-16 text-5xl font-medium">시험장 만들기</h1>
-
-    <!-- 공통 Chips 영역 -->
-    <div class="flex flex-wrap gap-2 mb-4">
-      <SelectionChip
-        v-for="(chip, key) in chips"
-        :key="key"
-        v-if="chip"
-        :label="chip.label"
-        :icon="chip.icon"
-        removable
-        @remove="handleChipRemove(key)"
-      />
-    </div>
-
-    <div class="relative h-[750px] overflow-visible pr-12">
-      <Swiper
-        :effect="'cards'"
-        :modules="[EffectCards]"
-        :grabCursor="true"
-        @swiper="onSwiper"
-        @slideChange="onSlideChange"
-        class="mySwiper overflow-visible"
+  <h1 class="font-laundry mb-16 text-5xl font-medium">시험장 만들기</h1>
+  
+  <!-- Swiper -->
+  <div class="relative h-[750px] overflow-visible pr-12">
+    <Swiper
+      :effect="'cards'"
+      :modules="[EffectCards]"
+      :grabCursor="true"
+      @swiper="onSwiper"
+      @slideChange="onSlideChange"
+      class="mySwiper overflow-visible"
+    >
+      <!-- 문제집 슬라이드 -->
+      <SwiperSlide
+        :class="{ 'active-slide': currentTab === 0 }"
+        class="border-beige-2 border"
       >
-        <!-- 문제집 선택 슬라이드 -->
-        <SwiperSlide :class="{ 'active-slide': currentTab === 0 }" class="border-beige-2 border">
-          <div class="px-16 py-6 relative">
-            <SelectWorkbook
-              v-model:selectedWorkbook="examData.workbook"
+      <div class="px-16 py-6 relative">
+          <!-- Chips Container -->
+          <div class="flex gap-2 flex-wrap mb-4">
+            <SelectionChip
+              v-if="examData.selectedWorkbook"
+              :label="`${examData.selectedWorkbook.title}`"
+              icon="pi pi-book"
+              @remove="examData.selectedWorkbook = null"
+              removable
             />
-            <div class="absolute top-8 transition-all duration-300 z-20" :style="{ right: '-3rem' }">
-              <div class="bg-orange-2 rounded-r-lg p-4 flex items-center gap-2 cursor-pointer"
-                   :class="{ 'bg-orange-500': currentTab === 0 }">
-                <i class="pi pi-book text-white"></i>
-              </div>
-            </div>
+            <SelectionChip
+              v-if="examData.examDateTime"
+              :label="dateTimeChip"
+              icon="pi pi-clock"
+              @remove="resetDateTime"
+              removable
+            />
+            <SelectionChip
+              v-if="examData.participants.length"
+              :label="participantsChip"
+              icon="pi pi-users"
+              @remove="examData.participants = []"
+              removable
+            />
           </div>
-          <div class="absolute bottom-6 right-6 flex gap-4">
-            <button
-              @click="nextSlide"
-              class="px-6 py-2 text-gray-3 rounded flex items-center gap-2 hover:text-gray-2 transition"
-            >
-              다음으로
-              <img :src="rightArrow" alt="다음으로 가기" />
-            </button>
-          </div>
-        </SwiperSlide>
 
-        <!-- 시간 선택 슬라이드 -->
-        <SwiperSlide :class="{ 'active-slide': currentTab === 1 }" class="border-beige-2 border">
-          <div class="px-16 py-6 relative">
-            <SelectDateTime
-              v-model:examDateTime="examData.examDateTime"
-              v-model:duration="examData.duration"
-            />
-            <div class="absolute top-16 transition-all duration-300 z-20" :style="{ right: '-3rem' }">
-              <div class="bg-orange-2 rounded-r-lg p-4 flex items-center gap-2 cursor-pointer"
-                   :class="{ 'bg-orange-500': currentTab === 1 }">
-                <i class="pi pi-clock text-white"></i>
-              </div>
+          <SelectWorkbook
+            v-model:selectedWorkbook="examData.selectedWorkbook"
+          />
+          <div
+            class="absolute top-8 transition-all duration-300 z-20"
+            :style="{ right: '-3rem' }"
+            @click="setTab(0)"
+          >
+            <div
+              class="bg-orange-2 rounded-r-lg p-4 flex items-center gap-2 cursor-pointer"
+              :class="{ 'bg-orange-500': currentTab === 0 }"
+            >
+              <i class="pi pi-book text-white"></i>
             </div>
           </div>
-          <div class="absolute bottom-6 right-6 flex gap-4">
-            <button
-              @click="prevSlide"
-              class="px-6 py-2 text-gray-3 rounded flex items-center gap-2 hover:text-gray-2 transition"
-            >
-              <img :src="leftArrow" alt="이전으로 가기" />
-              이전으로
-            </button>
-            <button
-              @click="nextSlide"
-              class="px-6 py-2 text-gray-3 rounded flex items-center gap-2 hover:text-gray-2 transition"
-            >
-              다음으로
-              <img :src="rightArrow" alt="다음으로 가기" />
-            </button>
-          </div>
-        </SwiperSlide>
+        </div>
+        <div class="absolute bottom-6 right-6 flex gap-4">
+          <button
+            @click="nextSlide"
+            class="px-6 py-2 text-gray-3 rounded flex items-center gap-2 hover:text-gray-2 transition"
+          >
+            다음으로
+            <img :src="rightArrow" alt="다음으로 가기" />
+          </button>
+        </div>
+      </SwiperSlide>
 
-        <!-- 참가자 선택 슬라이드 -->
-        <SwiperSlide :class="{ 'active-slide': currentTab === 2 }" class="border-beige-2 border">
-          <div class="px-16 py-6 relative">
-            <SelectParticipants
-              v-model:participants="examData.participants"
-              v-model:shareOption="examData.shareOption"
+      <!-- 시간 선택 슬라이드 -->
+      <SwiperSlide
+        :class="{ 'active-slide': currentTab === 1 }"
+        class="border-beige-2 border"
+      >
+      <div class="px-16 py-6 relative">
+          <!-- Chips Container -->
+          <div class="flex gap-2 flex-wrap mb-4">
+            <SelectionChip
+              v-if="examData.selectedWorkbook"
+              :label="`${examData.selectedWorkbook.title}`"
+              icon="pi pi-book"
+              @remove="examData.selectedWorkbook = null"
+              removable
             />
-            <div class="absolute top-32 transition-all duration-300 z-20" :style="{ right: '-3rem' }">
-              <div class="bg-orange-2 rounded-r-lg p-4 flex items-center gap-2 cursor-pointer"
-                   :class="{ 'bg-orange-500': currentTab === 2 }">
-                <i class="pi pi-user-plus text-white"></i>
-              </div>
+            <SelectionChip
+              v-if="examData.examDateTime"
+              :label="dateTimeChip"
+              icon="pi pi-clock"
+              @remove="resetDateTime"
+              removable
+            />
+            <SelectionChip
+              v-if="examData.participants.length"
+              :label="participantsChip"
+              icon="pi pi-users"
+              @remove="examData.participants = []"
+              removable
+            />
+          </div>
+
+          <SelectDateTime
+            v-model:examDateTime="examData.examDateTime"
+            v-model:duration="examData.duration"
+          />
+          <div
+            class="absolute top-16 transition-all duration-300 z-20"
+            :style="{ right: '-3rem' }"
+            @click="setTab(1)"
+          >
+            <div
+              class="bg-orange-2 rounded-r-lg p-4 flex items-center gap-2 cursor-pointer"
+              :class="{ 'bg-orange-500': currentTab === 1 }"
+            >
+              <i class="pi pi-clock text-white"></i>
             </div>
           </div>
-          <div class="absolute bottom-6 right-6 flex gap-4">
-            <button
-              @click="prevSlide"
-              class="px-6 py-2 text-gray-3 rounded flex items-center gap-2 hover:text-gray-2 transition"
-            >
-              <img :src="leftArrow" alt="이전으로 가기" />
-              이전으로
-            </button>
-            <button
-              @click="handleSubmit"
-              :disabled="!isCompleteEnabled"
-              class="px-10 py-2 bg-orange-500 text-white rounded-full hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
-            >
-              완료하기
-            </button>
+        </div>
+        <div class="absolute bottom-6 right-6 flex gap-4">
+          <button
+            @click="prevSlide"
+            class="px-6 py-2 text-gray-3 rounded flex items-center gap-2 hover:text-gray-2 transition"
+          >
+            <img :src="leftArrow" alt="이전으로 가기" />
+            이전으로
+          </button>
+          <button
+            @click="nextSlide"
+            class="px-6 py-2 text-gray-3 rounded flex items-center gap-2 hover:text-gray-2 transition"
+          >
+            다음으로
+            <img :src="rightArrow" alt="다음으로 가기" />
+          </button>
+        </div>
+      </SwiperSlide>
+
+      <!-- 참가자 선택 슬라이드 -->
+      <SwiperSlide
+        :class="{ 'active-slide': currentTab === 2 }"
+        class="border-beige-2 border"
+      >
+        <div class="px-16 py-6 relative">
+          <!-- Chips Container -->
+          <div class="flex gap-2 flex-wrap mb-4">
+            <SelectionChip
+              v-if="examData.selectedWorkbook"
+              :label="`${examData.selectedWorkbook.title}`"
+              icon="pi pi-book"
+              @remove="examData.selectedWorkbook = null"
+              removable
+            />
+            <SelectionChip
+              v-if="examData.examDateTime"
+              :label="dateTimeChip"
+              icon="pi pi-clock"
+              @remove="resetDateTime"
+              removable
+            />
+            <SelectionChip
+              v-if="examData.participants.length"
+              :label="participantsChip"
+              icon="pi pi-users"
+              @remove="examData.participants = []"
+              removable
+            />
           </div>
-        </SwiperSlide>
-      </Swiper>
-    </div>
+
+          <SelectParticipants
+            v-model:participants="examData.participants"
+            v-model:shareOption="examData.shareOption"
+          />
+          <div
+            class="absolute top-32 transition-all duration-300 z-20"
+            :style="{ right: '-3rem' }"
+            @click="setTab(2)"
+          >
+            <div
+              class="bg-orange-2 rounded-r-lg p-4 flex items-center gap-2 cursor-pointer"
+              :class="{ 'bg-orange-500': currentTab === 2 }"
+            >
+              <i class="pi pi-user-plus text-white"></i>
+            </div>
+          </div>
+        </div>
+        <div class="absolute bottom-6 right-6 flex gap-4">
+          <button
+            @click="prevSlide"
+            class="px-6 py-2 text-gray-3 rounded flex items-center gap-2 hover:text-gray-2 transition"
+          >
+            <img :src="leftArrow" alt="이전으로 가기" />
+            이전으로
+          </button>
+          <button
+            @click="handleSubmit"
+            :disabled="!isCompleteEnabled"
+            class="px-10 py-2 bg-orange-500 text-white rounded-full hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+          >
+            완료하기
+          </button>
+        </div>
+      </SwiperSlide>
+    </Swiper>
   </div>
 </template>
 

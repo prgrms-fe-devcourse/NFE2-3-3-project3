@@ -11,7 +11,6 @@ const alertPath = new URL("@/assets/icons/alert.svg", import.meta.url).href;
 const pointPath = new URL("@/assets/icons/point.svg", import.meta.url).href;
 
 
-
 // Menu 참조
 const menu = ref(null);
 
@@ -28,6 +27,7 @@ const showLoginModal = ref(false);
 const handleLogout = async () => {
   try {
     await authStore.logout();
+    router.push('/');
   } catch (error) {
     console.error("Logout failed:", error);
   }

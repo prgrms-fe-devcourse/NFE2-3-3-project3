@@ -1,7 +1,21 @@
 <script setup>
 import { setDefaultAvatar } from "@/utils/imageUtils";
 
-defineProps(['user', 'showRemoveButton']);
+const props = defineProps({
+  user: {
+    type: Object,
+    required: true,
+  },
+  showRemoveButton: {
+    type: Boolean,
+    default: false,
+  },
+  isOwner: {
+    type: Boolean,
+    default: false,
+  }
+});
+
 const emit = defineEmits(['add', 'remove']);
 </script>
 
@@ -16,7 +30,10 @@ const emit = defineEmits(['add', 'remove']);
       />
       <div class="flex flex-col">
         <strong class="font-medium">{{ user.email }}</strong>
-        <span class="text-gray-1">{{ user.nickname }}</span>
+        <div class="flex items-center gap-2">
+          <span class="text-gray-1">{{ user.nickname }}</span>
+          <span v-if="isOwner" class="text-orange-500 text-sm">(주최자)</span>
+        </div>
       </div>
     </div>
     
@@ -28,7 +45,7 @@ const emit = defineEmits(['add', 'remove']);
       제거
     </button>
     <button 
-      v-else
+      v-else-if="!isOwner"
       @click="emit('add', user)"
       class="text-orange-500 hover:text-orange-600 px-2 py-1 rounded"
     >
@@ -36,3 +53,9 @@ const emit = defineEmits(['add', 'remove']);
     </button>
   </li>
 </template>
+
+<style scoped>
+.text-gray-1 {
+  color: var(--gray-1, #666666);
+}
+</style>
