@@ -87,9 +87,8 @@ watchEffect(() => {
         v-if="paginatedWorkbooks.length === 0"
         class="text-center py-8 text-gray-500"
       >
-        보관한 문제집이 텅 비었습니다. <br/>
-        문제집을 생성한 후 시험장을 이용할 수
-        있습니다.
+        보관한 문제집이 텅 비었습니다. <br />
+        문제집을 생성한 후 시험장을 이용할 수 있습니다.
       </div>
 
       <MyWorkBook

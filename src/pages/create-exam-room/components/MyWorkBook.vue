@@ -7,12 +7,12 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['select-workbook']);
+const emit = defineEmits(["select-workbook"]);
 
 const handleSelect = (book) => {
   // 선택된 문제집 로깅
   // console.log('Selected workbook:', book);
-  emit('select-workbook', book);
+  emit("select-workbook", book);
 };
 </script>
 
@@ -25,8 +25,10 @@ const handleSelect = (book) => {
       @click="handleSelect(book)"
     >
       <div>
-        <h3 class="font-medium">{{ book.title || '제목 없음' }}</h3>
-        <p class="text-sm text-gray-600 truncate">{{ book.description || '설명 없음' }}</p>
+        <h3 class="font-medium">{{ book.title || "제목 없음" }}</h3>
+        <p class="text-sm text-gray-600 truncate">
+          {{ book.description || "설명 없음" }}
+        </p>
       </div>
       <div class="flex justify-between items-center mt-2">
         <img :src="shareIcon" alt="share" />

@@ -8,12 +8,21 @@ import SelectParticipants from "./components/SelectParticipants.vue";
 import SelectionChip from "./components/SelectionChip.vue";
 import leftArrow from "@/assets/icons/create-exam-room/left-arrow.svg";
 import rightArrow from "@/assets/icons/create-exam-room/right-arrow.svg";
+import { useRouter } from "vue-router";
+import { useToast } from "primevue/usetoast";
+import { Dialog, Button } from "primevue";
 
 import "swiper/css";
 import "swiper/css/effect-cards";
+import { useAuthStore } from "@/store/authStore";
+import { testCenterAPI } from "@/api/testCenter";
 
 const swiperInstance = ref(null);
 const currentTab = ref(0);
+const router = useRouter();
+const toast = useToast();
+const showConfirmDialog = ref(false);
+const authStore = useAuthStore();
 
 const tabs = [
   { label: "문제집", icon: "pi pi-book" },
@@ -27,7 +36,7 @@ const examData = ref({
   examDateTime: null,
   duration: null,
   participants: [],
-  shareOption: 'share',
+  shareOption: "share",
 });
 
 // 완료 버튼 활성화 여부
@@ -50,7 +59,9 @@ const dateTimeChip = computed(() => {
 const participantsChip = computed(() => {
   const participants = examData.value.participants;
   if (!participants.length) return "";
-  return `${examData.value.shareOption === "share" ? "공유함" : "공유하지 않음"}, 시험 인원 ${participants.length}명`;
+  return `${
+    examData.value.shareOption === "share" ? "공유함" : "공유하지 않음"
+  }, 시험 인원 ${participants.length}명`;
 });
 
 const onSwiper = (swiper) => {
@@ -88,14 +99,40 @@ const resetDateTime = () => {
 };
 
 const handleSubmit = () => {
-  console.log("최종 시험 데이터:", examData.value);
-  // API 호출 등 최종 처리
+  showConfirmDialog.value = true;
+};
+
+const submitExam = async () => {
+  try {
+    const currentUser = authStore.user;
+
+    const body = {
+      uid: currentUser?.id,
+      workbook_id: examData.value.selectedWorkbook?.id,
+      start_date: examData.value.examDateTime,
+      end_date: new Date(
+        examData.value.examDateTime.getTime() + examData.value.duration * 60000,
+      ),
+    };
+
+    const result = await testCenterAPI.add(body);
+
+    router.push("/exam-room");
+  } catch (error) {
+    console.error("시험장 생성 실패:", error);
+    toast.add({
+      severity: "error",
+      summary: "시험장 생성 실패",
+      detail: "시험장 생성 중 문제가 발생했습니다.",
+      life: 3000,
+    });
+  }
 };
 </script>
 
 <template>
   <h1 class="font-laundry mb-16 text-5xl font-medium">시험장 만들기</h1>
-  
+
   <!-- Swiper -->
   <div class="relative h-[750px] overflow-visible pr-12">
     <Swiper
@@ -111,7 +148,7 @@ const handleSubmit = () => {
         :class="{ 'active-slide': currentTab === 0 }"
         class="border-beige-2 border"
       >
-      <div class="px-16 py-6 relative">
+        <div class="px-16 py-6 relative">
           <!-- Chips Container -->
           <div class="flex gap-2 flex-wrap mb-4">
             <SelectionChip
@@ -169,7 +206,7 @@ const handleSubmit = () => {
         :class="{ 'active-slide': currentTab === 1 }"
         class="border-beige-2 border"
       >
-      <div class="px-16 py-6 relative">
+        <div class="px-16 py-6 relative">
           <!-- Chips Container -->
           <div class="flex gap-2 flex-wrap mb-4">
             <SelectionChip
@@ -297,6 +334,55 @@ const handleSubmit = () => {
       </SwiperSlide>
     </Swiper>
   </div>
+
+  <!-- 확인 다이얼로그 -->
+  <Dialog
+    v-model:visible="showConfirmDialog"
+    header="시험장 생성 확인"
+    :modal="true"
+    class="w-[500px]"
+  >
+    <div class="space-y-4">
+      <h3 class="text-lg font-medium">설정한 시험장 환경은 다음과 같습니다.</h3>
+      <div class="space-y-2">
+        <p>
+          <span class="font-medium">선택한 문제집:</span>
+          {{ examData.selectedWorkbook?.title }}
+        </p>
+        <p>
+          <span class="font-medium">날짜:</span>
+          {{ examData.examDateTime?.toLocaleDateString() }}
+        </p>
+        <p>
+          <span class="font-medium">시작 시간:</span>
+          {{ examData.examDateTime?.toLocaleTimeString() }}
+        </p>
+        <p>
+          <span class="font-medium">시험 응시 시간:</span>
+          {{ examData.duration }}분
+        </p>
+        <p>
+          <span class="font-medium">공유 여부:</span>
+          {{ examData.shareOption === "share" ? "공개" : "비공개" }}
+        </p>
+      </div>
+    </div>
+
+    <template #footer>
+      <div class="flex justify-end gap-3">
+        <Button
+          label="취소"
+          @click="showConfirmDialog = false"
+          class="p-button-text"
+        />
+        <Button
+          label="확인"
+          @click="submitExam"
+          class="bg-orange-500 border-orange-500"
+        />
+      </div>
+    </template>
+  </Dialog>
 </template>
 
 <style scoped>
