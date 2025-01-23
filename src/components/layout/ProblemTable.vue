@@ -10,7 +10,14 @@ import {
   Textarea,
 } from "primevue";
 import { RouterLink } from "vue-router";
-import { ref, onMounted, onBeforeUnmount, defineProps, watchEffect } from "vue";
+import {
+  ref,
+  onMounted,
+  onBeforeUnmount,
+  defineProps,
+  watchEffect,
+  computed,
+} from "vue";
 import statusSolved from "@/assets/icons/problem-board/status-solved.svg";
 import statusWrong from "@/assets/icons/problem-board/status-wrong.svg";
 import minus from "@/assets/icons/problem-board/minus.svg";
@@ -34,8 +41,6 @@ const handleAddClick = () => {
 const SORTS = ref([
   { name: "최신순", value: "최신순" },
   { name: "좋아요 많은 순", value: "좋아요 많은 순" },
-  { name: "정답률 높은 순", value: "정답률 높은 순" },
-  { name: "정답률 낮은 순", value: "정답률 낮은 순" },
 ]);
 const sort = ref({ name: "최신순", value: "최신순" });
 
@@ -155,6 +160,24 @@ watchEffect(async () => {
   problemSets.value = await workbookAPI.getAll(user.value.id);
 });
 
+const sortedProblems = computed(() => {
+  if (!props.problems) return [];
+
+  const problems = [...props.problems];
+  switch (sort.value.value) {
+    case "최신순":
+      return problems.sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at),
+      );
+    case "좋아요 많은 순":
+      return problems.sort(
+        (a, b) => (b.likes.length || 0) - (a.likes.length || 0),
+      );
+    default:
+      return problems;
+  }
+});
+
 onMounted(() => {
   window.addEventListener("click", handleClickOutside);
 });
@@ -221,7 +244,7 @@ onBeforeUnmount(() => {
     <div class="border border-black-5 rounded-2xl overflow-hidden">
       <DataTable
         v-model:selection="selectedProblems"
-        :value="problems"
+        :value="sortedProblems"
         dataKey="id"
         tableStyle="min-width: 50rem"
         paginator
@@ -254,12 +277,15 @@ onBeforeUnmount(() => {
             </button>
           </template>
         </Column>
-        <Column field="status" header="상태">
+        <Column field="history[0].status" header="상태">
           <template #body="slotProps">
-            <div v-tooltip.top="messageStatus(slotProps.data.status)">
+            <div
+              v-if="slotProps.data.history?.length"
+              v-tooltip.top="messageStatus(slotProps.data.history[0].status)"
+            >
               <img
-                v-if="getStatus(slotProps.data.status) !== ''"
-                :src="getStatus(slotProps.data.status)"
+                v-if="getStatus(slotProps.data.history[0].status) !== ''"
+                :src="getStatus(slotProps.data.history[0].status)"
                 alt="상태 아이콘"
               />
             </div>
@@ -299,7 +325,7 @@ onBeforeUnmount(() => {
             <Tag v-else value="O / X" severity="secondary"></Tag>
           </template>
         </Column>
-        <Column field="category" header="카테고리"></Column>
+        <Column field="category.name" header="카테고리"></Column>
         <Column field="origin_source" header="출처"></Column>
       </DataTable>
     </div>

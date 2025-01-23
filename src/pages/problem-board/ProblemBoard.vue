@@ -1,56 +1,51 @@
 <script setup>
+import { problemAPI } from "@/api/problem";
 import ProblemTable from "@/components/layout/ProblemTable.vue";
 import Search from "@/components/layout/Search.vue";
-import { ref } from "vue";
+import { ref, watch } from "vue";
+import { formatDate } from "@/utils/formatDate";
+import { useAuthStore } from "@/store/authStore";
+import { storeToRefs } from "pinia";
 
-const problems = ref([
-  {
-    id: 1,
-    status: "corrected",
-    title: "소방경력공무원 관계법규 개념 예제 문제 ",
-    category: "소방경력공무원 기출",
-    origin_source: "소방경력공무원 CBT",
-    problem_type: "ox",
+const authStore = useAuthStore();
+const { user } = storeToRefs(authStore);
+const problems = ref([]);
+
+const search = async (keyword, status, startDate, endDate) => {
+  problems.value = await problemAPI.search(
+    user.value.id,
+    keyword,
+    status,
+    formatDate(startDate),
+    formatDate(endDate),
+  );
+};
+
+const fetchInitialData = async () => {
+  if (!user.value) return;
+  problems.value = await problemAPI.getAllShared(user.value.id);
+};
+
+watch(
+  () => user.value,
+  (newUser) => {
+    if (newUser) {
+      fetchInitialData();
+    }
   },
-  {
-    id: 2,
-    status: "wrong",
-    title: "소방경력공무원 관계법규 개념 예제 문제 ",
-    category: "소방경력공무원 기출",
-    origin_source: "소방경력공무원 CBT",
-    problem_type: "multiple_choice",
-  },
-  {
-    id: 3,
-    status: "",
-    title: "소방경력공무원 관계법규 개념 예제 문제 ",
-    category: "소방경력공무원 기출",
-    origin_source: "소방경력공무원 CBT",
-    problem_type: "ox",
-  },
-  {
-    id: 4,
-    status: "wrong",
-    title: "소방경력공무원 관계법규 개념 예제 문제 ",
-    category: "소방경력공무원 기출",
-    origin_source: "소방경력공무원 CBT",
-    problem_type: "multiple_choice",
-  },
-  {
-    id: 5,
-    status: "wrong",
-    title: "소방경력공무원 관계법규 개념 예제 문제 ",
-    category: "소방경력공무원 기출",
-    origin_source: "소방경력공무원 CBT",
-    problem_type: "multiple_choice",
-  },
-]);
+  { immediate: true },
+);
 </script>
 <template>
   <div class="relative flex flex-col gap-14">
     <h1 class="text-[42px] font-laundry">문제 게시판</h1>
-    <Search :show-status="true" />
-    <ProblemTable :problems="problems" />
+    <Search :show-status="true" @search="search" />
+    <ProblemTable
+      :problems="problems"
+      :show-my-problem="false"
+      :show-problem="false"
+      :show-shared-problem="false"
+    />
   </div>
 </template>
 <style scoped></style>

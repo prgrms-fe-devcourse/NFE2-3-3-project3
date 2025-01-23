@@ -45,12 +45,9 @@ const routes = [
     path: "/exam-result/:examResultId",
     name: "ExamResult",
     component: () => import("@/pages/exam-result/ExamResult.vue"),
-    path: "/:pathMatch(.*)*",
-    name: "NotFound",
-    component: NotFound,
   },
   {
-    path: "/not-found",
+    path: "/:pathMatch(.*)*",
     name: "NotFound",
     component: NotFound,
   },
