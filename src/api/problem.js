@@ -129,7 +129,7 @@ const search = async (userId, keyword, startDate, endDate, status) => {
  *
  * @description problem_type = "multiple_choice" | "ox"
  * @param {Number} workbook_id 문제집의 id
- * @param {object} body title, question, answer, explanation, origin_source, problem_type, category_id, image_src, option_one, option_two, option_three, option_four
+ * @param {object} body title, question, answer, explanation, origin_source, problem_type, category_id, image_src, option_one, option_two, option_three, option_four, shared
  * @returns
  */
 const add = async (workbook_id, body) => {
@@ -230,7 +230,7 @@ const addMultiple = async (workbook_id, problemIds) => {
 
 /**
  * @description 아래의 속성을 모두 다 넣을 필요는 없고, 바꾸고 싶은 값만 사용하시면 됩니다
- * @param {object} body title, question, answer, explanation, origin_source, problem_type, category, image_src, option_one, option_two, option_three, option_four
+ * @param {object} body title, question, answer, explanation, origin_source, problem_type, category, image_src, option_one, option_two, option_three, option_four, shared
  * @returns
  */
 const update = async (id, body) => {

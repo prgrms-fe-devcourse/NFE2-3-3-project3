@@ -36,7 +36,7 @@ module.exports = {
         gray: {
           1: "#777777",
           2: "#4F4F4F",
-          3: "#B1B1B1",
+          3: "#1E2338",
         },
       },
       fontFamily: {
@@ -45,6 +45,7 @@ module.exports = {
       },
     },
   },
+  mode: "jit",
   corePlugins: {
     preflight: false,
   },
