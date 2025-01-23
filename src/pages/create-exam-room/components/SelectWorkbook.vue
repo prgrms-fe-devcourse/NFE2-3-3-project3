@@ -1,10 +1,10 @@
 <script setup>
-import { ref, computed,watchEffect } from 'vue';
-import { useAuthStore } from '@/store/authStore';
-import { workbookAPI } from '@/api/workbook';
+import { ref, computed, watchEffect } from "vue";
+import { useAuthStore } from "@/store/authStore";
+import { workbookAPI } from "@/api/workbook";
 import SearchBar from "@/components/layout/SearchBar.vue";
 import MyWorkBook from "./MyWorkBook.vue";
-import { Paginator } from 'primevue';
+import { Paginator } from "primevue";
 
 const props = defineProps({
   selectedWorkbook: {
@@ -13,21 +13,22 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['update:selectedWorkbook']);
+const emit = defineEmits(["update:selectedWorkbook"]);
 
 const authStore = useAuthStore();
 const workbooks = ref([]);
-const keyword = ref('');
+const keyword = ref("");
 const currentPage = ref(1);
 const itemsPerPage = 8;
 
 // 검색어로 필터링된 문제집 목록
 const filteredWorkbooks = computed(() => {
   if (!keyword.value) return workbooks.value;
-  
-  return workbooks.value.filter(book => 
-    book.title?.toLowerCase().includes(keyword.value.toLowerCase()) ||
-    book.description?.toLowerCase().includes(keyword.value.toLowerCase())
+
+  return workbooks.value.filter(
+    (book) =>
+      book.title?.toLowerCase().includes(keyword.value.toLowerCase()) ||
+      book.description?.toLowerCase().includes(keyword.value.toLowerCase()),
   );
 });
 
@@ -48,7 +49,7 @@ const onPageChange = (event) => {
 };
 
 const handleWorkbookSelect = (workbook) => {
-  emit('update:selectedWorkbook', workbook);
+  emit("update:selectedWorkbook", workbook);
 };
 
 // 문제집 데이터 불러오기
@@ -57,7 +58,7 @@ const fetchWorkbooks = async () => {
     const data = await workbookAPI.getUid(authStore.user?.id);
     workbooks.value = data || [];
   } catch (error) {
-    console.error('문제집 데이터 불러오기 실패:', error);
+    console.error("문제집 데이터 불러오기 실패:", error);
   }
 };
 watchEffect(() => {
@@ -77,12 +78,22 @@ watchEffect(() => {
     </div>
 
     <!-- 문제집 목록 -->
-    <section class="flex flex-col gap-[18px]">
-      <div class="flex items-center gap-[16px]">
+    <section class="flex flex-col gap-5">
+      <div class="flex items-center gap-4">
         <h2 class="font-semibold text-xl">내가 만든 문제집</h2>
       </div>
 
-      <MyWorkBook 
+      <div
+        v-if="paginatedWorkbooks.length === 0"
+        class="text-center py-8 text-gray-500"
+      >
+        보관한 문제집이 텅 비었습니다. <br/>
+        문제집을 생성한 후 시험장을 이용할 수
+        있습니다.
+      </div>
+
+      <MyWorkBook
+        v-else
         :visibleMyBooks="paginatedWorkbooks"
         @select-workbook="handleWorkbookSelect"
       />
