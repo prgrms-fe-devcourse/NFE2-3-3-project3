@@ -1,6 +1,6 @@
 import { supabase } from "./index.js";
 
-const getAll = async (userId) => {
+const getAllByUserId = async (userId) => {
   try {
     const { data, error } = await supabase
       .from("problem")
@@ -197,8 +197,8 @@ const getById = async (id) => {
 };
 
 export const problemAPI = {
-  getAll,
-  getAllShare: getAllSharedByUserId,
+  getAllByUserId,
+  getAllSharedByUserId,
   getById,
   add,
   addMultiple,

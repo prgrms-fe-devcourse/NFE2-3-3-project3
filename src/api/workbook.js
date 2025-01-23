@@ -95,7 +95,7 @@ const checkWorkbookInsert = async () => {
 export const workbookAPI = {
   add,
   getAll,
-  getAllShare: getAllSharedByUserId,
+  getAllSharedByUserId,
   getUid,
   updateTilte,
   updateDescription,

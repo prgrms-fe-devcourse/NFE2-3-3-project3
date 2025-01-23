@@ -45,8 +45,8 @@ watchEffect(async () => {
   }
 
   const followingPromise = followAPI.getFollowing(userId);
-  const problemsPromise = problemAPI.getAllShare(userId);
-  const problemSetsPromise = workbookAPI.getAllShare(userId);
+  const problemsPromise = problemAPI.getAllSharedByUserId(userId);
+  const problemSetsPromise = workbookAPI.getAllSharedByUserId(userId);
 
   const [followingData, problemsData, problemSetsData] = await Promise.all([
     followingPromise,
