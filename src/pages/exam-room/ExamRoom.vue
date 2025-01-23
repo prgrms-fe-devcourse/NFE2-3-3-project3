@@ -113,17 +113,17 @@ watchEffect(fetchExams);
 
 <template>
   <div class="w-full">
-    <h1 class="font-laundry mb-16 text-5xl font-medium">내 시험장</h1>
+    <h1 class="mb-16 text-5xl font-medium font-laundry">내 시험장</h1>
 
     <!-- 진행중인 시험 섹션 -->
-    <section class="mb-8 w-full">
-      <div class="flex items-center gap-2 w-full mb-4">
-        <h2 class="text-gray-2 font-medium text-xl">진행중인 시험</h2>
+    <section class="w-full mb-8">
+      <div class="flex items-center w-full gap-2 mb-4">
+        <h2 class="text-xl font-medium text-gray-2">진행중인 시험</h2>
         <!-- 더보기/접기 버튼 -->
         <button
           v-if="showOngoingExamsMoreButton"
           @click="toggleOngoingExamsDisplay"
-          class="px-3 py-2 text-gray-3 hover:bg-gray-100 rounded-full transition-colors"
+          class="px-3 py-2 transition-colors rounded-full text-gray-3 hover:bg-gray-100"
         >
           {{ isOngoingExamsExpanded ? "접기" : "전체보기 +" }}
         </button>
@@ -132,7 +132,7 @@ watchEffect(fetchExams);
       <!-- 조건부 렌더링 -->
       <div
         v-if="ongoingExams.length === 0"
-        class="text-gray-500 w-full py-10 item-middle"
+        class="w-full py-10 text-gray-500 item-middle"
       >
         현재 진행중인 시험이 없습니다.
       </div>
@@ -149,14 +149,14 @@ watchEffect(fetchExams);
     </section>
 
     <!-- 내가 만든 시험 섹션 -->
-    <section class="mb-8 w-full">
-      <div class="flex items-center gap-2 w-full mb-4">
-        <h2 class="text-gray-2 font-medium text-xl">내가 만든 시험</h2>
+    <section class="w-full mb-8">
+      <div class="flex items-center w-full gap-2 mb-4">
+        <h2 class="text-xl font-medium text-gray-2">내가 만든 시험</h2>
         <!-- 더보기/접기 버튼 -->
         <button
           v-if="showMyExamsMoreButton"
           @click="toggleMyExamsDisplay"
-          class="px-3 py-2 text-gray-3 hover:bg-gray-100 rounded-full transition-colors"
+          class="px-3 py-2 transition-colors rounded-full text-gray-3 hover:bg-gray-100"
         >
           {{ isMyExamsExpanded ? "접기" : "전체보기 +" }}
         </button>
@@ -165,7 +165,7 @@ watchEffect(fetchExams);
       <!-- 조건부 렌더링 -->
       <div
         v-if="myExams.length === 0"
-        class="text-gray-500 w-full py-10 item-middle"
+        class="w-full py-10 text-gray-500 item-middle"
       >
         시험장 정보가 없습니다.
       </div>
@@ -182,14 +182,14 @@ watchEffect(fetchExams);
     </section>
 
     <!-- 초대된 시험 섹션 -->
-    <section class="mb-8 w-full">
-      <div class="flex items-center gap-2 w-full mb-4">
-        <h2 class="text-gray-2 font-medium text-xl">초대된 시험</h2>
+    <section class="w-full mb-8">
+      <div class="flex items-center w-full gap-2 mb-4">
+        <h2 class="text-xl font-medium text-gray-2">초대된 시험</h2>
         <!-- 더보기/접기 버튼 -->
         <button
           v-if="showInvitedExamsMoreButton"
           @click="toggleInvitedExamsDisplay"
-          class="px-3 py-2 text-gray-3 hover:bg-gray-100 rounded-full transition-colors"
+          class="px-3 py-2 transition-colors rounded-full text-gray-3 hover:bg-gray-100"
         >
           {{ isInvitedExamsExpanded ? "접기" : "전체보기 +" }}
         </button>
@@ -198,7 +198,7 @@ watchEffect(fetchExams);
       <!-- 조건부 렌더링 -->
       <div
         v-if="invitedExams.length === 0"
-        class="text-gray-500 w-full py-10 item-middle"
+        class="w-full py-10 text-gray-500 item-middle"
       >
         초대된 시험이 없습니다.
       </div>
@@ -216,7 +216,7 @@ watchEffect(fetchExams);
   </div>
   <RouterLink
     to="/create-exam-room"
-    class="w-16 h-16 rounded-full bg-orange-1 flex justify-center items-center cursor-pointer fixed right-20 bottom-20"
+    class="fixed flex items-center justify-center w-16 h-16 rounded-full cursor-pointer bg-orange-1 right-20 bottom-20"
   >
     <img :src="createIcon" alt="새 시험장 만들기" class="w-8 h-8" />
   </RouterLink>

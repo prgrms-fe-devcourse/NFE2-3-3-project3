@@ -66,7 +66,7 @@ const handleDeny = async () => {
     </div>
     <div class="flex items-center gap-2 mb-2 text-sm">
       <img :src="userIcon" alt="user icon" class="w-3 h-3" />
-      <span>{{ participants }}명</span>
+      <span>{{ participants }}</span>
     </div>
     <div class="flex items-center gap-2 mb-2 text-sm">
       <img :src="folderIcon" alt="folder icon" class="w-3 h-3" />
