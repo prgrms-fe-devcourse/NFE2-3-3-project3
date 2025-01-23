@@ -11,14 +11,17 @@ const props = defineProps({
   problem: {
     type: Object,
     required: true,
+    default: () => ({}),
   },
   author: {
     type: Object,
     required: true,
+    default: () => ({}),
   },
   hasLiked: {
     type: Boolean,
     required: true,
+    default: false,
   },
   likeCount: {
     type: Number,
@@ -36,8 +39,8 @@ const toggleMenu = () => {
 
 // 메뉴 외부 클릭시 닫기
 const closeMenu = (event) => {
-  const menu = document.querySelector('.menu-container');
-  const button = document.querySelector('.menu-trigger');
+  const menu = document.querySelector(".menu-container");
+  const button = document.querySelector(".menu-trigger");
   if (!menu?.contains(event.target) && !button?.contains(event.target)) {
     showMenu.value = false;
   }
@@ -70,11 +73,11 @@ const fetchUserGrade = async () => {
 
 onMounted(() => {
   fetchUserGrade();
-  document.addEventListener('click', closeMenu);
+  document.addEventListener("click", closeMenu);
 });
 
 onBeforeUnmount(() => {
-  document.removeEventListener('click', closeMenu);
+  document.removeEventListener("click", closeMenu);
 });
 </script>
 
@@ -116,7 +119,9 @@ onBeforeUnmount(() => {
           <button
             @click="$emit('toggle-like')"
             class="flex items-center gap-1 px-2 py-1 rounded-full transition"
-            :class="hasLiked ? 'bg-orange-100 text-orange-500' : 'hover:bg-gray-100'"
+            :class="
+              hasLiked ? 'bg-orange-100 text-orange-500' : 'hover:bg-gray-100'
+            "
           >
             <img
               :src="thumbsUpIcon"
@@ -137,12 +142,12 @@ onBeforeUnmount(() => {
         >
           <i class="pi pi-ellipsis-h"></i>
         </button>
-        
+
         <!-- 커스텀 메뉴 -->
         <div
           v-if="showMenu"
           class="menu-container absolute right-0 top-12 mt-2 flex bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden flex-col"
-          style="z-index: 1000;"
+          style="z-index: 1000"
         >
           <button
             @click="emit('menu-action', 'edit')"
