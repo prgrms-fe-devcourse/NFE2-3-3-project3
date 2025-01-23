@@ -2,7 +2,7 @@
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import dropdownDown from "@/assets/icons/problem-set-board/dropdown-down.svg";
 import search from "@/assets/icons/problem-set-board/search.svg";
-import { Checkbox, Chip, DatePicker, RadioButton } from "primevue";
+import { Chip, DatePicker, RadioButton } from "primevue";
 import { formatDate } from "@/utils/formatDate";
 
 const STATUSES = ["안 푼 문제", "푼 문제", "틀린 문제"];
@@ -42,7 +42,7 @@ onBeforeUnmount(() => {
 <template>
   <div class="flex flex-col gap-2">
     <form
-      @submit.prevent="emit('search', keyword, status, startDate, endDate)"
+      @submit.prevent="emit('search', keyword, startDate, endDate, status)"
       class="flex justify-between items-center bg-beige-2 has-[:focus]:border-orange-1 rounded-2xl h-12 p-4 border border-black-4"
     >
       <input
