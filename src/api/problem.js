@@ -66,7 +66,7 @@ const getAllSharedByUserId = async (userId) => {
  * @param {String} endDate YYYY-MM-DD
  * @returns
  */
-const search = async (userId, keyword, status, startDate, endDate) => {
+const search = async (userId, keyword, startDate, endDate, status) => {
   try {
     let query = supabase
       .from("problem")
