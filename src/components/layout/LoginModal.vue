@@ -32,19 +32,14 @@ const handleKakaoLogin = async () => {
   <Transition name="modal">
     <div
       v-if="modelValue"
-      class="fixed inset-0 z-50 overflow-y-auto"
+      class="fixed inset-0 z-50 overflow-y-auto bg-black-1/30"
       role="dialog"
+      @click="$emit('update:modelValue', false)"
     >
-      <!-- 모달 배경 -->
-      <div
-        class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
-        @click="$emit('update:modelValue', false)"
-      ></div>
-
       <!-- 모달 -->
       <div class="flex min-h-full items-center justify-center p-4">
         <div
-          class="relative w-full max-w-md transform rounded-lg bg-white p-6 text-left shadow-xl transition-all"
+          class="relative w-[450px] transform rounded-lg bg-white p-6 text-left shadow-xl transition-all"
         >
           <!-- 모달 header -->
           <div class="mb-5 text-center">
@@ -55,10 +50,10 @@ const handleKakaoLogin = async () => {
           </div>
 
           <!-- 로그인 버튼 -->
-          <div class="space-y-3">
+          <div class="flex flex-col gap-2 box-border">
             <button
               @click="handleGoogleLogin"
-              class="flex w-full items-center justify-center space-x-2 rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              class="flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               <img
                 src="https://www.svgrepo.com/show/475656/google-color.svg"
@@ -70,7 +65,7 @@ const handleKakaoLogin = async () => {
 
             <button
               @click="handleGithubLogin"
-              class="flex w-full items-center justify-center space-x-2 rounded-lg border border-gray-300 bg-gray-800 px-4 py-3 text-white shadow-sm hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              class="flex items-center justify-center gap-2 rounded-lg bg-gray-800 px-4 py-3 text-white hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
             >
               <img
                 src="https://www.svgrepo.com/show/512317/github-142.svg"
@@ -82,7 +77,7 @@ const handleKakaoLogin = async () => {
 
             <button
               @click="handleKakaoLogin"
-              class="flex w-full items-center justify-center space-x-2 rounded-lg border border-[#FEE500] bg-[#FEE500] px-4 py-3 text-black hover:bg-[#FEE500]/90 focus:outline-none focus:ring-[#FEE500]"
+              class="flex items-center justify-center gap-2 rounded-lg bg-[#FEE500] px-4 py-3 text-black hover:bg-[#FEE500]/90 focus:outline-none focus:ring-[#FEE500]"
             >
               <img
                 src="https://developers.kakao.com/assets/img/about/logos/kakaotalksharing/kakaotalk_sharing_btn_medium.png"

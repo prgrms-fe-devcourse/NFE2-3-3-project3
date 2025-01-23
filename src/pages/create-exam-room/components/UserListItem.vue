@@ -1,6 +1,8 @@
 <script setup>
-defineProps(['user', 'showRemoveButton'])
-const emit = defineEmits(['add', 'remove'])
+import { setDefaultAvatar } from "@/utils/imageUtils";
+
+defineProps(['user', 'showRemoveButton']);
+const emit = defineEmits(['add', 'remove']);
 </script>
 
 <template>
@@ -9,6 +11,7 @@ const emit = defineEmits(['add', 'remove'])
       <img 
         :src="user.profileImage" 
         :alt="user.nickname"
+        @error="setDefaultAvatar"
         class="w-12 h-12 rounded-full object-cover"
       />
       <div class="flex flex-col">

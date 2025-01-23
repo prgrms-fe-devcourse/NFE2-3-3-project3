@@ -113,48 +113,71 @@ const resetDateTime = () => {
 </script>
 
 <template>
-  <div class="px-16">
-    <!-- 시간 선택 완료 -> 시작 일시 ~ 종료 일시 -->
-    <SelectionChip
-      v-if="selectedDate"
-      :label="dateTimeChip"
-      icon="pi pi-clock"
-      @remove="resetDateTime"
-      removable
-    />
+  <!-- 시간 선택 완료 -> 시작 일시 ~ 종료 일시 -->
+  <SelectionChip
+    v-if="selectedDate"
+    :label="dateTimeChip"
+    icon="pi pi-clock"
+    @remove="resetDateTime"
+    removable
+  />
 
-    <h2 class="text-2xl text-black-1 font-medium mb-6">시간 선택하기</h2>
+  <h2 class="text-2xl text-black-1 font-medium mb-6">시간 선택하기</h2>
 
-    <!-- 시작 시간 선택 -->
-    <div class="space-y-4 mb-4">
-      <h3 class="text-lg font-medium">시작 날짜</h3>
-      <div class="flex gap-6 align-top">
-        <Calendar
-          v-model="selectedDate"
-          :showIcon="true"
-          :minDate="new Date()"
-          dateFormat="yy-mm-dd"
-          class="w-1/2"
-          :inline="true"
-          showButtonBar
-        />
-        <!-- <Calendar
-          v-model="selectedTime"
-          :timeOnly="true"
-          hourFormat="24"
-          class="w-1/4"
-          :inline="true"
-        /> -->
+  <!-- 시작 시간 선택 -->
+  <div class="space-y-4 mb-4">
+    <h3 class="text-lg font-medium">시작 날짜</h3>
+    <div class="flex gap-6 align-top">
+      <Calendar
+        v-model="selectedDate"
+        :showIcon="true"
+        :minDate="new Date()"
+        dateFormat="yy-mm-dd"
+        class="w-1/2"
+        :inline="true"
+        showButtonBar
+      />
+      <div class="flex gap-4 w-full flex-col">
+        <h3 class="text-lg font-medium shrink-0">시작 시간</h3>
+        <div class="flex gap-4 w-full mb-20">
+          <div class="w-full">
+            <label class="text-sm text-gray-600 mb-1 block">시간</label>
+            <InputNumber
+              v-model="hours"
+              :min="0"
+              :max="23"
+              class="w-full"
+              :showButtons="false"
+              buttonLayout="horizontal"
+              spinnerMode="horizontal"
+            />
+          </div>
+          <div class="w-full">
+            <label class="text-sm text-gray-600 mb-1 block">분</label>
+            <InputNumber
+              v-model="minutes"
+              :min="0"
+              :max="59"
+              :step="5"
+              class="w-full"
+              :showButtons="false"
+              buttonLayout="horizontal"
+              spinnerMode="horizontal"
+            />
+          </div>
+        </div>
+
+        <!-- 시험 시간 선택 -->
         <div class="flex gap-4 w-full flex-col">
-          <h3 class="text-lg font-medium shrink-0">시작 시간</h3>
-          <div class="flex gap-4 w-full mb-10">
+          <h3 class="text-lg font-medium w-full">시험 시간</h3>
+          <div class="flex gap-4 w-full">
             <div class="w-full">
               <label class="text-sm text-gray-600 mb-1 block">시간</label>
               <InputNumber
                 v-model="hours"
                 :min="0"
                 :max="23"
-                class="w-1/2"
+                class="w-full"
                 :showButtons="false"
                 buttonLayout="horizontal"
                 spinnerMode="horizontal"
@@ -167,43 +190,11 @@ const resetDateTime = () => {
                 :min="0"
                 :max="59"
                 :step="5"
-                class="w-1/2"
+                class="w-full"
                 :showButtons="false"
                 buttonLayout="horizontal"
                 spinnerMode="horizontal"
               />
-            </div>
-          </div>
-
-          <!-- 시험 시간 선택 -->
-          <div class="space-y-4 w-3/4">
-            <h3 class="text-lg font-medium w-full">시험 시간</h3>
-            <div class="flex gap-4 w-full">
-              <div class="w-full">
-                <label class="text-sm text-gray-600 mb-1 block">시간</label>
-                <InputNumber
-                  v-model="hours"
-                  :min="0"
-                  :max="23"
-                  class="w-1/2"
-                  :showButtons="false"
-                  buttonLayout="horizontal"
-                  spinnerMode="horizontal"
-                />
-              </div>
-              <div class="w-full">
-                <label class="text-sm text-gray-600 mb-1 block">분</label>
-                <InputNumber
-                  v-model="minutes"
-                  :min="0"
-                  :max="59"
-                  :step="5"
-                  class="w-1/2"
-                  :showButtons="false"
-                  buttonLayout="horizontal"
-                  spinnerMode="horizontal"
-                />
-              </div>
             </div>
           </div>
         </div>
