@@ -109,8 +109,8 @@ const routes = [
         name: "ExamHistory",
         component: ExamHistory,
       },
-      {
-        path: "exam-make",
+       {
+        path: "exam-make/:problemSetId",
         name: "ExamMake",
         component: ExamMake,
       },
