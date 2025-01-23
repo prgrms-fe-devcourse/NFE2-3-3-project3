@@ -1,5 +1,27 @@
 import { supabase } from "./index.js";
 
+/**
+ * @description 게시판에서 사용되는 API
+ * @param {*} userId
+ * @returns
+ */
+const getAllShared = async (userId) => {
+  try {
+    const { data, error } = await supabase
+      .from("problem")
+      .select(
+        "*, category(*), history: problem_history(*), likes: problem_like(*)",
+      )
+      .eq("shared", true)
+      .filter("history.uid", "eq", userId);
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 const getAllByUserId = async (userId) => {
   try {
     const { data, error } = await supabase
@@ -14,6 +36,11 @@ const getAllByUserId = async (userId) => {
   }
 };
 
+/**
+ * @description 특정 유저가 공유한 문제를 가져올 때 사용하는 API
+ * @param {*} userId
+ * @returns
+ */
 const getAllSharedByUserId = async (userId) => {
   try {
     const { data, error } = await supabase
@@ -21,6 +48,75 @@ const getAllSharedByUserId = async (userId) => {
       .select("*")
       .eq("uid", userId)
       .eq("shared", true);
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+/**
+ *
+ * @description 게시판 검색에 사용하는 API
+ * @param {String} userId
+ * @param {String} keyword 검색 키워드
+ * @param {String} status 상태
+ * @param {String} startDate YYYY-MM-DD
+ * @param {String} endDate YYYY-MM-DD
+ * @returns
+ */
+const search = async (userId, keyword, status, startDate, endDate) => {
+  try {
+    let query = supabase
+      .from("problem")
+      .select(
+        "*, category(*), history: problem_history(*), likes: problem_like(*)",
+      );
+
+    if (keyword) {
+      query.or(`title.ilike.%${keyword}%,question.ilike.%${keyword}%`);
+    }
+    if (startDate) {
+      query.gte("created_at", startDate); // 시작 날짜 조건
+    }
+    if (endDate) {
+      query.lte("created_at", endDate);
+    }
+
+    let { data, error } = await query;
+
+    if (status === "푼 문제") {
+      const { data: historyData } = await supabase
+        .from("problem_history")
+        .select("*, user_info(*)")
+        .eq("uid", userId);
+
+      data = data.filter((problem) =>
+        historyData.some((history) => history.problem_id === problem.id),
+      );
+    } else if (status === "안 푼 문제") {
+      const { data: historyData } = await supabase
+        .from("problem_history")
+        .select("*, user_info(*)")
+        .eq("uid", userId);
+
+      data = data.filter((problem) =>
+        historyData.every((history) => history.problem_id !== problem.id),
+      );
+    } else if (status === "틀린 문제") {
+      const { data: historyData } = await supabase
+        .from("problem_history")
+        .select("*, user_info(*)")
+        .eq("uid", userId);
+
+      data = data.filter((problem) =>
+        historyData.some(
+          (history) =>
+            problem.id === history.problem_id && history.status === "wrong",
+        ),
+      );
+    }
 
     if (error) throw error;
     return data;
@@ -197,9 +293,11 @@ const getById = async (id) => {
 };
 
 export const problemAPI = {
+  getAllShared,
   getAllByUserId,
   getAllSharedByUserId,
   getById,
+  search,
   add,
   addMultiple,
   update,

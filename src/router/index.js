@@ -1,4 +1,3 @@
-import { supabase } from "../api";
 import { createRouter, createWebHistory } from "vue-router";
 import DefaultLayout from "@/components/layout/DefaultLayout.vue";
 
@@ -44,12 +43,9 @@ const routes = [
     path: "/exam-result/:examResultId",
     name: "ExamResult",
     component: () => import("@/pages/exam-result/ExamResult.vue"),
-    path: "/:pathMatch(.*)*",
-    name: "NotFound",
-    component: NotFound,
   },
   {
-    path: "/not-found",
+    path: "/:pathMatch(.*)*",
     name: "NotFound",
     component: NotFound,
   },
