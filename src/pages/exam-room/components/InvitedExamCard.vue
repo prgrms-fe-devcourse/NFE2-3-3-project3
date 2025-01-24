@@ -34,7 +34,7 @@ const handleAccept = async () => {
   if (isProcessing.value) return;
   isProcessing.value = true;
   try {
-    await inviteAPI.accept(userId, id);
+    await inviteAP.accept(userId, id);
     alert("시험에 참여 승인되었습니다.");
   } catch (error) {
     console.error(error);
