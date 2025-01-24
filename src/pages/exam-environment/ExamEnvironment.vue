@@ -7,8 +7,10 @@ import { useRoute } from "vue-router";
 import { testCenterAPI } from "@/api/testCenter";
 import { testResultAPI } from "@/api/testResult";
 import { authAPI } from "@/api/auth";
+import { useToast } from "primevue";
 
 let intervalId;
+const toast = useToast();
 const router = useRouter();
 const route = useRoute();
 
@@ -106,13 +108,28 @@ watch(
       testCenterId,
     );
     if (isSubmitted) {
+      toast.add({
+        severity: "error",
+        summary: "시험 입장 오류",
+        detail: "이미 제출한 시험입니다.",
+        life: 3000,
+      });
       return router.replace("/exam-room");
     }
 
     const testCenterData = await testCenterAPI.getAllByTestCenterId(
       testCenterId,
     );
-    if (new Date(testCenterData.end_date) < new Date()) {
+    if (
+      new Date(testCenterData.start_date) > new Date() ||
+      new Date(testCenterData.end_date) < new Date()
+    ) {
+      toast.add({
+        severity: "error",
+        summary: "시험 입장 오류",
+        detail: "시험 시간이 아닙니다.",
+        life: 3000,
+      });
       return router.replace("/exam-room");
     }
     problems.value = testCenterData.problems;
