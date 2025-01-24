@@ -31,6 +31,26 @@ const getUid = async (uid) => {
   return data;
 };
 
+/**
+ * @description 공유된 문제집 목록을 가져오는 API
+ * @returns
+ */
+const getAllShared = async () => {
+  const { data, error } = await supabase
+    .from("workbook")
+    .select(
+      "*, user: user_info(name, avatar_url), problems: workbook_problem(problem_id), likes: workbook_like(id)",
+    )
+    .eq("shared", true);
+  if (error) throw error;
+  return data;
+};
+
+/**
+ * @description 특정 유저가 공유한 문제집 목록을 가져오는 API
+ * @param {*} uid 유저 ID
+ * @returns
+ */
 const getAllSharedByUserId = async (uid) => {
   try {
     const { data, error } = await supabase
@@ -55,6 +75,35 @@ const getAllSharedByUserId = async (uid) => {
   } catch (error) {
     console.error(error);
   }
+};
+
+const search = async (keyword, startDate, endDate) => {
+  const query = supabase
+    .from("workbook")
+    .select(
+      `
+      *,
+      user: user_info(name, avatar_url),
+      problems: workbook_problem(problem_id),
+      likes: workbook_like(id)
+    `,
+    )
+    .eq("shared", true);
+
+  if (keyword) {
+    query.or(`title.ilike.%${keyword}%,description.ilike.%${keyword}%`);
+  }
+  if (startDate) {
+    query.gte("created_at", startDate);
+  }
+  if (endDate) {
+    query.lte("created_at", endDate);
+  }
+
+  const { data, error } = await query;
+
+  if (error) throw error;
+  return data;
 };
 
 // UPDATE
@@ -95,7 +144,9 @@ const checkWorkbookInsert = async () => {
 export const workbookAPI = {
   add,
   getAll,
+  getAllShared,
   getAllSharedByUserId,
+  search,
   getUid,
   updateTilte,
   updateDescription,
