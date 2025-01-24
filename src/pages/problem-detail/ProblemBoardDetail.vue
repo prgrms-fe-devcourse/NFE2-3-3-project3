@@ -35,6 +35,7 @@ const loadComments = async (page = 1) => {
     isLoadingComments.value = true;
     const response = await commentAPI.getComments({
       problem_id: parseInt(route.params.problemId),
+      workbook_id: problemStore.problem.workbook_id,
       page,
       pageSize: 10,
     });
@@ -60,6 +61,7 @@ const handleSubmitComment = async () => {
   try {
     await commentAPI.createComment({
       problem_id: parseInt(route.params.problemId),
+      workbook_id: problemStore.problem.workbook_id, // workbook_id 추가
       content: commentValue.value,
       uid: authStore.user.id,
     });
@@ -160,9 +162,11 @@ onMounted(async () => {
       :currentPage="currentPage"
       :totalPages="totalPages"
       v-model:value="commentValue"
+      :problemId="route.params.problemId"
+      :workbookId="problemStore.problem.workbook_id"
       @submit-comment="handleSubmitComment"
       @page-change="handlePageChange"
-    />
+    ></CommentList>
 
     <!-- 삭제 확인 다이얼로그 -->
     <Dialog
