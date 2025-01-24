@@ -1,28 +1,64 @@
 <script setup>
 import Search from "@/components/layout/Search.vue";
-import { ref } from "vue";
+import { ref, watchEffect, computed, watch } from "vue";
 import { Paginator, Select } from "primevue";
 import ProblemSet from "@/components/layout/ProblemSet.vue";
+import { SORTS } from "@/const/sorts";
+import { workbookAPI } from "@/api/workbook";
+import { formatDate } from "@/utils/formatDate";
 
-const WORK_BOOKS = [1, 2, 3, 4, 5];
-const SORTS = ref([
-  { name: "최신순", value: "최신순" },
-  { name: "좋아요 많은 순", value: "좋아요 많은 순" },
-  { name: "정답률 높은 순", value: "정답률 높은 순" },
-  { name: "정답률 낮은 순", value: "정답률 낮은 순" },
-]);
-const sort = ref({ name: "최신순", value: "최신순" });
+const problemSets = ref([]);
+const sorts = ref(SORTS);
+const sort = ref(SORTS[0]);
+const first = ref(0);
+const rows = ref(4);
+
+const sortedProblemSets = computed(() => {
+  const newProblemSets = [...problemSets.value];
+  switch (sort.value?.value) {
+    case "최신순":
+      return newProblemSets
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(first.value, first.value + rows.value);
+    case "좋아요 많은 순":
+      return newProblemSets
+        .sort((a, b) => (b.likes.length || 0) - (a.likes.length || 0))
+        .slice(first.value, first.value + rows.value);
+    default:
+      return newProblemSets.slice(first.value, first.value + rows.value);
+  }
+});
+
+const search = async (keyword, startDate, endDate) => {
+  first.value = 0;
+  problemSets.value = await workbookAPI.search(
+    keyword,
+    formatDate(startDate),
+    formatDate(endDate),
+  );
+};
+
+watch(
+  () => sort.value,
+  () => {
+    first.value = 0;
+  },
+);
+
+watchEffect(async () => {
+  problemSets.value = await workbookAPI.search(null, null, null);
+});
 </script>
 <template>
   <div class="flex flex-col gap-14 relative">
     <h1 class="text-[42px] font-laundry">문제집 게시판</h1>
-    <Search :show-status="false" />
+    <Search :show-status="false" @search="search" />
     <section class="flex flex-col gap-[18px]">
       <div class="flex justify-between items-center">
-        <p class="font-semibold text-xl">{{ WORK_BOOKS.length }} 문제집</p>
+        <p class="font-semibold text-xl">{{ problemSets.length }} 문제집</p>
         <Select
           v-model="sort"
-          :options="SORTS"
+          :options="sorts"
           optionLabel="name"
           class="w-40"
         />
@@ -30,13 +66,18 @@ const sort = ref({ name: "최신순", value: "최신순" });
 
       <div class="grid grid-cols-4 gap-4">
         <ProblemSet
-          v-for="workbook in WORK_BOOKS"
-          :key="workbook"
-          :to="`/problem-set-board/${workbook}`"
+          v-for="problemSet in sortedProblemSets"
+          :problemSet="problemSet"
+          :key="problemSet.id"
+          :to="`/problem-set-board/${problemSet.id}`"
         />
       </div>
     </section>
-    <Paginator :rows="10" :totalRecords="120"></Paginator>
+    <Paginator
+      v-model:first="first"
+      :rows="rows"
+      :totalRecords="problemSets.length"
+    ></Paginator>
   </div>
 </template>
 <style scoped></style>
