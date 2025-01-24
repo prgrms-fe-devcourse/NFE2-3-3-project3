@@ -57,6 +57,29 @@ const getAllFields = async (uid) => {
   return data;
 };
 
+/**
+ * @description 시험에 사용되는 정보들을 반환하는 API
+ * @param {Number} testCenterId 시험장 id
+ * @returns
+ */
+const getAllByTestCenterId = async (testCenterId) => {
+  try {
+    const { data, error } = await supabase
+      .from("test_center")
+      .select("*, workbook(*, workbook_problem(problem(*)))")
+      .eq("id", testCenterId)
+      .single();
+
+    const problems = [...data.workbook.workbook_problem];
+    delete data.workbook.workbook_problem;
+
+    if (error) throw error;
+    return { ...data, problems };
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 // UPDATE
 
 const updateStartTime = async (start_time, id) => {
@@ -71,6 +94,7 @@ export const testCenterAPI = {
   add,
   getAll,
   getUid,
+  getAllByTestCenterId,
   updateStartTime,
   updateEndTime,
   getAllFields,

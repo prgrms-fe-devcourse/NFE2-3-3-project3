@@ -3,17 +3,19 @@ import { supabase } from "./index.js";
 export const againViewProblemAPI = {
   /**
    * @description 특정 문제의 다시 볼 문제 상태 조회
+   * @param {number} userId - 유저 ID
    * @param {number} problemId - 조회할 문제 ID
    * @returns {object | null} 다시 볼 문제 상태 데이터 또는 null
    */
-  async getByProblemId(problemId) {
+  async getByProblemId(userId, problemId) {
     try {
       const { data, error } = await supabase
         .from("again_view_problem")
         .select("problem_id")
         .eq("problem_id", problemId)
+        .eq("uid", userId)
         .single();
-      
+
       if (error) throw error;
       return data;
     } catch (error) {
@@ -30,7 +32,8 @@ export const againViewProblemAPI = {
     try {
       const { data, error } = await supabase
         .from("again_view_problem")
-        .select(`
+        .select(
+          `
           *,
           problem:problem(
             id,
@@ -38,7 +41,8 @@ export const againViewProblemAPI = {
             question,
             answer
           )
-        `)
+        `,
+        )
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -62,6 +66,28 @@ export const againViewProblemAPI = {
         .insert([newData])
         .select()
         .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  },
+
+  /**
+   * @description 다시 볼 문제에서 제거
+   * @param {number} userId - 유저 ID
+   * @param {number} problemId - 문제 ID
+   * @returns {object} 제거된 다시 볼 문제 데이터
+   */
+  async delete(problemId) {
+    try {
+      const { data, error } = await supabase
+        .from("again_view_problem")
+        .delete()
+        .eq("problem_id", problemId)
+        .select();
 
       if (error) throw error;
       return data;
