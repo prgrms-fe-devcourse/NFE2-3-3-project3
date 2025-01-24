@@ -3,7 +3,7 @@ import { supabase } from ".";
 // CREATE
 /**
  *
- * @param {object} body uid, test_center_id, score, correct_count
+ * @param {object} body test_center_id, correct_count, total_count, time
  * @returns
  */
 const add = async (body) => {
@@ -11,7 +11,8 @@ const add = async (body) => {
     const { data, error } = await supabase
       .from("test_result")
       .insert([body])
-      .select();
+      .select()
+      .single();
 
     if (error) throw error;
     return data;
@@ -51,6 +52,27 @@ const getAllByUserId = async (userId) => {
 
     if (error) throw error;
     return results;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+/**
+ * @description 시험 제출 여부 확인
+ * @param {String} userId
+ * @param {Number} testCenterId
+ * @returns
+ */
+const checkIsSubmitted = async (userId, testCenterId) => {
+  try {
+    const { data, error } = await supabase
+      .from("test_result")
+      .select("*")
+      .eq("uid", userId)
+      .eq("test_center_id", testCenterId);
+
+    if (error) throw error;
+    return data.length > 0;
   } catch (error) {
     console.error(error);
   }
@@ -113,5 +135,6 @@ const search = async (userId, keyword, startDate, endDate) => {
 export const testResultAPI = {
   add,
   getAllByUserId,
+  checkIsSubmitted,
   search,
 };

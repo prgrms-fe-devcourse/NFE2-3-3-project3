@@ -1,49 +1,92 @@
 <script setup>
-import { Button } from "primevue";
-import { computed } from "vue";
+import { againViewProblemAPI } from "@/api/againViewProblem";
+import { authAPI } from "@/api/auth";
+import { Button, useToast } from "primevue";
+import { computed, watch, ref } from "vue";
 
+const toast = useToast();
 const { problem, currentProblemIndex, userAnswers } = defineProps({
-  problem: {
-    type: Object,
-    required: true,
-  },
-  currentProblemIndex: {
-    type: Number,
-    required: true,
-  },
-  userAnswers: {
-    type: Array,
-    required: true,
-  },
+  problem: Object,
+  currentProblemIndex: Number,
+  userAnswers: Array,
 });
 
+const isAgainViewProblem = ref(false);
 const options = computed(() =>
   Object.entries(problem)
     .filter(([key]) => key.startsWith("option"))
     .map(([, value]) => value),
 );
 const emit = defineEmits(["selectAnswer"]);
+
+const addAgainViewProblem = async () => {
+  await againViewProblemAPI.addAgainViewProblem({
+    problem_id: problem.id,
+  });
+  isAgainViewProblem.value = true;
+  toast.add({
+    severity: "success",
+    summary: "다시 볼 문제 추가",
+    detail: "다시 볼 문제에 추가되었습니다.",
+    life: 3000,
+  });
+};
+
+const deleteAgainViewProblem = async () => {
+  await againViewProblemAPI.delete(problem.id);
+  isAgainViewProblem.value = false;
+  toast.add({
+    severity: "success",
+    summary: "다시 볼 문제 삭제",
+    detail: "다시 볼 문제에서 삭제되었습니다.",
+    life: 3000,
+  });
+};
+
+watch(
+  () => problem.id,
+  async (problemId) => {
+    const user = await authAPI.getCurrentUser();
+    const data = await againViewProblemAPI.getByProblemId(user.id, problemId);
+    if (data) {
+      isAgainViewProblem.value = true;
+    }
+  },
+  { immediate: true },
+);
 </script>
 <template>
   <article class="flex flex-col w-[1000px] mx-auto">
     <div class="flex items-center gap-4 pb-6 w-full border-b">
-      <h2>문제 {{ currentProblemIndex + 1 }}</h2>
+      <h2>문제 {{ currentProblemIndex + 1 }} : {{ problem.title }}</h2>
       <Button
+        v-if="isAgainViewProblem"
+        @click="deleteAgainViewProblem"
+        label="다시 볼 문제"
+        icon="pi pi-flag-fill"
+        size="small"
+        severity="secondary"
+      />
+      <Button
+        v-else
+        @click="addAgainViewProblem"
         label="다시 볼 문제"
         icon="pi pi-flag"
         size="small"
         severity="secondary"
-        class="!bg-navy-4 !text-white"
       />
     </div>
     <div
       v-html="
-        `<p class='mt-6 mb-12 break-keep'>화재 예방을 위해 건물의 소방 설비를 점검하는 과정에서 화재 경보기의 배터리가 모두 방전되어 작동하지 않는 것을 발견했습니다. 건물주는 이를 교체할 예산이 부족하다고 주장하며 당장 조치를 취하기 어렵다고 말했습니다. 이러한 상황에서 소방 공무원으로서 어떤 절차를 통해 문제를 해결할 것인지 구체적으로 설명하세요. 또한, 건물주의 협조를 얻기 위한 설득 방법과 이를 실행하지 않을 경우의 법적 조치에 대해 설명하세요. 마지막으로, 이런 일이 반복되지 않도록 예방 조치를 제안해보세요.</p>`
+        `<p class='mt-6 break-keep'>${problem.question}</p>
+        <div class='flex justify-center mt-6 mb-12'>
+          <img src='${problem.image_src}' alt='문제 이미지' />
+        </div>`
       "
     ></div>
-    <div class="flex flex-col gap-4">
+    <div class="flex flex-col gap-4 mb-20">
       <div
-        v-for="(description, index) in options"
+        v-for="(option, index) in options"
         :key="index"
         class="flex items-center"
       >
@@ -60,9 +103,7 @@ const emit = defineEmits(["selectAnswer"]);
         >
           {{ index + 1 }}
         </button>
-        <label :for="index" class="pl-3 cursor-pointer">{{
-          description
-        }}</label>
+        <label :for="index" class="pl-3 cursor-pointer"> {{ option }}</label>
       </div>
     </div>
   </article>
