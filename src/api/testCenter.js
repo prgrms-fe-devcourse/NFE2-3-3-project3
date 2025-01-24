@@ -7,18 +7,54 @@ import { supabase } from ".";
  * @returns
  */
 const add = async (body) => {
-  await supabase.from("test_center").insert([body]).select();
+  try {
+    const { data, error } = await supabase
+      .from("test_center")
+      .insert([body])
+      .select();
+
+    if (error) throw error;
+    return data[0]; // 첫 번째 객체 반환
+  } catch (error) {
+    console.error("시험장 생성 중 오류:", error);
+    return null;
+  }
 };
 
 // READ
 const getAll = async () => {
-  await supabase.from("test_center").select("workbook_id, created_at");
+  const { data, error } = await supabase
+    .from("test_center")
+    .select("workbook_id, created_at");
+  if (error) throw error;
+  return data;
 };
+
 const getUid = async (uid) => {
-  await supabase
+  const { data, error } = await supabase
     .from("test_center")
     .select("workbook_id, created_at")
     .eq("uid", uid);
+  if (error) throw error;
+  return data;
+};
+
+const getAllFields = async (uid) => {
+  const { data, error } = await supabase
+    .from("test_center")
+    .select(
+      `
+      *,
+      workbook:workbook_id (
+        title,
+        workbook_problem(count)
+      ),
+      confirmed_count:invite(count).filter(participate.eq(true))
+    `,
+    )
+    .eq("uid", uid);
+  if (error) throw error;
+  return data;
 };
 
 // UPDATE
@@ -37,4 +73,5 @@ export const testCenterAPI = {
   getUid,
   updateStartTime,
   updateEndTime,
+  getAllFields,
 };
