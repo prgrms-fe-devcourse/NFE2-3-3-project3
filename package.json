@@ -17,6 +17,7 @@
     "highlight.js": "^11.11.1",
     "lowlight": "^2.9.0",
     "pinia": "^2.3.0",
+    "pinia-plugin-persistedstate": "^4.2.0",
     "primeicons": "^7.0.0",
     "primevue": "^4.2.5",
     "swiper": "^11.2.1",
