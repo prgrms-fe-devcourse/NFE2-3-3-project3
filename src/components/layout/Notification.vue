@@ -1,7 +1,7 @@
 <script setup>
 import { supabase } from "@/api";
 import { notificationAPI } from "@/api/notification";
-import { Button, Menu, OverlayBadge } from "primevue";
+import { Button, Menu } from "primevue";
 import { ref, onBeforeMount, nextTick } from "vue";
 import { RouterLink } from "vue-router";
 import EmptyText from "@/components/layout/EmptyText.vue";
@@ -33,10 +33,7 @@ supabase
     ({ new: newNotification }) => {
       if (user.value?.id !== newNotification.target_uid) return;
 
-      notifications.value = notifications.value.map((notification) => {
-        if (notification.id !== newNotification.id) return newNotification;
-        return { ...notification, read: true };
-      });
+      fetchNotifications();
     },
   )
   .subscribe();
