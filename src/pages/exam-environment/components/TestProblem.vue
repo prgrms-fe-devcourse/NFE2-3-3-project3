@@ -77,12 +77,17 @@ watch(
       />
     </div>
     <div
+      v-if="problem.image_src"
       v-html="
         `<p class='mt-6 break-keep'>${problem.question}</p>
         <div class='flex justify-center mt-6 mb-12'>
           <img src='${problem.image_src}' alt='문제 이미지' />
         </div>`
       "
+    ></div>
+    <div
+      v-else
+      v-html="`<p class='mt-6 mb-12 break-keep'>${problem.question}</p>`"
     ></div>
     <div class="flex flex-col gap-4 mb-20">
       <div
