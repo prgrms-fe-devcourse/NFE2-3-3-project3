@@ -37,13 +37,14 @@ const fetchFollowing = async () => {
       const followData = await followAPI.getFollowing(authStore.user.id);
 
       // 데이터 확인
-      // console.log("followData:", followData);
+      console.log("followData:", followData);
 
       // followingUsers 값 생성
       followingUsers.value = followData.map((item) => ({
         email: item.following.email,
         nickname: item.following.name || item.following.email.split("@")[0],
         profileImage: item.following.avatar_url,
+        uid: item.following.id, // uid 값을 올바르게 설정
       }));
     }
   } catch (error) {
@@ -69,6 +70,7 @@ const searchUserByEmail = async () => {
           email: foundUser.email,
           nickname: foundUser.name || foundUser.email.split("@")[0],
           profileImage: foundUser.avatar_url,
+          uid: foundUser.id, // uid 값을 올바르게 설정
         },
       ];
     } else {
@@ -185,6 +187,16 @@ watchEffect(() => {
     console.error("세션 정보 파싱 중 에러 발생:", error);
   }
 });
+
+watchEffect(() => {
+  selectedUsers.value = props.participants.map(user => ({
+    ...user,
+    uid: user.uid || user.id, // uid 값을 올바르게 설정
+  }));
+  shareOption.value = props.shareOption;
+  console.log("Selected users:", selectedUsers.value); // 선택된 사용자 로그 출력
+});
+
 </script>
 
 <template>
@@ -256,9 +268,11 @@ watchEffect(() => {
     </div>
 
     <!-- 초대된 참가자 목록 -->
-    <section class="rounded-xl bg-beige-1 w-full px-5 py-3 h-full">
+    <section
+      class="rounded-xl bg-beige-1 w-full px-5 py-3 h-full flex flex-col"
+    >
       <h4 class="font-medium mb-4">초대된 참가자</h4>
-      <ul class="overflow-auto divide-y divide-gray-100">
+      <ul class="overflow-auto divide-y divide-gray-100 flex-grow">
         <UserListItem
           v-for="user in selectedUsers"
           :key="user.email"
