@@ -29,7 +29,7 @@ import seeMyProblems from "@/assets/icons/my-problems/see-my-problems.svg";
 import sharedIcon from "@/assets/icons/my-problem-sets/share.svg";
 import { workbookAPI } from "@/api/workbook";
 import { problemAPI } from "@/api/problem";
-import { SORTS } from "@/const/sorts";
+import { SORT, SORTS } from "@/const/sorts";
 import EmptyText from "./EmptyText.vue";
 
 const authStore = useAuthStore();
@@ -160,11 +160,11 @@ const sortedProblems = computed(() => {
 
   const problems = [...props.problems];
   switch (sort.value?.value) {
-    case "최신순":
+    case SORT.latest:
       return problems.sort(
         (a, b) => new Date(b.created_at) - new Date(a.created_at),
       );
-    case "좋아요 많은 순":
+    case SORT.likes:
       return problems.sort(
         (a, b) => (b.likes.length || 0) - (a.likes.length || 0),
       );

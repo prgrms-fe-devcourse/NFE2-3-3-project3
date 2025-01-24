@@ -1,4 +1,9 @@
 export const SORTS = [
-  { name: "최신순", value: "최신순" },
-  { name: "좋아요 많은 순", value: "좋아요 많은 순" },
+  { name: SORT.latest, value: SORT.latest },
+  { name: SORT.likes, value: SORT.likes },
 ];
+
+export const SORT = {
+  latest: "최신순",
+  likes: "좋아요 많은 순",
+};

@@ -3,7 +3,7 @@ import Search from "@/components/layout/Search.vue";
 import { ref, watchEffect, computed, watch } from "vue";
 import { Paginator, Select } from "primevue";
 import ProblemSet from "@/components/layout/ProblemSet.vue";
-import { SORTS } from "@/const/sorts";
+import { SORT, SORTS } from "@/const/sorts";
 import { workbookAPI } from "@/api/workbook";
 import { formatDate } from "@/utils/formatDate";
 import EmptyText from "@/components/layout/EmptyText.vue";
@@ -17,11 +17,11 @@ const rows = ref(4);
 const sortedProblemSets = computed(() => {
   const newProblemSets = [...problemSets.value];
   switch (sort.value?.value) {
-    case "최신순":
+    case SORT.latest:
       return newProblemSets
         .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
         .slice(first.value, first.value + rows.value);
-    case "좋아요 많은 순":
+    case SORT.likes:
       return newProblemSets
         .sort((a, b) => (b.likes.length || 0) - (a.likes.length || 0))
         .slice(first.value, first.value + rows.value);
