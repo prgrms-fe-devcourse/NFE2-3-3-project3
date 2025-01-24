@@ -3,7 +3,7 @@ import { ref, computed, watchEffect } from "vue";
 import ExamCard from "@/pages/exam-room/components/ExamCard.vue";
 import InvitedExamCard from "./components/InvitedExamCard.vue";
 import createIcon from "@/assets/icons/exam-room/edit_square.svg";
-import { RouterLink } from "vue-router";
+import { RouterLink, useRouter } from "vue-router";
 import { testCenterAPI } from "@/api/testCenter";
 import { useAuthStore } from "@/store/authStore";
 import { inviteAPI } from "@/api/invite";
@@ -143,7 +143,9 @@ watchEffect(fetchExams);
           :key="exam.id"
           class="basis-[calc(25%-1.2rem)]"
         >
-          <ExamCard v-bind="exam" :showEditButtons="false" />
+          <RouterLink :to="`/exam/${exam.id}`">
+            <ExamCard v-bind="exam" :showEditButtons="false" />
+          </RouterLink>
         </li>
       </ul>
     </section>
