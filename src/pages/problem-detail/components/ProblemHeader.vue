@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, watchEffect, onBeforeUnmount } from "vue";
 import { Avatar } from "primevue";
+import { useAuthStore } from "@/store/authStore";
 import { pointAPI } from "@/api/point";
 import { getCurrentGradeInfo } from "@/utils/getCurrentGradeInfo";
 import shareIcon from "@/assets/icons/problem-board/fi-rr-share.svg";
@@ -31,7 +32,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["toggle-like", "menu-action"]);
+const emit = defineEmits(["toggle-like", "menu-action", "toggle-bookmark"]);
 const userGrade = ref(null);
 const showMenu = ref(false);
 const authStore = useAuthStore();
@@ -57,7 +58,6 @@ const toggleMenu = () => {
   showMenu.value = !showMenu.value;
 };
 
-// 메뉴 외부 클릭시 닫기
 const closeMenu = (event) => {
   const menu = document.querySelector(".menu-container");
   const button = document.querySelector(".menu-trigger");
@@ -66,18 +66,15 @@ const closeMenu = (event) => {
   }
 };
 
-// 프로필 이미지 없을 때 기본 이미지 불러오기
 const handleAvatarError = (e) => {
   e.target.src = defaultProfileIMG;
 };
 
-// 사용자 등급 정보 가져오기
 const fetchUserGrade = async () => {
   try {
     if (props.author?.id) {
       const pointData = await pointAPI.getAll(props.author.id);
       if (pointData && pointData.length > 0) {
-        // 전체 포인트 합계 계산
         const totalPoints = pointData.reduce(
           (sum, point) => sum + point.point,
           0,
@@ -144,14 +141,12 @@ onBeforeUnmount(() => {
         size="large"
       />
       <div>
-        <!-- 닉네임, 등급 -->
         <p>
           <strong aria-label="닉네임">{{ author?.name || "닉네임" }}</strong>
           <span class="ml-2 text-black-3">
             {{ userGrade?.name || "등급 없음" }}
           </span>
         </p>
-        <!-- 최종 수정일 -->
         <span class="text-black-3 text-sm" aria-label="최종 수정일">
           {{ new Date(problem?.updated_at).toLocaleDateString() }}
         </span>
@@ -184,6 +179,13 @@ onBeforeUnmount(() => {
             />
             <span>{{ likeCount }}</span>
           </button>
+          <button
+            v-if="!isAuthor"
+            @click="$emit('toggle-bookmark')"
+            class="flex items-center gap-1 px-2 py-1 rounded-full hover:bg-gray-100 transition"
+          >
+            <i class="pi pi-bookmark"></i>
+          </button>
         </div>
       </div>
 
@@ -197,7 +199,6 @@ onBeforeUnmount(() => {
           <i class="pi pi-ellipsis-h"></i>
         </button>
 
-        <!-- 커스텀 메뉴 -->
         <div
           v-if="showMenu"
           class="menu-container absolute right-0 top-12 mt-2 flex bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden flex-col"
@@ -227,21 +228,5 @@ onBeforeUnmount(() => {
 <style scoped>
 .menu-container {
   min-width: 220px;
-  animation: slideIn 0.2s ease-out;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-:deep(.pi) {
-  font-size: 1rem;
 }
 </style>

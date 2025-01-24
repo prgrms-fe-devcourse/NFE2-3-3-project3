@@ -61,7 +61,7 @@ export const commentAPI = {
   * @param {object} newComment - 생성할 댓글 데이터
   * @param {number} newComment.problem_id - 문제 ID (문제집 댓글이 아닌 경우)
   * @param {number} newComment.workbook_id - 문제집 ID (문제 댓글이 아닌 경우)
-  * @param {string} newComment.content - 댓글 내용
+  * @param {string} newComment.comment - 댓글 내용
   * @returns {object} 생성된 댓글 데이터
   */
  async createComment(newComment) {

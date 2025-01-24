@@ -3,25 +3,60 @@ import calendarIcon from "@/assets/icons/exam-room/fi-rr-calendar.svg";
 import userIcon from "@/assets/icons/exam-room/fi-rr-user.svg";
 import folderIcon from "@/assets/icons/exam-room/fi-rr-folder.svg";
 import timeFastIcon from "@/assets/icons/exam-room/fi-rr-time-fast.svg";
-import Button from "primevue/button";
+import { ref } from "vue";
 
 defineProps({
   title: {
-    default: "기본 초대된 시험",
+    type: String,
+    required: true,
   },
   participants: {
-    default: "닉네임",
+    type: Number,
+    required: true,
   },
   category: {
-    default: "정보처리기사 문제집",
+    type: String,
+    required: true,
   },
   examDate: {
-    default: "2025.01.18 15:00",
+    type: String,
+    required: true,
   },
   duration: {
-    default: "1시간 20분",
+    type: String,
+    required: true,
   },
 });
+
+const isProcessing = ref(false);
+
+const handleAccept = async () => {
+  if (isProcessing.value) return;
+  isProcessing.value = true;
+  try {
+    await inviteAPI.accept(userId, id);
+    alert("시험에 참여 승인되었습니다.");
+  } catch (error) {
+    console.error(error);
+    alert("승인 요청 처리 중 오류가 발생했습니다.");
+  } finally {
+    isProcessing.value = false;
+  }
+};
+
+const handleDeny = async () => {
+  if (isProcessing.value) return;
+  isProcessing.value = true;
+  try {
+    await inviteAPI.deny(id);
+    alert("시험 초대를 거절했습니다.");
+  } catch (error) {
+    console.error(error);
+    alert("거절 요청 처리 중 오류가 발생했습니다.");
+  } finally {
+    isProcessing.value = false;
+  }
+};
 </script>
 
 <template>
@@ -31,7 +66,7 @@ defineProps({
     </div>
     <div class="flex items-center gap-2 mb-2 text-sm">
       <img :src="userIcon" alt="user icon" class="w-3 h-3" />
-      <span>{{ participants }}명</span>
+      <span>{{ participants }}</span>
     </div>
     <div class="flex items-center gap-2 mb-2 text-sm">
       <img :src="folderIcon" alt="folder icon" class="w-3 h-3" />
@@ -48,12 +83,16 @@ defineProps({
 
     <div class="card item-between gap-2">
       <button
-        class="bg-white text-gray-600 p-2 rounded-lg font-medium hover:bg-gray-50 w-1/2 flex justify-center items-center"
+        @click="handleAccept"
+        :disabled="isProcessing"
+        class="bg-white text-gray-600 px-2 py-1 rounded-md font-medium hover:bg-gray-50 w-1/2 flex justify-center items-center"
       >
         승인
       </button>
       <button
-        class="bg-red-500 text-white p-2 rounded-lg font-medium hover:bg-red-600 w-1/2 flex justify-center items-center"
+        @click="handleDeny"
+        :disabled="isProcessing"
+        class="bg-red-500 text-white px-2 py-1 rounded-md font-medium hover:bg-red-600 w-1/2 flex justify-center items-center"
       >
         거절
       </button>

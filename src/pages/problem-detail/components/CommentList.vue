@@ -11,26 +11,12 @@ import { useToast } from 'primevue/usetoast';
 const toast = useToast();
 
 const props = defineProps({
-  comments: {
-    type: Array,
-    required: true,
-  },
-  isLoading: {
-    type: Boolean,
-    default: false,
-  },
-  currentPage: {
-    type: Number,
-    required: true,
-  },
-  totalPages: {
-    type: Number,
-    required: true,
-  },
-  value: {
-    type: String,
-    default: "",
-  },
+  comments: Array,
+  isLoading: Boolean,
+  currentPage: Number,
+  totalPages: Number,
+  value: String,
+  problemId: Number,
 });
 
 const emit = defineEmits(["update:value", "submit-comment", "page-change"]);
@@ -144,13 +130,13 @@ watchEffect(async () => {
     </div>
 
     <div v-else class="w-full">
-      <div v-if="comments?.length === 0" class="text-center text-gray-500 py-4">
+      <h3 class="text-gray-2 text-2xl mb-4">댓글</h3>
+      <div v-if="comments?.length === 0" class="text-center text-gray-500 py-4 mb-6">
         첫 번째 댓글을 작성해보세요.
       </div>
-      <Comment
+      <div
         v-else
-        v-for="comment in comments"
-        :comment="comment"
+        v-for="comment in formattedComments"
         :key="comment.id"
         class="mb-4"
       >
@@ -191,6 +177,7 @@ watchEffect(async () => {
     <textarea
       :value="value"
       @input="emit('update:value', $event.target.value)"
+      @keypress="handleKeyPress"
       class="w-full h-[133px] resize-none pt-3 px-6 rounded-lg pretend text-[14px] bg-[#f0f0f0] border-[#d4d4d4]"
       placeholder="문제집에 대해 어떻게 생각하시나요?"
     ></textarea>
@@ -199,7 +186,7 @@ watchEffect(async () => {
       :rows="10"
       :totalRecords="totalPages"
       :page="currentPage"
-      @page="emit('page-change', $event.page)"
+      @page="onPageChange"
     />
   </div>
 </template>
