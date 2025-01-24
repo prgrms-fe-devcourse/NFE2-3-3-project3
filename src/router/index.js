@@ -37,7 +37,7 @@ const routes = [
     component: () => import("@/pages/problem-editor/ProblemEditor.vue"),
   },
   {
-    path: "/exam",
+    path: "/exam/:examRoomId",
     name: "ExamEnvironment",
     component: () => import("@/pages/exam-environment/ExamEnvironment.vue"),
   },

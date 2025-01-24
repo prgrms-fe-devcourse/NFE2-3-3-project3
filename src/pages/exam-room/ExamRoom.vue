@@ -139,11 +139,11 @@ watchEffect(fetchExams);
 
       <ul v-else class="flex flex-wrap gap-6">
         <li
-          v-for="exam in ongoingExams"
+          v-for="exam in visibleOngoingExams"
           :key="exam.id"
           class="basis-[calc(25%-1.2rem)]"
         >
-          <ExamCard v-bind="exam" />
+          <ExamCard v-bind="exam" :showEditButtons="false" />
         </li>
       </ul>
     </section>
@@ -176,7 +176,7 @@ watchEffect(fetchExams);
           :key="exam.id"
           class="basis-[calc(25%-1.2rem)]"
         >
-          <ExamCard v-bind="exam" />
+          <ExamCard v-bind="exam" :showEditButtons="true" />
         </li>
       </ul>
     </section>
