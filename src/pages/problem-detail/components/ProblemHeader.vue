@@ -1,11 +1,13 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, watchEffect, onBeforeUnmount } from "vue";
 import { Avatar } from "primevue";
 import { pointAPI } from "@/api/point";
 import { getCurrentGradeInfo } from "@/utils/getCurrentGradeInfo";
 import shareIcon from "@/assets/icons/problem-board/fi-rr-share.svg";
 import thumbsUpIcon from "@/assets/icons/problem-board/fi-rr-thumbs-up.svg";
 import defaultProfileIMG from "@/assets/default-profile-image.svg";
+import { problemLikeAPI } from "@/api/problemLike";
+import { supabase } from "@/api/index.js";
 
 const props = defineProps({
   problem: {
@@ -32,6 +34,24 @@ const props = defineProps({
 const emit = defineEmits(["toggle-like", "menu-action"]);
 const userGrade = ref(null);
 const showMenu = ref(false);
+const authStore = useAuthStore();
+
+const hasLiked = ref(false);
+const likeCount = ref(0);
+
+const getCurrentUserId = async () => {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.user?.id;
+  } catch (error) {
+    console.error("사용자 정보 가져오기 실패:", error);
+    return null;
+  }
+};
+
+const isAuthor = computed(() => {
+  return props.author?.id === authStore.user?.id;
+});
 
 const toggleMenu = () => {
   showMenu.value = !showMenu.value;
@@ -71,7 +91,40 @@ const fetchUserGrade = async () => {
   }
 };
 
-onMounted(() => {
+// 초기 좋아요 상태와 카운트 로드
+const loadLikeStatus = async () => {
+  const currentUserId = await getCurrentUserId();
+  if (!props.problem?.id || !currentUserId) return;
+  
+  try {
+    const [status, count] = await Promise.all([
+      problemLikeAPI.getUserLikeStatus(currentUserId, props.problem.id),
+      problemLikeAPI.getLikeCount(props.problem.id)
+    ]);
+    
+    hasLiked.value = status;
+    likeCount.value = count;
+  } catch (error) {
+    console.error("좋아요 상태 로딩 실패:", error);
+  }
+};
+
+// 좋아요 토글 핸들러
+const handleToggleLike = async () => {
+  const currentUserId = await getCurrentUserId();
+  if (!currentUserId) return;
+
+  try {
+    const result = await problemLikeAPI.toggle(currentUserId, props.problem.id);
+    hasLiked.value = result.isLiked;
+    likeCount.value += result.count;
+  } catch (error) {
+    console.error("좋아요 처리 실패:", error);
+  }
+};
+
+watchEffect(() => {
+  loadLikeStatus();
   fetchUserGrade();
   document.addEventListener("click", closeMenu);
 });
@@ -117,7 +170,7 @@ onBeforeUnmount(() => {
             <span>{{ problem?.shared ? "공개됨" : "미공개" }}</span>
           </div>
           <button
-            @click="$emit('toggle-like')"
+            @click="handleToggleLike"
             class="flex items-center gap-1 px-2 py-1 rounded-full transition"
             :class="
               hasLiked ? 'bg-orange-100 text-orange-500' : 'hover:bg-gray-100'
@@ -136,6 +189,7 @@ onBeforeUnmount(() => {
 
       <div class="relative flex items-center justify-center">
         <button
+          v-if="isAuthor"
           class="menu-trigger w-12 h-12 rounded-full hover:bg-gray-100 transition-colors flex items-center justify-center"
           @click="toggleMenu"
           aria-label="더보기"

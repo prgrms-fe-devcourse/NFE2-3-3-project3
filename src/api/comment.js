@@ -107,15 +107,32 @@ async updateComment(id, commentData) {
  * @param {number} id - 댓글 ID
  * @returns {boolean} 삭제 성공 여부
  */
+// async deleteComment(id) {
+//   try {
+//     const { data, error } = await supabase
+//       .from("comment")
+//       .delete()
+//       .eq('id', id)
+//       .select();
+
+//     if (error) throw error;
+//     return data;
+//   } catch (error) {
+//     console.error(error);
+//     throw error;
+//   }
+// },
+
 async deleteComment(id) {
   try {
-    const { error } = await supabase
+    const response = await supabase
       .from("comment")
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
-    return true;
+      .delete().eq('id', id)
+      .select();
+      console.log('Delete response:', response);
+    
+    if (response.error) throw response.error;
+    return response.data;
   } catch (error) {
     console.error(error);
     throw error;
