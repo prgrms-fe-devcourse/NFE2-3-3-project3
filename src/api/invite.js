@@ -33,22 +33,31 @@ const add = async (invites) => {
 
 const accept = async (userId, id) => {
   try {
-    const { data, error: updateError } = await supabase
+    const { data: inviteData, error: updateError } = await supabase
       .from("invite")
       .update({ participate: true })
       .eq("id", id)
       .select()
       .single();
+
     if (updateError) throw updateError;
 
     const { data: result, error: upsertError } = await supabase
       .from("test_center")
-      .upsert({ ...data, uid: userId, created_at: new Date() });
+      .upsert([{
+        uid: userId,
+        workbook_id: inviteData.workbook_id,
+        start_date: inviteData.start_date,
+        end_date: inviteData.end_date,
+        created_at: new Date()
+      }])
+      .select()
 
     if (upsertError) throw upsertError;
     return result;
   } catch (error) {
     console.error(error);
+    throw error;
   }
 };
 

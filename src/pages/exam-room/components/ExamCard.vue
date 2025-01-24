@@ -68,7 +68,7 @@ const problemCount = computed(() => {
         <img :src="userIcon" alt="user icon" class="w-3 h-3" />
         <span>{{ (confirmed_count?.[0]?.count || 0) + 1 }}명</span>
       </li>
-      <!-- 종료 시간 -->
+      <!-- 시작 시간 -->
       <li class="flex items-center gap-2 text-sm">
         <img :src="calendarIcon" alt="calendar icon" class="w-3 h-3" />
         <span>{{ formattedDate }}</span>

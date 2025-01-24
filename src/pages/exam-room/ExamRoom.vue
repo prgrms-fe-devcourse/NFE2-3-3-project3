@@ -60,6 +60,11 @@ const visibleInvitedExams = computed(() => {
   return invitedExams.value.slice(0, invitedExamsDisplayCount.value);
 });
 
+// visibleInvitedExams 값 확인
+watchEffect(() => {
+  console.log(visibleInvitedExams.value);
+});
+
 // 진행중인 시험 더보기 버튼 표시 여부
 const showOngoingExamsMoreButton = computed(() => {
   return ongoingExams.value.length > 4;
@@ -102,7 +107,7 @@ const fetchExams = async () => {
   if (inviteResponse) {
     invitedExams.value = inviteResponse.filter((invite) => {
       const endDate = new Date(invite.test_center.end_date);
-      return !invite.participate && now <= endDate;
+      return now <= endDate;
     });
   }
 };
@@ -144,7 +149,7 @@ watchEffect(fetchExams);
           class="basis-[calc(25%-1.2rem)]"
         >
           <RouterLink :to="`/exam/${exam.id}`">
-            <ExamCard v-bind="exam" :showEditButtons="false" />
+            <ExamCard v-bind="{ ...exam, showEditButtons: false }" />
           </RouterLink>
         </li>
       </ul>
@@ -178,7 +183,7 @@ watchEffect(fetchExams);
           :key="exam.id"
           class="basis-[calc(25%-1.2rem)]"
         >
-          <ExamCard v-bind="exam" :showEditButtons="true" />
+          <ExamCard v-bind="{ ...exam, showEditButtons: true }" />
         </li>
       </ul>
     </section>
@@ -207,11 +212,11 @@ watchEffect(fetchExams);
 
       <ul v-else class="flex flex-wrap gap-6">
         <li
-          v-for="exam in visibleInvitedExams"
-          :key="exam.id"
+          v-for="invite in visibleInvitedExams"
+          :key="invite.id"
           class="basis-[calc(25%-1.2rem)]"
         >
-          <InvitedExamCard v-bind="exam" />
+          <InvitedExamCard v-bind="{ ...invite, ...invite.test_center }" />
         </li>
       </ul>
     </section>

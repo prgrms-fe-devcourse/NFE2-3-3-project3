@@ -31,6 +31,16 @@ const getUid = async (uid) => {
   return data;
 };
 
+const getOne = async (workbook_id) => {
+  const { data, error } = await supabase
+    .from("workbook")
+    .select("*")
+    .eq("id", workbook_id)
+    .single();
+  if (error) throw error;
+  return data;
+};
+
 const getAllSharedByUserId = async (uid) => {
   try {
     const { data, error } = await supabase
@@ -97,6 +107,7 @@ export const workbookAPI = {
   getAll,
   getAllSharedByUserId,
   getUid,
+  getOne,
   updateTilte,
   updateDescription,
   remove,
