@@ -30,6 +30,7 @@ import sharedIcon from "@/assets/icons/my-problem-sets/share.svg";
 import { workbookAPI } from "@/api/workbook";
 import { problemAPI } from "@/api/problem";
 import { SORTS } from "@/const/sorts";
+import EmptyText from "./EmptyText.vue";
 
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
@@ -251,9 +252,7 @@ onBeforeUnmount(() => {
       >
         <!-- 검색 결과가 없는 경우 -->
         <template #empty>
-          <div class="flex items-center justify-center p-6 text-gray-500">
-            검색된 문제가 없습니다...
-          </div>
+          <EmptyText class="py-6">검색된 문제가 없습니다...</EmptyText>
         </template>
 
         <!-- 체크박스 선택 -->

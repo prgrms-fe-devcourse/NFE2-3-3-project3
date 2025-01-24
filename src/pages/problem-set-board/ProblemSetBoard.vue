@@ -6,6 +6,7 @@ import ProblemSet from "@/components/layout/ProblemSet.vue";
 import { SORTS } from "@/const/sorts";
 import { workbookAPI } from "@/api/workbook";
 import { formatDate } from "@/utils/formatDate";
+import EmptyText from "@/components/layout/EmptyText.vue";
 
 const problemSets = ref([]);
 const sorts = ref(SORTS);
@@ -64,7 +65,13 @@ watchEffect(async () => {
         />
       </div>
 
-      <div class="grid grid-cols-4 gap-4">
+      <div
+        v-if="!problemSets.length"
+        class="flex justify-center items-center h-40"
+      >
+        <EmptyText>검색된 문제집이 없습니다...</EmptyText>
+      </div>
+      <div v-else class="grid grid-cols-4 gap-4">
         <ProblemSet
           v-for="problemSet in sortedProblemSets"
           :problemSet="problemSet"
