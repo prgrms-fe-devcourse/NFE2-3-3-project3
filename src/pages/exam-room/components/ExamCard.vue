@@ -5,64 +5,70 @@ import folderIcon from "@/assets/icons/exam-room/fi-rr-folder.svg";
 import timeFastIcon from "@/assets/icons/exam-room/fi-rr-time-fast.svg";
 import pencilIcon from "@/assets/icons/exam-room/fi-rr-pencil.svg";
 import trashIcon from "@/assets/icons/exam-room/fi-rr-trash.svg";
+import { computed } from "vue";
 
-defineProps({
-  title: {
-    default: "기본 시험",
+const props = defineProps({
+  id: Number,
+  workbook_id: Number,
+  workbook: {
+    type: Object,
+    required: true,
   },
-  participants: {
-    default: 2,
-  },
-  category: {
-    default: "정보처리기사 문제집",
-  },
-  examDate: {
-    default: "2025.01.18 15:00",
-  },
-  duration: {
-    default: "1시간",
-  },
-  questionCount: {
-    default: 40,
-  },
+  start_date: String,
+  end_date: String,
+});
+
+const examDuration = computed(() => {
+  if (!props.start_date || !props.end_date) return "";
+  const diff = new Date(props.end_date) - new Date(props.start_date);
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  return `${hours}시간 ${minutes}분`;
+});
+
+const formattedDate = computed(() => {
+  return props.start_date
+    ? new Date(props.start_date).toLocaleString("ko-KR", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "";
+});
+
+const problemCount = computed(() => {
+  return props.workbook?.workbook_problem?.[0]?.count ?? 0;
 });
 </script>
 
 <template>
   <div class="bg-orange-3 rounded-lg p-4 w-full text-gray-2">
-    <div class="item-between mb-4" aria-label="title-wrapper">
-      <h3 class="font-medium text-lg">{{ title }}</h3>
-      <div class="item-middle">
-        <button
-          class="hover:bg-black-1/10 transition w-8 h-8 rounded-full flex justify-center items-center box-border"
-        >
-          <img :src="pencilIcon" alt="시험 수정" class="w-4 h-4" />
-        </button>
-        <button
-          class="hover:bg-black-1/10 transition w-8 h-8 rounded-full flex justify-center items-center box-border"
-        >
-          <img :src="trashIcon" alt="시험 삭제" class="w-4 h-4" />
-        </button>
+    <div class="item-between mb-4">
+      <h3 class="font-medium text-lg">{{ workbook?.title }}</h3>
+    </div>
+    <div class="flex flex-col gap-2">
+      <!-- 참가자 수 표시 추가 -->
+      <div class="flex items-center gap-2 text-sm">
+        <img :src="userIcon" alt="user icon" class="w-3 h-3" />
+        <span>{{ (confirmed_count?.[0]?.count || 0) + 1 }}명</span>
       </div>
-    </div>
-    <div class="flex items-center gap-2 mb-2 text-sm">
-      <img :src="userIcon" alt="user icon" class="w-3 h-3" />
-      <span>{{ participants }}명</span>
-    </div>
-    <div class="flex items-center gap-2 mb-2 text-sm">
-      <img :src="folderIcon" alt="folder icon" class="w-3 h-3" />
-      <span>{{ category }}</span>
-    </div>
-    <div class="flex items-center gap-2 mb-2 text-sm">
-      <img :src="calendarIcon" alt="calendar icon" class="w-3 h-3" />
-      <span>{{ examDate }}</span>
-    </div>
-    <div class="flex items-center justify-between mb-2">
-      <div class="flex items-center gap-2">
-        <img :src="timeFastIcon" alt="time icon" class="w-3 h-3" />
-        <span class="text-sm">{{ duration }} 소요</span>
+      <div class="flex items-center gap-2 text-sm">
+        <img :src="folderIcon" alt="folder icon" class="w-3 h-3" />
+        <span>{{ workbook?.title }}</span>
       </div>
-      <span class="font-semibold">{{ questionCount }}문제</span>
+      <div class="flex items-center gap-2 text-sm">
+        <img :src="calendarIcon" alt="calendar icon" class="w-3 h-3" />
+        <span>{{ formattedDate }}</span>
+      </div>
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2 text-sm">
+          <img :src="timeFastIcon" alt="time icon" class="w-3 h-3" />
+          <span>{{ examDuration }} 소요</span>
+        </div>
+        <span class="font-semibold">{{ problemCount }}문제</span>
+      </div>
     </div>
   </div>
 </template>
