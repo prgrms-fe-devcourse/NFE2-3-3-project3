@@ -56,6 +56,7 @@ const { exams } = defineProps({
             <AvatarGroup>
               <Avatar
                 v-for="{ user_info } in slotProps.data.users.slice(0, 3)"
+                v-tooltip="user_info.name"
                 :image="user_info.avatar_url"
                 shape="circle"
               />

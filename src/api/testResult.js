@@ -30,25 +30,22 @@ const getAllByUserId = async (userId) => {
   try {
     const { data, error } = await supabase
       .from("test_result")
-      .select("*, test_center(*)")
+      .select("*, test_center(*, workbook(id, title, description))")
       .eq("uid", userId);
 
     const results = await Promise.all(
       data.map(async (test_result) => {
         const { data: users, error } = await supabase
           .from("test_result")
-          .select("user_info(avatar_url)")
+          .select("user_info(name, avatar_url)")
           .eq("test_center_id", test_result.test_center_id);
 
-        const { data: workbook, workbookError } = await supabase
-          .from("workbook")
-          .select("id, title")
-          .eq("id", test_result.test_center.workbook_id)
-          .single();
-
         if (error) throw error;
-        if (workbookError) throw error;
-        return { ...test_result, users, workbook };
+        return {
+          ...test_result,
+          users,
+          workbook: test_result.test_center.workbook,
+        };
       }),
     );
 
@@ -93,7 +90,7 @@ const search = async (userId, keyword, startDate, endDate) => {
       data.map(async (test_result) => {
         const { data: users, error } = await supabase
           .from("test_result")
-          .select("user_info(avatar_url)")
+          .select("user_info(name, avatar_url)")
           .eq("test_center_id", test_result.test_center_id);
 
         if (error) throw error;
