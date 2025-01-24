@@ -16,6 +16,8 @@ import "swiper/css";
 import "swiper/css/effect-cards";
 import { useAuthStore } from "@/store/authStore";
 import { testCenterAPI } from "@/api/testCenter";
+import { inviteAPI } from "@/api/invite";
+
 
 const swiperInstance = ref(null);
 const currentTab = ref(0);
@@ -115,19 +117,46 @@ const submitExam = async () => {
       ),
     };
 
+    console.log("Exam data to be sent:", body); // 시험 데이터 로그 출력
+
     const result = await testCenterAPI.add(body);
 
-    router.push("/exam-room");
+    console.log("Test center creation result:", result); // 시험장 생성 결과 로그 출력
+
+    // 시험장 생성이 성공하면 초대 생성
+    if (result && result.id) {
+      const invites = examData.value.participants
+        .filter(participant => participant.email !== currentUser.email) // 로그인한 계정 제외
+        .map((participant) => ({
+          target_uid: participant.uid,
+          test_center_id: result.id,
+        }));
+
+      console.log("Invites to be sent:", invites); // 초대 데이터 로그 출력
+
+      const inviteResult = await inviteAPI.add(invites);
+      console.log("Invite creation result:", inviteResult); // 초대 생성 결과 로그 출력
+
+      if (inviteResult) {
+        router.push("/exam-room");
+      } else {
+        throw new Error("초대 생성 실패");
+      }
+    } else {
+      console.error("시험장 생성 실패: result 객체가 유효하지 않습니다.", result);
+      throw new Error("시험장 생성 실패");
+    }
   } catch (error) {
     console.error("시험장 생성 실패:", error);
     toast.add({
       severity: "error",
       summary: "시험장 생성 실패",
-      detail: "시험장 생성 중 문제가 발생했습니다.",
+      detail: error.message || "시험장 생성 중 문제가 발생했습니다.",
       life: 3000,
     });
   }
 };
+
 </script>
 
 <template>
