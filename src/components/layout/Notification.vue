@@ -16,7 +16,7 @@ const notifications = ref([]);
 const menu = ref(null);
 
 supabase
-  .channel("custom-insert-channel")
+  .channel("notification-channel")
   .on(
     "postgres_changes",
     { event: "INSERT", schema: "public", table: "notification" },
