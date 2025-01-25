@@ -48,7 +48,7 @@ export const categoryAPI = {
 
   /**
    * @description 새로운 카테고리 생성 (중복 검사 포함)
-   * @param {object} newData - 새로 생성할 카테고리 데이터 
+   * @param {object} newData - 새로 생성할 카테고리 데이터
    * @param {string} newData.name - 카테고리 이름
    * @throws {Error} 동일한 이름의 카테고리가 이미 존재하는 경우 에러 반환
    * @returns {Array} 생성된 카테고리 데이터
@@ -56,11 +56,13 @@ export const categoryAPI = {
   async createCategory(newData) {
     try {
       // 1. 중복 검사
+      // TODO: .single 하면 406에러 생김
+      // https://github.com/supabase/supabase/issues/2395
       const { data: existing } = await supabase
         .from("category")
         .select("id")
         .eq("name", newData.name)
-        .single();
+        .maybeSingle();
 
       if (existing) {
         throw new Error("이미 존재하는 카테고리입니다.");
