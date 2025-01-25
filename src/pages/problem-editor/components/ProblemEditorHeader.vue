@@ -1,23 +1,29 @@
 <script setup>
-import { ref, reactive } from "vue";
+import { ref, reactive, onBeforeMount } from "vue";
 import arrowLeftPath from "@/assets/icons/problem-editor/arrow-left.svg";
 import folderPath from "@/assets/icons/problem-editor/folder.svg";
 import arrowTopPath from "@/assets/icons/problem-editor/arrow-top.svg";
 import { Listbox, InputText, Textarea, Button } from "primevue";
-
+import { workbookAPI } from "@/api/workbook";
+import { useAuthStore } from "@/store/authStore";
+const props = defineProps({
+  storedFolder: {
+    type: Object,
+  },
+});
 const emits = defineEmits([
   "submitProblems",
   "onGoingBack",
   "setProblemFolder",
 ]);
 
-const DEFAULT_FOLDER = { id: "기본 id", title: "기본 폴더 제목" };
+const { user } = useAuthStore();
 
 // 팝업 열림 상태
 const isFolderOpen = ref(false);
 const isCreateNewFolder = ref(false);
 // 선택된 폴더
-const selectedFolder = ref(DEFAULT_FOLDER.title);
+const selectedFolder = ref("");
 const createdNewFolder = reactive({ title: "", description: "" });
 
 // 폴더 토글 버튼 조작
@@ -25,7 +31,6 @@ const onClickFolder = () => {
   isFolderOpen.value = !isFolderOpen.value;
 };
 
-// TODO: 뒤로가기, 저장하기 Submit
 const onSubmit = () => {
   emits("submitProblems");
 };
@@ -36,15 +41,8 @@ const showNewFolderPopup = () => {
 
 // 초기값은 API에서 불러오기
 // my problemsets
-const problemSets = reactive([
-  DEFAULT_FOLDER,
-  { id: 11, title: "예제 문제집1" },
-  { id: 12, title: "예제 문제집2" },
-  { id: 13, title: "예제 문제집3" },
-  { id: 14, title: "예제 문제집4" },
-  { id: 15, title: "예제 문제집5" },
-]);
-const selectedProblemSet = ref(DEFAULT_FOLDER);
+const problemSets = reactive([]);
+const selectedProblemSet = ref({});
 
 const closeAllPopups = () => {
   isCreateNewFolder.value = false;
@@ -52,27 +50,51 @@ const closeAllPopups = () => {
 };
 
 //폴더 지정 함수
-const setFolder = ({ id, title }) => {
-  selectedFolder.value = title;
-  emits("setProblemFolder", id);
+const setFolder = (folder) => {
+  selectedFolder.value = folder.title;
+  emits("setProblemFolder", folder);
   console.log(selectedFolder);
   closeAllPopups();
 };
 
-const onCreateNewFolder = ({ title, description }) => {
-  // api 호출
-  // 임시로 받아온 데이터
-  const data = { id: 1, title: title };
-  setFolder(data);
-  problemSets.push(data);
-  selectedProblemSet.value = data;
+const onCreateNewFolder = async ({ title, description }) => {
+  try {
+    const data = await workbookAPI.add(title, description);
+    setFolder(data);
+    problemSets.push(data);
+    selectedProblemSet.value = data;
+  } catch (error) {
+    console.error("문제집 생성에 실패했습니다.");
+  }
 };
 
 const setFolderFromList = () => {
   if (!selectedProblemSet.value) {
-    setFolder(DEFAULT_FOLDER);
+    setFolder({});
   } else setFolder(selectedProblemSet.value);
 };
+
+onBeforeMount(async () => {
+  const folder = props.storedFolder || "";
+  if (folder) {
+    setFolder(folder);
+  }
+
+  // problemSet 불러오기
+  // 사용자 UID 기반 경로 설정
+  // TODO: 로그아웃 안했는데 user이 null이 됨 -> token 갱신 이슈?
+  if (!user) {
+    throw new Error("사용자 인증에 실패했습니다. 다시 로그인해주세요.");
+  }
+  const userId = user.id;
+  const userFolderData = await workbookAPI.getUid(userId);
+  console.log(userFolderData);
+  problemSets.push(...userFolderData);
+
+  const sharedFolderData = await workbookAPI.getShared(userId);
+  console.log(sharedFolderData);
+  problemSets.push(...sharedFolderData);
+});
 </script>
 <template>
   <header
@@ -168,7 +190,7 @@ const setFolderFromList = () => {
         </div>
       </div>
     </div>
-    <Button label="저장하기"></Button>
+    <Button label="저장하기" @click="emits('submitProblems')"></Button>
     <!-- 팝업 -->
   </header>
 </template>

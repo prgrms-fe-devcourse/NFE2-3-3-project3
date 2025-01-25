@@ -9,6 +9,8 @@ import {
   onBeforeUnmount,
   watchEffect,
   watch,
+  defineExpose,
+  toRaw,
 } from "vue";
 import {
   Listbox,
@@ -17,10 +19,14 @@ import {
   MultiSelect,
   InputText,
   StyleClass,
+  SelectButton,
 } from "primevue";
 
 import Editor from "@toast-ui/editor";
 import "@toast-ui/editor/dist/toastui-editor.css";
+import { storageAPI } from "@/api/storage";
+import { HtmlGenerator, parse } from "latexjs";
+import { categoryAPI } from "@/api/category";
 
 const props = defineProps({
   problemIdx: {
@@ -34,66 +40,63 @@ const props = defineProps({
       explanation: String,
       origin_source: String,
       problem_type: String,
-      category: String,
+      category: Array,
       image_src: String,
       option_one: String,
       option_two: String,
       option_three: String,
       option_four: String,
-      shared: String,
+      shared: Boolean,
     },
+    default: () => ({
+      title: "",
+      question: "",
+      answer: "",
+      explanation: "",
+      origin_source: "",
+      problem_type: "",
+      category: [],
+      image_src: "",
+      option_one: "",
+      option_two: "",
+      option_three: "",
+      option_four: "",
+      shared: false,
+    }),
   },
 });
 
 const emits = defineEmits(["updateListItem", "deleteProblem", "submitProblem"]);
+
+const setType = (type) => {
+  localProblem.type = type;
+  emits("updateListItem", "TYPE", type);
+};
 const PROBLEM_TYPES = ["4지선다", "O/X"];
 // 카테고리
-let CATEGORY = [
-  { name: "카테고리 1", value: 1 },
-  { name: "카테고리 2", value: 2 },
-  { name: "카테고리 3", value: 3 },
-];
+
+const category = reactive([]);
 
 const localProblem = reactive({
   ...props.problemContent,
-  category: CATEGORY.filter(
-    ({ name, value }) => props.problemContent.category == name,
-  ),
 });
-
-watch(
-  () => props.problemContent,
-  (newContent) => {
-    Object.assign(localProblem, newContent);
-  },
-  { deep: true },
-);
 
 const currentIdx = computed(() => {
   return props.problemIdx;
 });
 
-//업데이트 함수
-
-const setQuestion = (event) => {
-  // 에디터 값 가져오기
-};
-const setAnswer = (event) => {};
-
-const setExplanation = (event) => {};
-
 // 에디터 옵션
-const problemEditorElement = ref(null);
-let problemEditorInstance = null;
-
-const questionEditorElement = ref(null);
-
+const questionEditor = ref(null);
 let questionEditorInstance = null;
+
+const explanationEditor = ref(null);
+
+let explanationEditorInstance = null;
 
 // 카테고리 생성용
 const doesCategoryExist = computed(() => {
   console.log(filteredCategory.value);
-  return JSON.stringify(CATEGORY).indexOf(`${filteredCategory.value}`) === -1
+  return JSON.stringify(category).indexOf(`${filteredCategory.value}`) === -1
     ? false
     : true;
 });
@@ -102,62 +105,155 @@ const onFilterCategory = (event) => {
   filteredCategory.value = event.value;
 };
 
-const createCategory = () => {
-  // Ensure filteredCategory is not empty
+const createCategory = async () => {
   if (!filteredCategory.value.trim()) {
     console.error("Category name cannot be empty");
     return;
   }
 
-  const newCategory = {
-    name: filteredCategory.value,
-    value: CATEGORY.length + 1,
-  };
+  const newCategoryData = await categoryAPI.createCategory({
+    name: filteredCategory.value.trim(),
+  });
 
-  // Use spread operator to create a new array
-  CATEGORY = [...CATEGORY, newCategory];
-
-  // Set the category as an array with the new category object
-  localProblem.category = [newCategory];
+  console.log(newCategoryData);
+  category.push(...newCategoryData);
+  localProblem.category = [...newCategoryData];
 
   filteredCategory.value = "";
 
-  console.log("새로운 카테고리가 생성되고 선택되었습니다:", newCategory);
+  console.log("새로운 카테고리가 생성되고 선택되었습니다:", newCategoryData);
 };
+
 watchEffect(() => {
-  // DOM 요소가 렌더링된 후 Editor 초기화
-  if (problemEditorElement.value) {
-    problemEditorInstance = new Editor({
-      el: problemEditorElement.value,
+  // 문제 에디터 초기화
+  if (questionEditor.value && !questionEditorInstance) {
+    questionEditorInstance = new Editor({
+      el: questionEditor.value,
       height: "200px",
-      initialEditType: "markdown",
+      initialEditType: "wysiwyg",
       previewStyle: "vertical",
+      toolbarItems: [
+        ["heading", "bold", "italic", "strike"],
+        ["hr", "quote"],
+        ["ul", "ol", "task", "indent", "outdent"],
+        ["table", "image", "link"],
+        ["code", "codeblock"],
+      ],
+      events: {
+        change: () => {
+          const value = questionEditorInstance.getMarkdown();
+          localProblem.question = value; // question만 업데이트
+        },
+      },
+      hooks: {
+        addImageBlobHook: async (fileOrBlob, callback) => {
+          // 이미지 업로드 처리
+          try {
+            const { type, size } = fileOrBlob;
+
+            if (!type.startsWith("image/")) {
+              throw new Error("이미지 파일만 업로드할 수 있습니다.");
+            }
+
+            const MAX_FILE_SIZE = 50 * 1024 * 1024;
+            if (size > MAX_FILE_SIZE) {
+              throw new Error("파일 크기가 50MB를 초과할 수 없습니다.");
+            }
+
+            const imageUrl = await storageAPI.uploadImage(fileOrBlob);
+            callback(imageUrl, fileOrBlob.name);
+          } catch (err) {
+            console.error("이미지 업로드 실패:", err);
+          }
+        },
+      },
+      customHTMLRenderer: {
+        latex(node) {
+          const generator = new latexjs.HtmlGenerator({ hyphenate: false });
+          const { body } = latexjs
+            .parse(node.literal, { generator })
+            .htmlDocument();
+
+          return [
+            { type: "openTag", tagName: "div", outerNewLine: true },
+            { type: "html", content: body.innerHTML },
+            { type: "closeTag", tagName: "div", outerNewLine: true },
+          ];
+        },
+      },
     });
-    console.log("Toast UI Editor initialized:", problemEditorInstance);
-  } else {
-    console.error("Editor element not found");
+
+    // 초기 question 값 설정
+    if (localProblem.question) {
+      questionEditorInstance.setMarkdown(localProblem.question);
+    }
   }
 
-  if (questionEditorElement.value) {
-    questionEditorInstance = new Editor({
-      el: questionEditorElement.value,
+  // 풀이 에디터 초기화
+  if (explanationEditor.value && !explanationEditorInstance) {
+    explanationEditorInstance = new Editor({
+      el: explanationEditor.value,
       height: "200px",
-      initialEditType: "markdown",
+      initialEditType: "wysiwyg",
       previewStyle: "vertical",
+      events: {
+        change: () => {
+          const value = explanationEditorInstance.getMarkdown();
+          localProblem.explanation = value; // explanation만 업데이트
+        },
+      },
+      hooks: {
+        addImageBlobHook: async (fileOrBlob, callback) => {
+          // 이미지 업로드 처리
+          try {
+            const { type, size } = fileOrBlob;
+
+            if (!type.startsWith("image/")) {
+              throw new Error("이미지 파일만 업로드할 수 있습니다.");
+            }
+
+            const MAX_FILE_SIZE = 50 * 1024 * 1024;
+            if (size > MAX_FILE_SIZE) {
+              throw new Error("파일 크기가 50MB를 초과할 수 없습니다.");
+            }
+
+            const imageUrl = await storageAPI.uploadImage(fileOrBlob);
+            callback(imageUrl, fileOrBlob.name);
+          } catch (err) {
+            console.error("이미지 업로드 실패:", err);
+          }
+        },
+      },
     });
-    console.log("Toast UI Editor initialized:", questionEditorInstance);
-  } else {
-    console.error("Editor element not found");
+
+    // 초기 explanation 값 설정
+    if (localProblem.explanation) {
+      explanationEditorInstance.setMarkdown(localProblem.explanation);
+    }
   }
 });
 
-// 문제 변경시 제출, 업데이트
-onBeforeUnmount(() => {
-  const categoryName = localProblem.category?.[0]?.name || ""; // 안전한 접근
+const submitProblem = () => {
+  const categoryRaw = toRaw(localProblem.category);
   emits("submitProblem", currentIdx.value, {
     ...localProblem,
-    category: categoryName,
+    category: categoryRaw,
   });
+  console.log(localProblem);
+};
+
+// 문제 변경시 제출, 업데이트
+onBeforeUnmount(() => {
+  submitProblem();
+});
+
+defineExpose({
+  submitProblem,
+});
+
+onBeforeMount(async () => {
+  const categoryData = await categoryAPI.getAll();
+  category.push(...categoryData);
 });
 </script>
 
@@ -183,13 +279,13 @@ onBeforeUnmount(() => {
             <li
               v-for="type in PROBLEM_TYPES"
               :key="type"
-              class="inline rounded px-3 py-1.5 leading-relaxed text-black-1 mr-2 border border-black-2"
+              class="inline rounded px-3 py-1.5 leading-relaxed mr-2"
               :class="[
                 localProblem.type === type
-                  ? 'bg-orange-1 text-white border-black-2 hover:bg-black-3'
-                  : 'bg-white hover:bg-black-5',
+                  ? 'bg-orange-1 text-white hover:bg-orange-hover'
+                  : 'bg-black-5 text-black-1 hover:bg-black-5',
               ]"
-              @click="emits('updateListItem', 'TYPE', type)"
+              @click="setType(type)"
             >
               {{ type }}
             </li>
@@ -200,7 +296,7 @@ onBeforeUnmount(() => {
           <MultiSelect
             v-model="localProblem.category"
             display="chip"
-            :options="CATEGORY"
+            :options="category"
             optionLabel="name"
             filter
             :selection-limit="1"
@@ -251,9 +347,14 @@ onBeforeUnmount(() => {
             placeholder="문제의 제목을 작성해 주세요."
             @change="(e) => emits('updateListItem', 'TITLE', e.target.value)"
           />
-          <div ref="problemEditorElement"></div>
+          <div ref="questionEditor"></div>
           <p>답</p>
-          <div v-for="(_, idx) in 4" :key="idx" class="flex items-center gap-2">
+          <div
+            v-if="localProblem.type == '4지선다'"
+            v-for="(_, idx) in 4"
+            :key="idx"
+            class="flex items-center gap-2"
+          >
             <input
               type="radio"
               name="answers"
@@ -281,10 +382,17 @@ onBeforeUnmount(() => {
               placeholder="선택지 내용"
             />
           </div>
+          <div v-else-if="localProblem.type == 'O/X'">
+            <SelectButton
+              v-model="localProblem.answer"
+              :options="['O', 'X']"
+              selection
+            />
+          </div>
         </fieldset>
         <fieldset>
           <legend class="my-2">풀이</legend>
-          <div ref="questionEditorElement"></div>
+          <div ref="explanationEditor"></div>
         </fieldset>
       </form>
     </article>

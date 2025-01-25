@@ -1,3 +1,4 @@
+import { useAuthStore } from "@/store/authStore.js";
 import { supabase } from "./index.js";
 
 /**
@@ -149,14 +150,16 @@ const add = async (workbook_id, body) => {
       if (!option_four) throw new Error(`${title}: 4번 보기가 비어있습니다.`);
     }
 
+    const { user } = useAuthStore();
+    const newBody = { ...body, uid: user.id }; // user_id 추가
     const { data, error } = await supabase
       .from("problem")
-      .insert([body])
+      .insert([newBody])
       .select();
 
     await supabase
       .from("workbook_problem")
-      .insert([{ workbook_id, problem_id: data.id }]);
+      .insert([{ workbook_id, problem_id: data[0].id }]);
 
     if (error) throw error;
     return data;
