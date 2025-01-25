@@ -191,7 +191,7 @@ const getAverage = async (testCenterId) => {
     const averageScore = totalScore / data.length;
     return Math.round(averageScore);
   } catch (error) {
-    console.error("Error calculating average score:", error);
+    console.error("평균 계산 오류", error);
     return 0;
   }
 };

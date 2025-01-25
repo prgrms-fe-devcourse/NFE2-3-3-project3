@@ -8,8 +8,6 @@ import { storeToRefs } from "pinia";
 
 const route = useRoute();
 const authStore = useAuthStore();
-
-const { user } = storeToRefs(authStore);
 </script>
 
 <template>
