@@ -3,7 +3,7 @@ import { ref, computed, watchEffect } from "vue";
 import ExamCard from "@/pages/exam-room/components/ExamCard.vue";
 import InvitedExamCard from "./components/InvitedExamCard.vue";
 import createIcon from "@/assets/icons/exam-room/edit_square.svg";
-import { RouterLink } from "vue-router";
+import { RouterLink, useRouter } from "vue-router";
 import { testCenterAPI } from "@/api/testCenter";
 import { useAuthStore } from "@/store/authStore";
 import { inviteAPI } from "@/api/invite";
@@ -60,6 +60,11 @@ const visibleInvitedExams = computed(() => {
   return invitedExams.value.slice(0, invitedExamsDisplayCount.value);
 });
 
+// visibleInvitedExams 값 확인
+watchEffect(() => {
+  console.log(visibleInvitedExams.value);
+});
+
 // 진행중인 시험 더보기 버튼 표시 여부
 const showOngoingExamsMoreButton = computed(() => {
   return ongoingExams.value.length > 4;
@@ -102,7 +107,7 @@ const fetchExams = async () => {
   if (inviteResponse) {
     invitedExams.value = inviteResponse.filter((invite) => {
       const endDate = new Date(invite.test_center.end_date);
-      return !invite.participate && now <= endDate;
+      return now <= endDate;
     });
   }
 };
@@ -139,11 +144,13 @@ watchEffect(fetchExams);
 
       <ul v-else class="flex flex-wrap gap-6">
         <li
-          v-for="exam in ongoingExams"
+          v-for="exam in visibleOngoingExams"
           :key="exam.id"
           class="basis-[calc(25%-1.2rem)]"
         >
-          <ExamCard v-bind="exam" />
+          <RouterLink :to="`/exam/${exam.id}`">
+            <ExamCard v-bind="{ ...exam, showEditButtons: false }" />
+          </RouterLink>
         </li>
       </ul>
     </section>
@@ -176,7 +183,7 @@ watchEffect(fetchExams);
           :key="exam.id"
           class="basis-[calc(25%-1.2rem)]"
         >
-          <ExamCard v-bind="exam" />
+          <ExamCard v-bind="{ ...exam, showEditButtons: true }" />
         </li>
       </ul>
     </section>
@@ -205,11 +212,11 @@ watchEffect(fetchExams);
 
       <ul v-else class="flex flex-wrap gap-6">
         <li
-          v-for="exam in visibleInvitedExams"
-          :key="exam.id"
+          v-for="invite in visibleInvitedExams"
+          :key="invite.id"
           class="basis-[calc(25%-1.2rem)]"
         >
-          <InvitedExamCard v-bind="exam" />
+          <InvitedExamCard v-bind="{ ...invite, ...invite.test_center }" />
         </li>
       </ul>
     </section>

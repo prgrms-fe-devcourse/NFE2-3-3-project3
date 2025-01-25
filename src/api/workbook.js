@@ -31,6 +31,17 @@ const getUid = async (uid) => {
   return data;
 };
 
+
+const getOne = async (workbook_id) => {
+  const { data, error } = await supabase
+    .from("workbook")
+    .select("*")
+    .eq("id", workbook_id)
+    .single();
+  if (error) throw error;
+  return data;
+};
+
 /**
  * @description 공유된 문제집 목록을 가져오는 API
  * @returns
@@ -159,6 +170,7 @@ export const workbookAPI = {
   search,
   getUid,
   getShared,
+  getOne,
   updateTitle,
   updateDescription,
   remove,

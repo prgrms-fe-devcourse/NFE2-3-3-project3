@@ -16,6 +16,10 @@ const props = defineProps({
   },
   start_date: String,
   end_date: String,
+  showEditButtons: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const examDuration = computed(() => {
@@ -46,35 +50,52 @@ const problemCount = computed(() => {
 <template>
   <div class="bg-orange-3 rounded-lg p-4 w-full text-gray-2">
     <div class="item-between mb-4">
-      <h3 class="font-medium text-lg">{{ workbook?.title }}</h3>
+      <!-- 문제집 이름 -->
+      <h3 class="font-medium text-lg line-clamp-1" v-tooltip.top="workbook?.title">{{ workbook?.title }}</h3>
+      <!-- 수정 및 삭제 버튼 -->
+      <div v-if="showEditButtons" class="flex gap-2">
+        <button class="flex items-center justify-center w-8 h-8 bg-black-1/5 rounded-full hover:bg-black-1/10">
+          <img :src="pencilIcon" alt="edit icon" class="w-4 h-4" />
+        </button>
+        <button class="flex items-center justify-center w-8 h-8 bg-black-1/5 rounded-full hover:bg-black-1/10">
+          <img :src="trashIcon" alt="delete icon" class="w-4 h-4" />
+        </button>
+      </div>
     </div>
-    <div class="flex flex-col gap-2">
-      <!-- 참가자 수 표시 추가 -->
-      <div class="flex items-center gap-2 text-sm">
+    <ul class="flex flex-col gap-2">
+      <!-- 응시자 표시 -->
+      <li class="flex items-center gap-2 text-sm">
         <img :src="userIcon" alt="user icon" class="w-3 h-3" />
         <span>{{ (confirmed_count?.[0]?.count || 0) + 1 }}명</span>
-      </div>
-      <div class="flex items-center gap-2 text-sm">
-        <img :src="folderIcon" alt="folder icon" class="w-3 h-3" />
-        <span>{{ workbook?.title }}</span>
-      </div>
-      <div class="flex items-center gap-2 text-sm">
+      </li>
+      <!-- 시작 시간 -->
+      <li class="flex items-center gap-2 text-sm">
         <img :src="calendarIcon" alt="calendar icon" class="w-3 h-3" />
         <span>{{ formattedDate }}</span>
-      </div>
-      <div class="flex items-center justify-between">
+      </li>
+      <!-- 소요 시간 -->
+      <li class="flex items-center justify-between">
         <div class="flex items-center gap-2 text-sm">
           <img :src="timeFastIcon" alt="time icon" class="w-3 h-3" />
           <span>{{ examDuration }} 소요</span>
         </div>
+        <!-- 문제 갯수 -->
         <span class="font-semibold">{{ problemCount }}문제</span>
-      </div>
-    </div>
+      </li>
+    </ul>
   </div>
 </template>
 
 <style scoped>
 * {
   color: #4f4f4f;
+}
+
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>
