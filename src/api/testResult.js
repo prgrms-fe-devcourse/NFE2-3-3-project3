@@ -196,12 +196,12 @@ const getAverage = async (testCenterId) => {
   }
 };
 
-//시험장의 user들의 평균 계산
+//시험장의 user들의 점수
 const getScoresByTestCenter = async (testCenterId) => {
   try {
     const { data, error } = await supabase
       .from("test_result")
-      .select("uid, correct_count, user_info(name)")
+      .select("uid, correct_count, user_info:uid (name)")
       .eq("test_center_id", testCenterId);
 
     if (error) throw error;
