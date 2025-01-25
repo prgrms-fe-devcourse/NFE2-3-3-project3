@@ -1,42 +1,61 @@
 <script setup>
-import { ref } from "vue";
+import { ref, computed, watch } from "vue";
+
+const props = defineProps({
+  totalCount: {
+    type: Number,
+    required: true,
+    default: 30, // 기본값 설정
+  },
+});
 
 // 문제 데이터 초기화
 const problems = ref(
-  Array.from({ length: 27 }, (_, i) => ({
+  Array.from({ length: props.totalCount }, (_, i) => ({
     number: i + 1, // 문제 번호
     flagged: false, // 플래그 상태
     highlight: false, // 강조 상태
   })),
 );
+// props.totalCount 값 변경 시 problems 업데이트
+watch(
+  () => props.totalCount,
+  (newCount) => {
+    problems.value = Array.from({ length: newCount }, (_, i) => ({
+      number: i + 1,
+      flagged: false,
+      highlight: false,
+    }));
+  },
+);
 
 // 문제 클릭 시 강조 처리 (토글 방식)
 const toggleHighlight = (problem) => {
-  // 현재 문제의 강조 상태를 토글
   problem.highlight = !problem.highlight;
-
-  // 다른 문제의 강조 상태를 해제
   problems.value.forEach((p) => {
     if (p !== problem) {
-      p.highlight = false; // 현재 문제 외에는 강조 해제
+      p.highlight = false;
     }
   });
 };
 
 // 플래그 토글
 const toggleFlag = (problem) => {
-  problem.flagged = !problem.flagged; // 플래그 상태 토글
+  problem.flagged = !problem.flagged;
 };
 
 // 행과 열 크기 설정
-const rows = 3;
+const rows = computed(() => Math.ceil(props.totalCount / columns));
 const columns = 10;
 
 // 테이블 데이터를 행렬 형태로 변환
-const tableData = ref([]);
-for (let i = 0; i < rows; i++) {
-  tableData.value.push(problems.value.slice(i * columns, (i + 1) * columns));
-}
+const tableData = computed(() => {
+  const data = [];
+  for (let i = 0; i < rows.value; i++) {
+    data.push(problems.value.slice(i * columns, (i + 1) * columns));
+  }
+  return data;
+});
 </script>
 
 <template>
