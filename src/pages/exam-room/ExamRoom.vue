@@ -216,7 +216,10 @@ watchEffect(fetchExams);
           :key="invite.id"
           class="basis-[calc(25%-1.2rem)]"
         >
-          <InvitedExamCard v-bind="{ ...invite, ...invite.test_center }" />
+          <InvitedExamCard
+            :invite-data="invite"
+            :test-center="invite.test_center"
+          />
         </li>
       </ul>
     </section>
