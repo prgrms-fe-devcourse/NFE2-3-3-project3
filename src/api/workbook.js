@@ -12,12 +12,39 @@ const add = async (title, description) => {
   return data;
 };
 
+const workbookProblemAdd = async (body) => {
+  try {
+    const { data, error } = await supabase
+      .from("workbook_problem")
+      .insert(body)
+      .select();
+    if (error) {
+      console.log(error);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 // READ
-const getOne = async (workbook_id) => {
+const getWorkbookProblems = async (workbookId) => {
+  const { data, error } = await supabase.rpc("workbook_problem_info", {
+    workbook_id: workbookId,
+  });
+
+  if (error) {
+    console.error("Error fetching workbook problems:", error);
+    return null;
+  }
+
+  return data;
+};
+
+const getOne = async (id) => {
   const { data, error } = await supabase
     .from("workbook")
     .select("*")
-    .eq("id", workbook_id)
+    .eq("id", id)
     .single();
   if (error) throw error;
   return data;
@@ -64,7 +91,6 @@ const getShared = async (uid) => {
   if (error) throw error;
   return data;
 };
-
 /**
  * @description 특정 유저가 공유한 문제집 목록을 가져오는 API
  * @param {*} uid 유저 ID
@@ -127,6 +153,48 @@ const search = async (keyword, startDate, endDate) => {
 
 // UPDATE
 const updated_at = new Date();
+const workbookCommentInfo = async (workbookId) => {
+  try {
+    const { data, error } = await supabase
+      .rpc("workbook_comment_info", {
+        workbook_id: workbookId,
+      })
+      .order("updated_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching workbook comments:", error);
+      return null;
+    }
+    return data;
+  } catch (error) {
+    console.error("실패:", error);
+  }
+};
+
+// UPDATE
+
+/**
+ *
+ * @param {object} body
+ * @param {string} body.title
+ * @param {string} body.description
+ * @param {string} body.shared
+ * @param {number} id 문제집 id
+ * @returns
+ */
+const update = async (body, id) => {
+  try {
+    const { data, error } = await supabase
+      .from("workbook")
+      .update(body)
+      .eq("id", id);
+
+    if (error) console.log(error);
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 const updateTitle = async (title, id) => {
   await supabase.from("workbook").update({ title, updated_at }).eq("id", id);
@@ -140,9 +208,19 @@ const updateDescription = async (description, id) => {
 };
 
 // DELETE
-const remove = async (id) => {
-  await supabase.from("workbook").delete().eq("id", id);
+const removeProblem = async (workbook_id, problem_id) => {
+  try {
+    const { error } = await supabase
+      .from("workbook_problem")
+      .delete()
+      .eq("workbook_id", workbook_id)
+      .eq("problem_id", problem_id);
+    if (error) console.log(error);
+  } catch (error) {
+    console.log(error);
+  }
 };
+
 const checkWorkbookInsert = async () => {
   const { data, error } = await supabase
     .from("workbook")
@@ -167,10 +245,15 @@ export const workbookAPI = {
   getShared,
   getAllShared,
   getAllSharedByUserId,
+  getWorkbookProblems,
+  getAllShare: getAllSharedByUserId,
   search,
   getUid,
   updateTitle,
   updateDescription,
-  remove,
+  update,
+  removeProblem,
   checkWorkbookInsert,
+  workbookCommentInfo,
+  workbookProblemAdd,
 };
