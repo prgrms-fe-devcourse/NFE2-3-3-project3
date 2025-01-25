@@ -1,41 +1,47 @@
 <script setup>
-import { Button } from "primevue";
+import { Button, ConfirmDialog, useConfirm } from "primevue";
 
-const { userAnswers, showWarning } = defineProps({
-  userAnswers: {
-    type: Array,
-    required: true,
-  },
-  showWarning: {
-    type: Boolean,
-    required: true,
-  },
+const { userAnswers, remainedTime } = defineProps({
+  userAnswers: Array,
+  remainedTime: Object,
 });
-const emit = defineEmits([
-  "submitAnswers",
-  "submitAnswersSafely",
-  "setCurrentProblemIndex",
-]);
+const emit = defineEmits(["submitAnswers", "setCurrentProblemIndex"]);
+
+const confirm = useConfirm();
+
+const requireConfirmation = () => {
+  confirm.require({
+    group: "headless",
+    header: "정말 제출하시겠습니까?",
+    message: "제출하시려면 '제출' 버튼을 클릭하세요",
+    accept: () => {
+      emit("submitAnswers");
+    },
+    reject: () => {},
+  });
+};
 </script>
 <template>
-  <aside class="flex flex-col min-w-72 w-72 h-screen border-l border-black-4">
+  <aside
+    class="sticky top-0 flex flex-col min-w-72 w-72 h-screen border-l border-black-4"
+  >
     <div class="flex flex-col justify-center items-center h-16 bg-black-5">
       <p class="font-semibold text-xl">남은 시간</p>
     </div>
     <div class="flex justify-center items-center h-24">
       <div class="flex gap-4 text-3xl">
         <div class="flex flex-col items-center">
-          <span>00</span>
+          <span>{{ remainedTime.hours }}</span>
           <span class="text-sm text-gray-3">시간</span>
         </div>
         <span class="text-gray-3">:</span>
         <div class="flex flex-col items-center">
-          <span>00</span>
+          <span>{{ remainedTime.minutes }}</span>
           <span class="text-sm text-gray-3">분</span>
         </div>
         <span class="text-gray-3">:</span>
         <div class="flex flex-col items-center">
-          <span>00</span>
+          <span>{{ remainedTime.seconds }}</span>
           <span class="text-sm text-gray-3">초</span>
         </div>
       </div>
@@ -69,26 +75,33 @@ const emit = defineEmits([
     </div>
 
     <Button
-      v-if="!showWarning"
-      @click="emit('submitAnswersSafely')"
+      @click="requireConfirmation"
       label="제출하기"
       class="w-44 h-9 mb-5 mx-auto"
       size="large"
       rounded
     />
-    <div v-else class="flex flex-col items-center gap-2">
-      <div class="flex items-center gap-2">
-        <span class="pi pi-exclamation-circle text-red-1"></span>
-        <span>아직 풀지 않은 문제가 있습니다.</span>
-      </div>
-      <Button
-        @click="emit('submitAnswers')"
-        label="그래도 제출하기"
-        class="w-44 h-9 mb-5 mx-auto"
-        size="large"
-        rounded
-      />
-    </div>
+    <ConfirmDialog group="headless">
+      <template #container="{ message, acceptCallback, rejectCallback }">
+        <div
+          class="flex flex-col items-center px-20 py-8 bg-surface-0 dark:bg-surface-900 rounded"
+        >
+          <span class="font-bold text-2xl block mb-2">{{
+            message.header
+          }}</span>
+          <p class="mb-0">{{ message.message }}</p>
+          <div class="flex items-center gap-2 mt-6">
+            <Button @click="acceptCallback" label="제출" class="w-20"></Button>
+            <Button
+              @click="rejectCallback"
+              label="취소"
+              outlined
+              class="w-20"
+            ></Button>
+          </div>
+        </div>
+      </template>
+    </ConfirmDialog>
   </aside>
 </template>
 <style scoped></style>

@@ -14,14 +14,17 @@ const getAll = async (userId) => {
   }
 };
 
-const add = async (targetUserId, testCenterId) => {
+const add = async (invites) => {
   try {
     const { data, error } = await supabase
       .from("invite")
-      .insert([{ target_uid: targetUserId, test_center_id: testCenterId }])
+      .insert(invites)
       .select();
 
-    if (error) throw error;
+    if (error) {
+      console.error("초대 생성 중 오류:", error); // 에러 로그 출력
+      throw error;
+    }
     return data;
   } catch (error) {
     console.error(error);

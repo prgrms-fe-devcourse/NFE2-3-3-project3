@@ -3,6 +3,7 @@ import { Avatar, AvatarGroup, Column, DataTable } from "primevue";
 import { formatMsToHourMinute } from "@/utils/formatMsToHour";
 import { formatDate } from "@/utils/formatDate";
 import { RouterLink } from "vue-router";
+import EmptyText from "@/components/layout/EmptyText.vue";
 
 const { exams } = defineProps({
   exams: Array,
@@ -25,9 +26,7 @@ const { exams } = defineProps({
         :rows="10"
       >
         <template #empty>
-          <div class="flex items-center justify-center p-6 text-gray-500">
-            검색된 문제가 없습니다...
-          </div>
+          <EmptyText class="py-6">검색된 시험 내역이 없습니다...</EmptyText>
         </template>
         <Column header="시험 결과">
           <template field="id" #body="slotProps">
@@ -56,6 +55,7 @@ const { exams } = defineProps({
             <AvatarGroup>
               <Avatar
                 v-for="{ user_info } in slotProps.data.users.slice(0, 3)"
+                v-tooltip="user_info.name"
                 :image="user_info.avatar_url"
                 shape="circle"
               />

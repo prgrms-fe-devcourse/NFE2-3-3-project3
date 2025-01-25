@@ -1,124 +1,146 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 import TestProblem from "./components/TestProblem.vue";
 import TestSidebar from "./components/TestSidebar.vue";
+import { useRoute } from "vue-router";
+import { testCenterAPI } from "@/api/testCenter";
+import { testResultAPI } from "@/api/testResult";
+import { authAPI } from "@/api/auth";
+import { useToast } from "primevue";
 
+let intervalId;
+const toast = useToast();
 const router = useRouter();
-const problems = ref([
-  {
-    id: 1,
-    status: "corrected",
-    title: "소방경력공무원 관계법규 개념 예제 문제 ",
-    category: "소방경력공무원 기출",
-    origin_source: "소방경력공무원 CBT",
-    problem_type: "multiple_choice",
-    option1: "보기 1",
-    option2: "보기 2",
-    option3: "보기 3",
-    option4: "보기 4",
-  },
-  {
-    id: 2,
-    status: "",
-    title: "소방경력공무원 관계법규 개념 예제 문제 ",
-    category: "소방경력공무원 기출",
-    origin_source: "소방경력공무원 CBT",
-    problem_type: "ox",
-    option1: "보기 1",
-    option2: "보기 2",
-    option3: "보기 3",
-    option4: "보기 4",
-  },
-  {
-    id: 3,
-    status: "wrong",
-    title: "소방경력공무원 관계법규 개념 예제 문제 ",
-    category: "소방경력공무원 기출",
-    origin_source: "소방경력공무원 CBT",
-    problem_type: "ox",
-    option1: "보기 1",
-    option2: "보기 2",
-    option3: "보기 3",
-    option4: "보기 4",
-  },
-  {
-    id: 4,
-    status: "wrong",
-    title: "소방경력공무원 관계법규 개념 예제 문제 ",
-    category: "소방경력공무원 기출",
-    origin_source: "소방경력공무원 CBT",
-    problem_type: "ox",
-    option1: "보기 1",
-    option2: "보기 2",
-    option3: "보기 3",
-    option4: "보기 4",
-  },
-  {
-    id: 5,
-    status: "wrong",
-    title: "소방경력공무원 관계법규 개념 예제 문제 ",
-    category: "소방경력공무원 기출",
-    origin_source: "소방경력공무원 CBT",
-    problem_type: "ox",
-    option1: "보기 1",
-    option2: "보기 2",
-    option3: "보기 3",
-    option4: "보기 4",
-  },
-  {
-    id: 6,
-    status: "wrong",
-    title: "소방경력공무원 관계법규 개념 예제 문제 ",
-    category: "소방경력공무원 기출",
-    origin_source: "소방경력공무원 CBT",
-    problem_type: "ox",
-    option1: "보기 1",
-    option2: "보기 2",
-    option3: "보기 3",
-    option4: "보기 4",
-  },
-]);
+const route = useRoute();
+
+const problems = ref([]);
+const testCenter = ref();
+const elapsedTime = ref(0);
+const currentProblemIndex = ref(0);
+const userAnswers = ref();
+
+const remainedTime = computed(() => {
+  if (!testCenter.value) return { hours: "00", minutes: "00", seconds: "00" };
+  const startTime = new Date(testCenter.value.start_date).getTime();
+  const endTime = new Date(testCenter.value.end_date).getTime();
+
+  const remainedMilliseconds = endTime - (startTime + elapsedTime.value);
+  const remainedSeconds = Math.floor(remainedMilliseconds / 1000);
+  const hours = String(Math.floor(remainedSeconds / 3600)).padStart(2, "0");
+  const minutes = String(Math.floor((remainedSeconds % 3600) / 60)).padStart(
+    2,
+    "0",
+  );
+  const seconds = String(remainedSeconds % 60).padStart(2, "0");
+  return { hours, minutes, seconds };
+});
 
 const currentProblem = computed(
-  () => problems.value[currentProblemIndex.value],
+  () => problems.value[currentProblemIndex.value].problem,
 );
 
-const currentProblemIndex = ref(0);
 const setCurrentProblemIndex = (index) => {
   currentProblemIndex.value = index;
 };
+
 const setNextProblemIndex = () => {
   if (currentProblemIndex.value === problems.value.length - 1) return;
   currentProblemIndex.value += 1;
 };
+
 const setPrevProblemIndex = () => {
   if (currentProblemIndex.value === 0) return;
   currentProblemIndex.value -= 1;
 };
 
-const userAnswers = ref(Array(problems.value.length).fill(""));
 const selectAnswer = (num) => {
   if (showWarning.value) {
     showWarning.value = false;
   }
+
   userAnswers.value[currentProblemIndex.value] = num;
 };
 
-const showWarning = ref(false);
-const submitAnswers = () => {
-  router.push(`/exam-result/${1}`); // 시험결과 id
+const submitAnswers = async () => {
+  const correctCount = problems.value.reduce((acc, { problem }, index) => {
+    return problem.answer === userAnswers.value[index] ? acc + 1 : acc;
+  }, 0);
+
+  const testResult = await testResultAPI.add({
+    test_center_id: testCenter.value.id,
+    correct_count: correctCount,
+    total_count: problems.value.length,
+    time: elapsedTime.value,
+  });
+  router.push(`/exam-result/${testResult.id}`);
 };
-const submitAnswersSafely = () => {
-  if (userAnswers.value.some((answer) => !answer)) {
-    showWarning.value = true;
+
+const updateElapsedTime = () => {
+  if (!testCenter.value) return;
+  if (
+    remainedTime.value.hours === "00" &&
+    remainedTime.value.minutes === "00" &&
+    remainedTime.value.seconds === "00"
+  ) {
+    submitAnswers();
     return;
   }
-  submitAnswers();
+  const startDate = new Date(testCenter.value.start_date);
+  elapsedTime.value = new Date().getTime() - startDate.getTime();
 };
+
+onMounted(() => {
+  intervalId = setInterval(updateElapsedTime, 1000); // 1초마다 경과시간 업데이트
+});
+
+onBeforeUnmount(() => {
+  clearInterval(intervalId);
+});
+
+watch(
+  route,
+  async () => {
+    const testCenterId = route.params.examId;
+    const user = await authAPI.getCurrentUser();
+    const isSubmitted = await testResultAPI.checkIsSubmitted(
+      user.id,
+      testCenterId,
+    );
+    if (isSubmitted) {
+      toast.add({
+        severity: "error",
+        summary: "시험 입장 오류",
+        detail: "이미 제출한 시험입니다.",
+        life: 3000,
+      });
+      return router.replace("/exam-room");
+    }
+
+    const testCenterData = await testCenterAPI.getAllByTestCenterId(
+      testCenterId,
+    );
+    if (
+      new Date(testCenterData.start_date) > new Date() ||
+      new Date(testCenterData.end_date) < new Date()
+    ) {
+      toast.add({
+        severity: "error",
+        summary: "시험 입장 오류",
+        detail: "시험 시간이 아닙니다.",
+        life: 3000,
+      });
+      return router.replace("/exam-room");
+    }
+    problems.value = testCenterData.problems;
+    userAnswers.value = Array(problems.value.length).fill("");
+    testCenter.value = testCenterData;
+  },
+  { immediate: true },
+);
 </script>
 <template>
-  <main class="flex h-screen">
+  <main class="flex h-auto relative">
     <section class="flex flex-col justify-between w-full">
       <div class="flex flex-col">
         <div
@@ -127,6 +149,7 @@ const submitAnswersSafely = () => {
           <h1 class="font-semibold text-xl">소방공무원 제 2차 시험장</h1>
         </div>
         <TestProblem
+          v-if="problems.length"
           :problem="currentProblem"
           :userAnswers="userAnswers"
           :currentProblemIndex="currentProblemIndex"
@@ -153,10 +176,9 @@ const submitAnswersSafely = () => {
       </div>
     </section>
     <TestSidebar
+      :remainedTime="remainedTime"
       :userAnswers="userAnswers"
-      :showWarning="showWarning"
       @submitAnswers="submitAnswers"
-      @submitAnswersSafely="submitAnswersSafely"
       @setCurrentProblemIndex="setCurrentProblemIndex"
     />
   </main>

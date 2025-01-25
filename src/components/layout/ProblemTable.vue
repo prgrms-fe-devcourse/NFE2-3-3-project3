@@ -29,6 +29,8 @@ import seeMyProblems from "@/assets/icons/my-problems/see-my-problems.svg";
 import sharedIcon from "@/assets/icons/my-problem-sets/share.svg";
 import { workbookAPI } from "@/api/workbook";
 import { problemAPI } from "@/api/problem";
+import { SORT, SORTS } from "@/const/sorts";
+import EmptyText from "./EmptyText.vue";
 
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
@@ -38,11 +40,8 @@ const handleAddClick = () => {
   emit("open-dialog");
 };
 
-const SORTS = ref([
-  { name: "최신순", value: "최신순" },
-  { name: "좋아요 많은 순", value: "좋아요 많은 순" },
-]);
-const sort = ref({ name: "최신순", value: "최신순" });
+const sorts = ref(SORTS);
+const sort = ref(SORTS[0]);
 
 const props = defineProps({
   problems: {
@@ -155,27 +154,28 @@ const handleClickOutside = (event) => {
     if (showAddProblemSet.value) showAddProblemSet.value = false;
   }
 };
-watchEffect(async () => {
-  if (!user.value) return;
-  problemSets.value = await workbookAPI.getAll(user.value.id);
-});
 
 const sortedProblems = computed(() => {
   if (!props.problems) return [];
 
   const problems = [...props.problems];
-  switch (sort.value.value) {
-    case "최신순":
+  switch (sort.value?.value) {
+    case SORT.latest:
       return problems.sort(
         (a, b) => new Date(b.created_at) - new Date(a.created_at),
       );
-    case "좋아요 많은 순":
+    case SORT.likes:
       return problems.sort(
         (a, b) => (b.likes.length || 0) - (a.likes.length || 0),
       );
     default:
       return problems;
   }
+});
+
+watchEffect(async () => {
+  if (!user.value) return;
+  problemSets.value = await workbookAPI.getAll(user.value.id);
 });
 
 onMounted(() => {
@@ -234,7 +234,7 @@ onBeforeUnmount(() => {
       <Select
         v-if="showSelect"
         v-model="sort"
-        :options="SORTS"
+        :options="sorts"
         optionLabel="name"
         class="w-40"
       />
@@ -252,9 +252,7 @@ onBeforeUnmount(() => {
       >
         <!-- 검색 결과가 없는 경우 -->
         <template #empty>
-          <div class="flex items-center justify-center p-6 text-gray-500">
-            검색된 문제가 없습니다...
-          </div>
+          <EmptyText class="py-6">검색된 문제가 없습니다...</EmptyText>
         </template>
 
         <!-- 체크박스 선택 -->
