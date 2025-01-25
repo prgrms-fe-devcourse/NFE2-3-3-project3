@@ -87,7 +87,7 @@ const showInvitedExamsMoreButton = computed(() => {
 const fetchExams = async () => {
   if (!authStore.user?.id) return;
 
-  const now = new Date(); // `now`를 함수의 초반에 선언하여 모든 곳에서 접근 가능하도록 함
+  const now = new Date();
   try {
     // 1. 내가 만든 시험장 목록
     const testCenterResponse = await testCenterAPI.getAllFields(
@@ -247,6 +247,7 @@ watchEffect(fetchExams);
           <InvitedExamCard
             :invite-data="invite"
             :test-center="invite.test_center"
+            @exam-status-change="fetchExams"
           />
         </li>
       </ul>
