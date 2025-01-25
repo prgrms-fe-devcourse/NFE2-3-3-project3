@@ -51,12 +51,12 @@ watchEffect(async () => {
 });
 </script>
 <template>
-  <div class="flex flex-col gap-14 relative">
+  <div class="relative flex flex-col gap-14">
     <h1 class="text-[42px] font-laundry">문제집 게시판</h1>
     <Search :show-status="false" @search="search" />
     <section class="flex flex-col gap-[18px]">
-      <div class="flex justify-between items-center">
-        <p class="font-semibold text-xl">{{ problemSets.length }} 문제집</p>
+      <div class="flex items-center justify-between">
+        <p class="text-xl font-semibold">{{ problemSets.length }} 문제집</p>
         <Select
           v-model="sort"
           :options="sorts"
@@ -67,7 +67,7 @@ watchEffect(async () => {
 
       <div
         v-if="!problemSets.length"
-        class="flex justify-center items-center h-40"
+        class="flex items-center justify-center h-40"
       >
         <EmptyText>검색된 문제집이 없습니다...</EmptyText>
       </div>
@@ -76,7 +76,7 @@ watchEffect(async () => {
           v-for="problemSet in sortedProblemSets"
           :problemSet="problemSet"
           :key="problemSet.id"
-          :to="`/problem-set-board/${problemSet.id}`"
+          :to="`/problem-set-board-detail/${problemSet.id}`"
         />
       </div>
     </section>

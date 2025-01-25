@@ -13,6 +13,16 @@ const add = async (title, description) => {
 };
 
 // READ
+const getOne = async (workbook_id) => {
+  const { data, error } = await supabase
+    .from("workbook")
+    .select("*")
+    .eq("id", workbook_id)
+    .single();
+  if (error) throw error;
+  return data;
+};
+
 const getAll = async (uid) => {
   const { data, error } = await supabase
     .from("workbook")
@@ -31,17 +41,6 @@ const getUid = async (uid) => {
   return data;
 };
 
-
-const getOne = async (workbook_id) => {
-  const { data, error } = await supabase
-    .from("workbook")
-    .select("*")
-    .eq("id", workbook_id)
-    .single();
-  if (error) throw error;
-  return data;
-};
-
 /**
  * @description 공유된 문제집 목록을 가져오는 API
  * @returns
@@ -56,7 +55,6 @@ const getAllShared = async () => {
   if (error) throw error;
   return data;
 };
-
 // 유저가 공유받은 workbook 가져오기
 const getShared = async (uid) => {
   const { data, error } = await supabase
@@ -165,12 +163,12 @@ const checkWorkbookInsert = async () => {
 export const workbookAPI = {
   add,
   getAll,
+  getOne,
+  getShared,
   getAllShared,
   getAllSharedByUserId,
   search,
   getUid,
-  getShared,
-  getOne,
   updateTitle,
   updateDescription,
   remove,
