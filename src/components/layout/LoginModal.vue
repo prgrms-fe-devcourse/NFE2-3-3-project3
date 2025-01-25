@@ -3,7 +3,7 @@ import { authAPI } from "@/api/auth";
 
 const emit = defineEmits(["update:modelValue", "login-success"]);
 const props = defineProps({
-  modelValue: {
+  modalValue: {
     type: Boolean,
     required: true,
   },
@@ -12,26 +12,26 @@ const props = defineProps({
 const handleGoogleLogin = async () => {
   await authAPI.logInWithGoogle();
   emit("login-success");
-  emit("update:modelValue", false);
+  emit("update:modalValue", false);
 };
 
 const handleGithubLogin = async () => {
   await authAPI.logInWithGithub();
   emit("login-success");
-  emit("update:modelValue", false);
+  emit("update:modalValue", false);
 };
 
 const handleKakaoLogin = async () => {
   await authAPI.logInWithKakao();
   emit("login-success");
-  emit("update:modelValue", false);
+  emit("update:modalValue", false);
 };
 </script>
 
 <template>
   <Transition name="modal">
     <div
-      v-if="modelValue"
+      v-if="modalValue"
       class="fixed inset-0 z-50 overflow-y-auto bg-black-1/30"
       role="dialog"
       @click="$emit('update:modelValue', false)"
