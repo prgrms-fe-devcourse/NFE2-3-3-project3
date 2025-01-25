@@ -16,11 +16,14 @@ const testPath = new URL("@/assets/icons/test.svg", import.meta.url).href;
     </RouterLink>
 
     <!-- 버튼 -->
-    <button
-      class="bg-orange-1 text-white text-lg border-none px-8 py-2.5 rounded-lg hover:bg-orange-hover cursor-pointer mb-[24px]"
-    >
-      새로운 문제 만들기
-    </button>
+    <RouterLink to="/problem-editor">
+      <button
+        class="bg-orange-1 text-white text-lg border-none px-8 py-2.5 rounded-lg hover:bg-orange-hover cursor-pointer mb-[24px]"
+        to="/problem-editor"
+      >
+        새로운 문제 만들기
+      </button>
+    </RouterLink>
 
     <!-- 내비게이션 -->
     <nav class="w-full px-6">
@@ -32,13 +35,13 @@ const testPath = new URL("@/assets/icons/test.svg", import.meta.url).href;
         </div>
         <RouterLink
           to="/my-problems"
-          class="block text-[#B1B1B1] hover:bg-beige-1 hover:text-navy-3 px-2 rounded leading-relaxed"
+          class="block text-[#B1B1B1] hover:bg-beige-1 hover:text-navy-3 px-2 rounded leading-relaxed ml-2"
         >
           보관한 문제
         </RouterLink>
         <RouterLink
           to="/my-problem-sets"
-          class="block text-[#B1B1B1] hover:bg-beige-1 px-2 rounded mt-1.5 leading-relaxed hover:text-navy-3"
+          class="block text-[#B1B1B1] hover:bg-beige-1 px-2 rounded mt-1.5 leading-relaxed hover:text-navy-3 ml-2"
         >
           보관한 문제집
         </RouterLink>
@@ -52,13 +55,13 @@ const testPath = new URL("@/assets/icons/test.svg", import.meta.url).href;
         </div>
         <RouterLink
           to="/problem-board"
-          class="block text-[#B1B1B1] hover:bg-beige-1 hover:text-navy-3 px-2 rounded leading-relaxed mt-1.5"
+          class="block text-[#B1B1B1] hover:bg-beige-1 hover:text-navy-3 px-2 rounded leading-relaxed mt-1.5 ml-2"
         >
           문제 게시판
         </RouterLink>
         <RouterLink
           to="/problem-set-board"
-          class="block text-[#B1B1B1] hover:bg-beige-1 hover:text-navy-3 px-2 rounded leading-relaxed mt-1.5"
+          class="block text-[#B1B1B1] hover:bg-beige-1 hover:text-navy-3 px-2 rounded leading-relaxed mt-1.5 ml-2"
         >
           문제집 게시판
         </RouterLink>
@@ -72,13 +75,13 @@ const testPath = new URL("@/assets/icons/test.svg", import.meta.url).href;
         </div>
         <RouterLink
           to="/exam-room"
-          class="block text-[#B1B1B1] hover:bg-beige-1 hover:text-navy-3 px-2 rounded leading-relaxed"
+          class="block text-[#B1B1B1] hover:bg-beige-1 hover:text-navy-3 px-2 rounded leading-relaxed ml-2"
         >
           내 시험장
         </RouterLink>
         <RouterLink
           to="/exam-history"
-          class="block text-[#B1B1B1] hover:bg-beige-1 hover:text-navy-3 px-2 rounded mt-1.5 leading-relaxed"
+          class="block text-[#B1B1B1] hover:bg-beige-1 hover:text-navy-3 px-2 rounded mt-1.5 leading-relaxed ml-2"
         >
           시험 내역
         </RouterLink>
