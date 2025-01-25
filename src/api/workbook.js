@@ -31,17 +31,6 @@ const getUid = async (uid) => {
   return data;
 };
 
-
-const getOne = async (workbook_id) => {
-  const { data, error } = await supabase
-    .from("workbook")
-    .select("*")
-    .eq("id", workbook_id)
-    .single();
-  if (error) throw error;
-  return data;
-};
-
 /**
  * @description 공유된 문제집 목록을 가져오는 API
  * @returns
@@ -53,16 +42,6 @@ const getAllShared = async () => {
       "*, user: user_info(name, avatar_url), problems: workbook_problem(problem_id), likes: workbook_like(id)",
     )
     .eq("shared", true);
-  if (error) throw error;
-  return data;
-};
-
-// 유저가 공유받은 workbook 가져오기
-const getShared = async (uid) => {
-  const { data, error } = await supabase
-    .from("shared_workbook")
-    .select("*")
-    .eq("uid", uid);
   if (error) throw error;
   return data;
 };
@@ -130,7 +109,7 @@ const search = async (keyword, startDate, endDate) => {
 // UPDATE
 const updated_at = new Date();
 
-const updateTitle = async (title, id) => {
+const updateTilte = async (title, id) => {
   await supabase.from("workbook").update({ title, updated_at }).eq("id", id);
 };
 
@@ -169,9 +148,7 @@ export const workbookAPI = {
   getAllSharedByUserId,
   search,
   getUid,
-  getShared,
-  getOne,
-  updateTitle,
+  updateTilte,
   updateDescription,
   remove,
   checkWorkbookInsert,

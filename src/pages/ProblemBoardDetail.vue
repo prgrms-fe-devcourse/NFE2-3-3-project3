@@ -11,7 +11,7 @@ import Accordion from "primevue/accordion";
 import AccordionTab from "primevue/accordiontab";
 import shareIcon from "@/assets/icons/problem-board/fi-rr-share.svg";
 import thumbsUpIcon from "@/assets/icons/problem-board/fi-rr-thumbs-up.svg";
-import CommentList from "@/components/CommentList.vue";
+import CommentList from "@/pages/problem-set-detail/components/CommentList.vue";
 import router from "@/router";
 
 // 더보기 메뉴 상태 관리

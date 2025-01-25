@@ -1,17 +1,32 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { Menu } from "primevue";
 
-import CommentList from "@/components/CommentList.vue";
+import CommentList from "@/pages/problem-set-detail/components/CommentList.vue";
 import addOption from "@/assets/icons/problem-set-board-detail/add-option.svg";
 import thumbsUp from "@/assets/icons/problem-set-board-detail/thumbs-up.svg";
 import testCenterEnter from "@/assets/icons/problem-set-board-detail/test-center-enter.svg";
 import like from "@/assets/icons/problem-set-board-detail/like.svg";
 import ProblemTable from "@/components/layout/ProblemTable.vue";
+import { workbookAPI } from "@/api/workbook";
+import { userAPI } from "@/api/user";
+import { workbookLikeAPI } from "@/api/workbookLike";
+import { authAPI } from "@/api/auth";
 
 const route = useRoute();
 const router = useRouter();
+
+const uid = ref(null);
+const love = ref(null);
+const name = ref(null);
+const title = ref(null);
+const comments = ref([]);
+const problems = ref([]);
+const created_at = ref(null);
+const updated_at = ref(null);
+const description = ref(null);
+const workbookUserId = ref(null);
 
 const goToEditPage = () => {
   router.push(`/my-problem-sets-update/${route.params.problemSetId}`);
@@ -48,78 +63,44 @@ const myMenu = ref(null);
 const otherMenu = ref(null);
 // Menu 열기 함수
 const openMenu = (event) => {
-  myMenu.value.toggle(event); // 클릭 위치에서 메뉴 표시
+  if (uid.value === workbookUserId.value) myMenu.value.toggle(event);
+  else otherMenu.value.toggle(event);
 };
 
-const problems = ref([
-  {
-    id: 1,
-    status: "corrected",
-    title: "소방경력공무원 관계법규 개념 예제 문제 ",
-    category: "소방경력공무원 기출",
-    origin_source: "소방경력공무원 CBT",
-    problem_type: "ox",
-  },
-  {
-    id: 2,
-    status: "wrong",
-    title: "소방경력공무원 관계법규 개념 예제 문제 ",
-    category: "소방경력공무원 기출",
-    origin_source: "소방경력공무원 CBT",
-    problem_type: "multiple_choice",
-  },
-  {
-    id: 3,
-    status: "",
-    title: "소방경력공무원 관계법규 개념 예제 문제 ",
-    category: "소방경력공무원 기출",
-    origin_source: "소방경력공무원 CBT",
-    problem_type: "ox",
-  },
-  {
-    id: 4,
-    status: "wrong",
-    title: "소방경력공무원 관계법규 개념 예제 문제 ",
-    category: "소방경력공무원 기출",
-    origin_source: "소방경력공무원 CBT",
-    problem_type: "multiple_choice",
-  },
-  {
-    id: 5,
-    status: "wrong",
-    title: "소방경력공무원 관계법규 개념 예제 문제 ",
-    category: "소방경력공무원 기출",
-    origin_source: "소방경력공무원 CBT",
-    problem_type: "multiple_choice",
-  },
-]);
+const currentPage = ref(1);
+const totalPages = ref(0);
+// 페이지 변경 핸들러
+const handlePageChange = (page) => {
+  loadComments(page + 1); // PrimeVue의 Paginator는 0-based index 사용
+};
 
-const comments = ref([
-  {
-    id: 1,
-    author: "김내현",
-    contents: "소방경력공무원 관계법규 개념 예제 문제 ",
-    date: "1일전",
-  },
-  {
-    id: 2,
-    author: "김내현",
-    contents: "소방경력공무원 관계법규 개념 예제 문제 ",
-    date: "1일전",
-  },
-  {
-    id: 3,
-    author: "김내현",
-    contents: "소방경력공무원 관계법규 개념 예제 문제 ",
-    date: "1일전",
-  },
-  {
-    id: 4,
-    author: "김내현",
-    contents: "소방경력공무원 관계법규 개념 예제 문제 ",
-    date: "1일전",
-  },
-]);
+// 댓글 불러오기
+const loadComments = async (page = 1) => {};
+
+onMounted(async () => {
+  const workbookData = await workbookAPI.getOne(route.params.problemSetId);
+  title.value = workbookData["title"];
+  description.value = workbookData["description"];
+  created_at.value = workbookData["created_at"].split("T")[0];
+  updated_at.value = workbookData["updated_at"].split("T")[0];
+
+  const workbookProblemData = await workbookAPI.getWorkbookProblems(
+    workbookData["id"],
+  );
+  problems.value = workbookProblemData;
+  const workbookDataUid = workbookData["uid"];
+  const userInfo = await userAPI.getOne(workbookDataUid);
+  name.value = userInfo["name"];
+  workbookUserId.value = workbookDataUid;
+
+  love.value = await workbookLikeAPI.getWorkbookLikeCount(workbookData["id"]);
+
+  const comment = await workbookAPI.workbookCommentInfo(workbookData["id"]);
+  comments.value = comment;
+
+  const userId = await authAPI.getCurrentUser();
+  uid.value = userId["id"];
+});
 </script>
 <template>
   <div class="flex flex-col items-center w-full">
@@ -132,19 +113,19 @@ const comments = ref([
       <div class="h-[124px] mr-[196px] flex flex-col justify-between">
         <div class="flex flex-col justify-between h-[77px]">
           <div class="font-laundry text-[36px] -tracking[1.1%]">
-            소방공무원 3회차 시험 글자수 제한
+            {{ title }}
           </div>
-          <div class="h-[23px]">소방공무원 3회차 시험 문제집 설명입니다.</div>
+          <div class="h-[23px]">{{ description }}</div>
         </div>
         <div class="flex w-[473px] h-[23px] ml-[7px] justify-between">
-          <div>작성자 | 김내현</div>
-          <div>생성일 | 2025-01-02</div>
-          <div>수정일 | 2025-01-02</div>
-          <div class="flex justify-between w-10">
+          <div>작성자 | {{ name }}</div>
+          <div>생성일 | {{ created_at }}</div>
+          <div>수정일 | {{ updated_at }}</div>
+          <div class="flex justify-between w-8">
             <div>
               <img :src="thumbsUp" alt="좋아요" />
             </div>
-            <div>227</div>
+            <div>{{ love }}</div>
           </div>
         </div>
       </div>
@@ -164,8 +145,14 @@ const comments = ref([
       :showCheckbox="false"
       :show-problem="false"
     />
-    <hr class="w-[870px] mt-[104px] mb-10 border border-[#d4d4d4]" />
-    <CommentList :comments="comments" />
+    <hr class="w-[870px] mb-10 border border-[#d4d4d4]" />
+    <CommentList
+      :comments="comments"
+      :workbookId="route.params.problemSetId"
+      :totalPages="totalPages"
+      :currentPage="currentPage"
+      @page-change="handlePageChange"
+    />
   </div>
   <Menu
     :model="myMenuItems"

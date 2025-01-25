@@ -9,7 +9,7 @@ import ProblemSetBoard from "@/pages/problem-set-board/ProblemSetBoard.vue";
 import ExamRoom from "@/pages/exam-room/ExamRoom.vue";
 import LandingPage from "@/pages/LandingPage.vue";
 import ExamHistory from "@/pages/exam-history/ExamHistory.vue";
-import ProblemSetBoardDetail from "@/pages/ProblemSetBoardDetail.vue";
+import ProblemSetBoardDetail from "@/pages/problem-set-detail/ProblemSetDetail.vue";
 import CreateExamRoom from "@/pages/create-exam-room/CreateExamRoom.vue";
 import ProblemBoardDetail from "@/pages/problem-detail/ProblemBoardDetail.vue";
 import MyProblemsDetail from "@/pages/MyProblemsDetail.vue";
@@ -136,7 +136,7 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
-        path: "problem-set-board/:problemSetId",
+        path: "problem-set-board-detail/:problemSetId",
         name: "ProblemSetBoardDetail",
         component: ProblemSetBoardDetail,
         meta: { requiresAuth: true },
@@ -171,7 +171,6 @@ const router = createRouter({
 
 router.beforeEach(async (to, _, next) => {
   const session = await authAPI.getSession();
-  console.log(session);
 
   if (!session && to.meta.requiresAuth) {
     next("/");
