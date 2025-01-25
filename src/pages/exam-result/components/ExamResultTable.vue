@@ -1,98 +1,95 @@
 <script setup>
-import { ref, computed, watch } from "vue";
+import { computed, onMounted } from "vue";
+import { useExamResultStore } from "@/store/ExamResultStore";
+import { useRoute } from "vue-router";
 
-const props = defineProps({
-  totalCount: {
-    type: Number,
-    required: true,
-    default: 30, // 기본값 설정
-  },
-});
+const examResultStore = useExamResultStore();
+const route = useRoute();
+const testResultId = route.params.examResultId;
 
-// 문제 데이터 초기화
-const problems = ref(
-  Array.from({ length: props.totalCount }, (_, i) => ({
-    number: i + 1, // 문제 번호
-    flagged: false, // 플래그 상태
-    highlight: false, // 강조 상태
-  })),
-);
-// props.totalCount 값 변경 시 problems 업데이트
-watch(
-  () => props.totalCount,
-  (newCount) => {
-    problems.value = Array.from({ length: newCount }, (_, i) => ({
-      number: i + 1,
-      flagged: false,
-      highlight: false,
-    }));
-  },
-);
+const rows = computed(() => examResultStore.rows);
+const tableData = computed(() => examResultStore.tableData);
 
-// 문제 클릭 시 강조 처리 (토글 방식)
-const toggleHighlight = (problem) => {
-  problem.highlight = !problem.highlight;
-  problems.value.forEach((p) => {
-    if (p !== problem) {
-      p.highlight = false;
-    }
-  });
+// 문제 클릭 시 선택 처리
+const selectProblem = (problem) => {
+  examResultStore.selectProblem(problem);
 };
 
 // 플래그 토글
 const toggleFlag = (problem) => {
-  problem.flagged = !problem.flagged;
+  examResultStore.toggleFlag(problem);
 };
 
-// 행과 열 크기 설정
-const rows = computed(() => Math.ceil(props.totalCount / columns));
-const columns = 10;
+// 데이터 디버깅 및 문제 로드
+onMounted(async () => {
+  console.log("Mounted Table: Initializing data...");
 
-// 테이블 데이터를 행렬 형태로 변환
-const tableData = computed(() => {
-  const data = [];
-  for (let i = 0; i < rows.value; i++) {
-    data.push(problems.value.slice(i * columns, (i + 1) * columns));
+  if (!testResultId) {
+    console.error("Missing testResultId. Cannot fetch problems.");
+    return;
   }
-  return data;
+
+  try {
+    console.log("Calling fetchProblems with testResultId =", testResultId);
+    await examResultStore.fetchProblems(testResultId); // Pinia 액션 호출
+    console.log("Fetched problems:", examResultStore.problems);
+  } catch (error) {
+    console.error("Error while fetching problems:", error);
+  }
+
+  console.log("Mounted Table: Data loaded", {
+    problems: examResultStore.problems,
+    rows: rows.value,
+    tableData: tableData.value,
+  });
 });
 </script>
 
 <template>
-  <div class="border border-[#D4D4D4] rounded-[16px] mt-8 overflow-hidden">
-    <table class="custom-table">
-      <tbody>
-        <!-- 숫자행 + 플래그행 반복 -->
-        <template v-for="(row, rowIndex) in tableData" :key="'row-' + rowIndex">
-          <!-- 숫자 행 -->
-          <tr>
-            <td
-              v-for="(cell, colIndex) in row"
-              :key="'number-cell-' + colIndex"
-              :class="['cell problem-cell', { highlighted: cell.highlight }]"
-              @click="toggleHighlight(cell)"
-            >
-              <button>{{ cell.number }}</button>
-            </td>
-          </tr>
-          <!-- 플래그 행 -->
-          <tr>
-            <td
-              v-for="(cell, colIndex) in row"
-              :key="'flag-cell-' + colIndex"
-              class="cell flag-cell"
-              @click="toggleFlag(cell)"
-            >
-              <i
-                v-if="cell.flagged"
-                class="pi pi-flag"
-                style="color: blue; cursor: pointer"
-              ></i>
-            </td>
-          </tr>
-        </template>
-      </tbody>
-    </table>
+  <div class="container mx-auto mt-8">
+    <!-- 문제 테이블 -->
+    <div class="border border-[#D4D4D4] rounded-[16px] overflow-hidden mb-8">
+      <table class="custom-table">
+        <tbody>
+          <template
+            v-for="(row, rowIndex) in tableData"
+            :key="'row-' + rowIndex"
+          >
+            <!-- 숫자 행 -->
+            <tr>
+              <td
+                v-for="(cell, colIndex) in row"
+                :key="'number-cell-' + colIndex"
+                class="cell problem-cell"
+                :class="{
+                  highlighted: cell === examResultStore.currentProblem,
+                }"
+                @click="selectProblem(cell)"
+              >
+                <button class="w-full py-2">
+                  {{ cell.number }}
+                </button>
+              </td>
+            </tr>
+            <!-- 플래그 행 -->
+            <tr>
+              <td
+                v-for="(cell, colIndex) in row"
+                :key="'flag-cell-' + colIndex"
+                class="cell flag-cell"
+                @click="toggleFlag(cell)"
+              >
+                <i
+                  v-if="cell.flagged"
+                  class="pi pi-flag"
+                  style="color: blue; cursor: pointer"
+                ></i>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>
 

@@ -1,5 +1,4 @@
 <script setup>
-import profile from "@/assets/harp seal.jpg";
 import close from "@/assets/icons/exam-result/close.svg";
 
 import { useAuthStore } from "@/store/authStore";

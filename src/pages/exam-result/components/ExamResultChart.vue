@@ -1,31 +1,16 @@
 <script setup>
 import { ref, watch } from "vue";
+import { useExamResultStore } from "@/store/ExamResultStore";
 import Chart from "primevue/chart";
 
-const props = defineProps({
-  totalCount: {
-    type: Number,
-    required: true,
-    default: 0,
-  },
-  correctCount: {
-    type: Number,
-    required: true,
-    default: 0,
-  },
-  averageCount: {
-    type: Number,
-    required: true,
-    default: 1,
-  },
-});
+const examResultStore = useExamResultStore();
 
 const chartData = ref({
   labels: ["내 점수", "평균 점수"],
   datasets: [
     {
       backgroundColor: ["#F6C085", "#8992B5"],
-      data: [props.correctCount, props.averageCount],
+      data: [examResultStore.correctCount, examResultStore.averageCount],
     },
   ],
 });
@@ -42,7 +27,7 @@ const chartOptions = ref({
   scales: {
     x: {
       beginAtZero: true,
-      max: props.total, // 최대 점수
+      max: examResultStore.totalCount, // 최대 점수
       grid: {
         display: false,
       },
@@ -56,7 +41,11 @@ const chartOptions = ref({
 });
 
 watch(
-  () => [props.correctCount, props.averageCount, props.totalCount],
+  () => [
+    examResultStore.correctCount,
+    examResultStore.averageCount,
+    examResultStore.totalCount,
+  ],
   ([newCorrect, newAverage, newTotal]) => {
     chartData.value.datasets[0].data = [newCorrect, newAverage];
     chartOptions.value.scales.x.max = newTotal;
