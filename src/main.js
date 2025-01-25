@@ -9,9 +9,12 @@ import "primeicons/primeicons.css";
 import ToastService from "primevue/toastservice";
 import Tooltip from "primevue/tooltip";
 import { ConfirmationService } from "primevue";
+import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
+
+const pinia = createPinia();
+pinia.use(piniaPluginPersistedstate);
 
 const app = createApp(App);
-const pinia = createPinia();
 app.use(pinia);
 app.use(router);
 app.use(PrimeVue, {

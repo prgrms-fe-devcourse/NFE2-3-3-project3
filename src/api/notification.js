@@ -1,12 +1,13 @@
 import { supabase } from "./index.js";
 
-const getAll = async (userId) => {
+const getAll = async () => {
   try {
     const { data, error } = await supabase
       .from("notification")
-      .select("*")
-      .eq("target_uid", userId);
-
+      .select(
+        "*, sender: user_info!uid(*), receiver: user_info!target_uid(*), follow(*), invite(*), comment(*)",
+      )
+      .order("created_at", { ascending: true });
     if (error) throw error;
     return data;
   } catch (error) {
@@ -29,12 +30,11 @@ const read = async (id) => {
   }
 };
 
-const readAll = async (userId) => {
+const readAll = async () => {
   try {
     const { data, error } = await supabase
       .from("notification")
       .update({ read: true })
-      .eq("target_uid", userId)
       .select();
 
     if (error) throw error;

@@ -12,7 +12,7 @@ const problemSets = ref([]);
 const sorts = ref(SORTS);
 const sort = ref(SORTS[0]);
 const first = ref(0);
-const rows = ref(4);
+const rows = ref(8);
 
 const sortedProblemSets = computed(() => {
   const newProblemSets = [...problemSets.value];
