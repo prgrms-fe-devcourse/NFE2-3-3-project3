@@ -90,6 +90,21 @@ const updateEndTime = async (end_time, id) => {
   await supabase.from("test_center").update({ end_time }).eq("id", id);
 };
 
+const deleteTestCenter = async (id) => {
+  try {
+    const { data, error } = await supabase
+      .from("test_center")
+      .delete()
+      .eq("id", id)
+      .select();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 export const testCenterAPI = {
   add,
   getAll,
@@ -98,4 +113,5 @@ export const testCenterAPI = {
   updateStartTime,
   updateEndTime,
   getAllFields,
+  deleteTestCenter,
 };

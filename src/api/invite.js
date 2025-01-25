@@ -4,7 +4,10 @@ const getAll = async (userId) => {
   try {
     const { data, error } = await supabase
       .from("invite")
-      .select(`*, test_center(*)`)
+      .select(`
+        *,
+        test_center(*, workbook(title))
+      `)
       .eq("target_uid", userId);
 
     if (error) throw error;

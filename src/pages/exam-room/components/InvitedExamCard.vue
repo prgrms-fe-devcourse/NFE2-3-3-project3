@@ -27,6 +27,7 @@ const workbookTitle = ref("");
 const workbookDescription = ref("");
 const userName = ref("");
 const userId = ref(null);
+const emit = defineEmits(['exam-status-change']);
 
 const examDuration = computed(() => {
  if (!props.testCenter.start_date || !props.testCenter.end_date) return "";
@@ -79,31 +80,33 @@ const fetchCurrentUserId = async () => {
 };
 
 const handleAccept = async () => {
- if (isProcessing.value || !userId.value) return;
- isProcessing.value = true;
- try {
-   await inviteAPI.accept(userId.value, props.inviteData.id);
-   alert("시험에 참여 승인되었습니다.");
- } catch (error) {
-   console.error(error);
-   alert("승인 요청 처리 중 오류가 발생했습니다.");
- } finally {
-   isProcessing.value = false;
- }
+  if (isProcessing.value || !userId.value) return;
+  isProcessing.value = true;
+  try {
+    await inviteAPI.accept(userId.value, props.inviteData.id);
+    alert("시험에 참여 승인되었습니다.");
+    emit('exam-status-change');
+  } catch (error) {
+    console.error(error);
+    alert("승인 요청 처리 중 오류가 발생했습니다.");
+  } finally {
+    isProcessing.value = false;
+  }
 };
 
 const handleDeny = async () => {
- if (isProcessing.value) return;
- isProcessing.value = true;
- try {
-   await inviteAPI.deny(props.inviteData.id);
-   alert("시험 초대를 거절했습니다.");
- } catch (error) {
-   console.error(error);
-   alert("거절 요청 처리 중 오류가 발생했습니다.");
- } finally {
-   isProcessing.value = false;
- }
+  if (isProcessing.value) return;
+  isProcessing.value = true;
+  try {
+    await inviteAPI.deny(props.inviteData.id);
+    alert("시험 초대를 거절했습니다.");
+    emit('exam-status-change');
+  } catch (error) {
+    console.error(error);
+    alert("거절 요청 처리 중 오류가 발생했습니다.");
+  } finally {
+    isProcessing.value = false;
+  }
 };
 
 watchEffect(() => {
