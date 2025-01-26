@@ -12,8 +12,10 @@ import { ref } from "vue";
 import { inviteAPI } from "@/api/invite";
 import { useConfirm } from "primevue/useconfirm";
 import { testCenterAPI } from "@/api/testCenter";
+import { useToast } from "primevue/usetoast";
 
 const emit = defineEmits(["delete-exam"]);
+const toast = useToast();
 
 const props = defineProps({
   id: Number,
@@ -40,11 +42,21 @@ const handleDelete = async () => {
   isProcessing.value = true;
   try {
     await testCenterAPI.deleteTestCenter(props.id);
-    alert("시험이 삭제되었습니다.");
+    toast.add({
+      severity: 'success', 
+      summary: '삭제 완료',
+      detail: '시험이 삭제되었습니다.',
+      life: 3000
+    });
     emit('delete-exam');
   } catch (error) {
     console.error(error);
-    alert("삭제 요청 처리 중 오류가 발생했습니다.");
+    toast.add({
+      severity: 'error',
+      summary: '삭제 실패', 
+      detail: '삭제 요청 처리 중 오류가 발생했습니다.',
+      life: 3000
+    });
   } finally {
     isProcessing.value = false;
   }
