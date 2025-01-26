@@ -41,6 +41,13 @@ const formattedDate = computed(() => {
 const problemCount = computed(() => {
   return props.workbook?.workbook_problem?.[0]?.count ?? 0;
 });
+
+watchEffect(async () => {
+ if (props.id) {
+   participantCount.value = await inviteAPI.getParticipantCount(props.id);
+   console.log("getParticipantCount 결괏값", participantCount.value)
+ }
+});
 </script>
 
 <template>
