@@ -13,7 +13,6 @@ import { inviteAPI } from "@/api/invite";
 import { useConfirm } from "primevue/useconfirm";
 import { testCenterAPI } from "@/api/testCenter";
 import { useToast } from "primevue/usetoast";
-import { supabase } from "@/api";
 
 const emit = defineEmits(["delete-exam"]);
 const toast = useToast();
@@ -88,13 +87,9 @@ const problemCount = computed(() => {
 });
 
 watchEffect(async () => {
-  if (props.id) {
-    const { data: { user } } = await supabase.auth.getUser();
-    // console.log("user 정보",user)
-    if (user?.id) {
-      participantCount.value = await inviteAPI.getParticipantCount(props.id, user.id);
-    }
-  }
+ if (props.id) {
+   participantCount.value = await inviteAPI.getParticipantCount(props.id);
+ }
 });
 </script>
 
