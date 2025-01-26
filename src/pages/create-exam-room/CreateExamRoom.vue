@@ -17,6 +17,7 @@ import "swiper/css/effect-cards";
 import { useAuthStore } from "@/store/authStore";
 import { testCenterAPI } from "@/api/testCenter";
 import { inviteAPI } from "@/api/invite";
+import { formatToKoreanDateTime } from "@/utils/formatToKoreanDateTime";
 
 
 const swiperInstance = ref(null);
@@ -104,24 +105,25 @@ const handleSubmit = () => {
   showConfirmDialog.value = true;
 };
 
+// 시험장 생성 요청
 const submitExam = async () => {
   try {
     const currentUser = authStore.user;
+    const start_date = new Date(formatToKoreanDateTime(examData.value.examDateTime));
+    const end_date = new Date(start_date.getTime() + examData.value.duration * 60000);
 
     const body = {
       uid: currentUser?.id,
       workbook_id: examData.value.selectedWorkbook?.id,
-      start_date: examData.value.examDateTime,
-      end_date: new Date(
-        examData.value.examDateTime.getTime() + examData.value.duration * 60000,
-      ),
+      start_date,
+      end_date,
     };
 
-    console.log("Exam data to be sent:", body); // 시험 데이터 로그 출력
+    console.log("시험 데이터 로그:", body); // 시험 데이터 로그 출력
 
     const result = await testCenterAPI.add(body);
 
-    console.log("Test center creation result:", result); // 시험장 생성 결과 로그 출력
+    console.log("시험장 생성 결과:", result); // 시험장 생성 결과 로그 출력
 
     // 시험장 생성이 성공하면 초대 생성
     if (result && result.id) {
@@ -132,10 +134,10 @@ const submitExam = async () => {
           test_center_id: result.id,
         }));
 
-      console.log("Invites to be sent:", invites); // 초대 데이터 로그 출력
+      console.log("초대 데이터 로그:", invites); // 초대 데이터 로그 출력
 
       const inviteResult = await inviteAPI.add(invites);
-      console.log("Invite creation result:", inviteResult); // 초대 생성 결과 로그 출력
+      console.log("초대 생성 결과:", inviteResult); // 초대 생성 결과 로그 출력
 
       if (inviteResult) {
         router.push("/exam-room");
