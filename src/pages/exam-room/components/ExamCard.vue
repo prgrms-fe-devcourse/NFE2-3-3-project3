@@ -8,15 +8,17 @@ import trashIcon from "@/assets/icons/exam-room/fi-rr-trash.svg";
 import { computed } from "vue";
 import { formatToKoreanDateTime } from "@/utils/formatToKoreanDateTime";
 import { formatMsToHourMinute } from "@/utils/formatMsToHour";
-import { ref } from "vue";
+import { ref, watchEffect } from "vue";
 import { inviteAPI } from "@/api/invite";
 import { useConfirm } from "primevue/useconfirm";
 import { testCenterAPI } from "@/api/testCenter";
+import { useToast } from "primevue/usetoast";
 
 const emit = defineEmits(["delete-exam"]);
+const toast = useToast();
 
 const props = defineProps({
-  id: Number,
+  id: Number, // 테스트센터 아이디
   workbook_id: Number,
   workbook: {
     type: Object,
@@ -34,17 +36,28 @@ const props = defineProps({
 
 const confirm = useConfirm();
 const isProcessing = ref(false);
+const participantCount = ref(0);
 
 const handleDelete = async () => {
   if (isProcessing.value) return;
   isProcessing.value = true;
   try {
     await testCenterAPI.deleteTestCenter(props.id);
-    alert("시험이 삭제되었습니다.");
+    toast.add({
+      severity: 'success', 
+      summary: '삭제 완료',
+      detail: '시험이 삭제되었습니다.',
+      life: 3000
+    });
     emit('delete-exam');
   } catch (error) {
     console.error(error);
-    alert("삭제 요청 처리 중 오류가 발생했습니다.");
+    toast.add({
+      severity: 'error',
+      summary: '삭제 실패', 
+      detail: '삭제 요청 처리 중 오류가 발생했습니다.',
+      life: 3000
+    });
   } finally {
     isProcessing.value = false;
   }
@@ -72,6 +85,12 @@ const formattedDate = computed(() => {
 const problemCount = computed(() => {
   return props.workbook?.workbook_problem?.[0]?.count ?? 0;
 });
+
+watchEffect(async () => {
+ if (props.id) {
+   participantCount.value = await inviteAPI.getParticipantCount(props.id);
+ }
+});
 </script>
 
 <template>
@@ -98,7 +117,7 @@ const problemCount = computed(() => {
       <!-- 응시자 표시 -->
       <li class="flex items-center gap-2 text-sm">
         <img :src="userIcon" alt="user icon" class="w-3 h-3" />
-        <span>{{ (confirmed_count?.[0]?.count || 0) + 1 }}명</span>
+        <span>{{ participantCount + 1 }}명</span>
       </li>
       <!-- 시작 시간 -->
       <li class="flex items-center gap-2 text-sm">
