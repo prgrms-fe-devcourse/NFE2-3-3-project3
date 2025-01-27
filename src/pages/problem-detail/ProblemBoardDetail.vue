@@ -154,8 +154,6 @@ onMounted(async () => {
       :source="problemStore.problem?.origin_source"
     />
 
-    <hr class="w-full mb-10 border border-slate-100" />
-
     <CommentList
       :comments="comments"
       :isLoading="isLoadingComments"
