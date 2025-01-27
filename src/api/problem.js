@@ -331,11 +331,11 @@ const checkIsShared = async (uid, problem_id) => {
  * @param {number} problem_id - 북마크할 문제 ID
  * @returns {object} 생성된 북마크 데이터
  */
-const addShare = async (problem_id) => {
+const addShare = async (problem_id, uid) => {
   try {
     const { data, error } = await supabase
       .from("shared_problem")
-      .insert([{ problem_id }])
+      .insert([{ problem_id, uid }])
       .select();
 
     if (error) throw error;
