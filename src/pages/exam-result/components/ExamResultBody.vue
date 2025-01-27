@@ -167,46 +167,9 @@ watch(
         ]"
       >
         <div class="px-8 py-4 mb-6 text-gray-800 border-t border-gray-300">
-          <!-- 정답 표시 -->
-          <div v-if="currentProblem" class="mb-4">
-            <h4 class="font-semibold text-lg mb-2">정답</h4>
-            <div class="flex items-center gap-2">
-              <span
-                class="w-8 h-8 flex items-center justify-center rounded-full bg-orange-3 text-red-1 font-bold"
-              >
-                {{ currentProblem.answer }}
-              </span>
-              <p class="text-gray-700">
-                {{
-                  currentProblem.options?.[currentProblem.answer - 1] ||
-                  "선택지 정보 없음"
-                }}
-              </p>
-            </div>
-          </div>
-
-          <!-- 풀이 내용 -->
-          <div
-            v-if="currentProblem?.explanation"
-            class="bg-gray-50 p-4 rounded-lg"
-          >
-            <h4 class="font-semibold text-lg mb-2">상세 풀이</h4>
-            <p class="text-gray-600 leading-relaxed whitespace-pre-line">
-              {{ currentProblem.explanation }}
-            </p>
-          </div>
-
-          <!-- 데이터 없을 경우 -->
-          <div v-else class="text-center py-4 text-gray-400">
-            표시할 풀이 내용이 없습니다
-          </div>
+          <ExamResultProblems />
         </div>
       </div>
-    </div>
-
-    <!-- 선택한 문제 보여주기 -->
-    <div class="rounded-2xl border border-gray-300 mt-8 p-2">
-      <ExamResultProblems />
     </div>
 
     <!-- 다른 사용자 점수 보기 -->
