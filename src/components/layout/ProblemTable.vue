@@ -17,11 +17,11 @@ import {
   InputText,
   Listbox,
   Textarea,
+  useToast,
+  ToggleSwitch,
 } from "primevue";
 import { storeToRefs } from "pinia";
 import { RouterLink } from "vue-router";
-
-import router from "@/router";
 import { problemAPI } from "@/api/problem";
 import { SORT, SORTS } from "@/const/sorts";
 import EmptyText from "./EmptyText.vue";
@@ -34,6 +34,9 @@ import statusWrong from "@/assets/icons/problem-board/status-wrong.svg";
 import statusSolved from "@/assets/icons/problem-board/status-solved.svg";
 import seeMyProblems from "@/assets/icons/my-problems/see-my-problems.svg";
 import checkedMyProblem from "@/assets/icons/my-problems/color-my-problems.svg";
+import { useRoute } from "vue-router";
+import { useRouter } from "vue-router";
+import { watch } from "vue";
 
 const props = defineProps({
   problems: {
@@ -87,16 +90,21 @@ const props = defineProps({
   workbookId: String,
 });
 
-const title = ref("");
+const route = useRoute();
+const router = useRouter();
 const popup = ref(null);
 const sorts = ref(SORTS);
-const sort = ref(SORTS[0]);
+const currentSort = route.query.sort === SORT.likes ? SORTS[1] : SORTS[0];
+const sort = ref(currentSort);
 const problemSets = ref([]);
+const title = ref("");
 const description = ref("");
+const shared = ref(false);
 const selectedProblems = ref([]);
 const showProblemSet = ref(false);
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
+const toast = useToast();
 
 const handleAddClick = () => {
   emit("open-dialog");
@@ -117,18 +125,43 @@ const showAddProblemSetPopup = () => {
 
 const addProblemToProblemSet = async (problemSetId, problems) => {
   const problemIds = problems.map((problem) => problem.id);
-  await problemAPI.addMultiple(problemSetId, problemIds);
-  alert(`해당 문제집에 문제 ${problems.length}개가 추가되었습니다.`);
+  const { data, insertedCount } = await problemAPI.addMultiple(
+    problemSetId,
+    problemIds,
+  );
+  if (data) {
+    toast.add({
+      severity: "success",
+      summary: "문제 추가 완료",
+      detail: `해당 문제집에 새로운 문제 ${insertedCount}개가 추가되었습니다.`,
+      life: 3000,
+    });
+  } else {
+    toast.add({
+      severity: "error",
+      summary: "문제 추가 실패",
+      detail: "문제 추가 중 오류가 발생했습니다.",
+      life: 3000,
+    });
+  }
+
+  if (showProblemSet.value) showProblemSet.value = false;
+  if (showAddProblemSet.value) showAddProblemSet.value = false;
+  selectedProblems.value = [];
 };
 
 const addProblemSet = async () => {
-  const problemSet = await workbookAPI.add(title.value, description.value);
+  const problemSet = await workbookAPI.add(
+    title.value,
+    description.value,
+    shared.value,
+  );
   problemSets.value = [...problemSets.value, problemSet];
   showAddProblemSet.value = false;
 };
 
 const deleteProblem = async (problem_id) => {
-  const realDelete = confirm("문제집에서 해당 문제를 뺴시겠습니까?");
+  const realDelete = confirm("문제집에서 해당 문제를 빼시겠습니까?");
   if (realDelete) {
     await workbookAPI.removeProblem(props.workbookId, problem_id);
     router.go(0);
@@ -189,6 +222,11 @@ const sortedProblems = computed(() => {
     default:
       return problems;
   }
+});
+
+watch(sort, (newSort) => {
+  const newQuery = { ...route.query, sort: newSort.value };
+  router.push({ query: newQuery });
 });
 
 watchEffect(async () => {
@@ -416,6 +454,10 @@ onBeforeUnmount(() => {
               cols="30"
               placeholder="문제집 설명을 입력해주세요"
             />
+          </div>
+          <div class="flex flex-col gap-2">
+            <label for="shared" class="text-sm">게시판 공유 여부</label>
+            <ToggleSwitch id="shared" v-model="shared" />
           </div>
         </div>
         <Button
