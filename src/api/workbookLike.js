@@ -2,13 +2,33 @@ import { supabase } from ".";
 
 // CREATE
 const add = async (uid, workbook_id) => {
-  await supabase.from("workbook_like").insert([{ uid, workbook_id }]).select();
-  console.log(data);
+  try {
+    await supabase
+      .from("workbook_like")
+      .insert([{ uid, workbook_id }])
+      .select();
+  } catch (error) {
+    throw error;
+  }
 };
 
 // READ
 const getUid = async (uid) => {
   await supabase.from("workbook_like").select("workbook_id").eq("uid", uid);
+};
+
+const getWorkbookLike = async (uid, workbook_id) => {
+  try {
+    const { data, error } = await supabase
+      .from("workbook_like")
+      .select("*")
+      .eq("uid", uid)
+      .eq("workbook_id", workbook_id);
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 const getWorkbookLikeCount = async (workbook_id) => {
@@ -28,5 +48,6 @@ const getWorkbookLikeCount = async (workbook_id) => {
 export const workbookLikeAPI = {
   add,
   getUid,
+  getWorkbookLike,
   getWorkbookLikeCount,
 };
