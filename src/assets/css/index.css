@@ -19,6 +19,14 @@
   /* select */
   --p-select-option-selected-color: #1a1a1a !important;
   --p-select-option-selected-focus-color: #1a1a1a !important;
+  /* outline-button */
+  --p-button-outlined-primary-border-color: var(--p-primary-color) !important;
+  --p-button-outlined-primary-hover-background: var(
+    --p-primary-active-color
+  ) !important;
+  --p-button-outlined-primary-active-background: var(
+    --p-primary-active-color
+  ) !important;
 }
 
 *,

@@ -1,39 +1,41 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, watch, onBeforeMount } from "vue";
 import { useRouter } from "vue-router";
 import Menu from "primevue/menu";
-
 import LoginModal from "./LoginModal.vue";
-
-import { authAPI } from "@/api/auth";
-
-import { useAuthStore } from "../../store/authStore";
+import { Button } from "primevue";
+import Notification from "./Notification.vue";
+import { userAPI } from "@/api/user";
+import { useAuthStore } from "@/store/authStore";
+import { storeToRefs } from "pinia";
 
 const alertPath = new URL("@/assets/icons/alert.svg", import.meta.url).href;
 const pointPath = new URL("@/assets/icons/point.svg", import.meta.url).href;
+
 const router = useRouter();
 
-// Menu 참조
-const menu = ref(null);
-
-// Menu 열기 함수
-const openMenu = (event) => {
-  menu.value.toggle(event); // 클릭 위치에서 메뉴 표시
-};
-//포인트 추적
-const points = ref(40);
-
+// 유저 정보
 const authStore = useAuthStore();
+const { user } = storeToRefs(authStore);
+const userInfo = ref();
+
 const showLoginModal = ref(false);
 
 const handleLogout = async () => {
   try {
-    authStore.logout();
+    await authStore.logout();
     router.push("/");
   } catch (error) {
     console.error("Logout failed:", error);
   }
 };
+
+const handleLoginSuccess = () => {
+  showLoginModal.value = false;
+};
+
+// Menu 참조
+const menu = ref(null);
 
 // 메뉴 항목 정의
 const menuItems = [
@@ -51,23 +53,24 @@ const menuItems = [
   },
 ];
 
-const handleLoginSuccess = () => {
-  showLoginModal.value = false;
+// Menu 열기 함수
+const openMenu = (event) => {
+  menu.value.toggle(event); // 클릭 위치에서 메뉴 표시
 };
 
-const name = ref(null);
-
-onMounted(async () => {
+onBeforeMount(async () => {
   await authStore.initializeAuth();
-  authAPI
-    .getCurrentUser()
-    .then((data) => {
-      name.value = data["user_metadata"]["name"];
-    })
-    .catch((error) => {
-      console.error("Error fetching user info:", error);
-    });
 });
+
+watch(
+  () => user.value,
+  async (user) => {
+    if (user) {
+      userInfo.value = await userAPI.getOne(user.id);
+    }
+  },
+  { immediate: true },
+);
 </script>
 
 <template>
@@ -75,9 +78,15 @@ onMounted(async () => {
     <nav
       class="flex items-center justify-end px-16 py-6 space-x-3 text-gray-600"
     >
-      <a href="#" class="no-underline hover:text-gray-800">다크 모드</a>
+      <Button
+        icon="pi pi-sun"
+        severity="secondary"
+        variant="text"
+        rounded
+        class="!py-0"
+      />
       <!-- 알림 및 포인트 -->
-      <img :src="alertPath" alt="alert" />
+      <Notification />
 
       <div
         class="flex items-center px-2 py-1 h-[24px] bg-black-5 rounded-full font-pretend"
@@ -85,14 +94,16 @@ onMounted(async () => {
         <!-- 별 아이콘 -->
         <img :src="pointPath" alt="point" class="mr-1" />
         <!-- 포인트 숫자 -->
-        <span class="text-sm font-bold text-gray-800">{{ points }}</span>
+        <span class="text-sm font-bold text-gray-800">
+          {{ userInfo?.total_points }}
+        </span>
       </div>
       <!-- 메뉴 트리거 -->
       <div
         @click="openMenu"
         class="flex items-center gap-2 cursor-pointer font-pretend"
       >
-        <span class="font-medium">{{ name }}님</span>
+        <span class="font-medium">{{ userInfo?.name }}님</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"

@@ -18,13 +18,13 @@ const { problemSet } = defineProps({
       <div class="flex justify-between items-center">
         <div class="flex items-center">
           <Avatar
-            :image="problemSet?.user.avatar_url"
+            :image="problemSet?.user?.avatar_url"
             class="mr-2 max-w-7 max-h-7"
             shape="circle"
           />
-          <span>{{ problemSet?.user.name }}</span>
+          <span>{{ problemSet?.user?.name }}</span>
         </div>
-        <p class="font-medium">{{ problemSet?.count }}문제</p>
+        <p class="font-medium">{{ problemSet?.problems?.length }}문제</p>
       </div>
     </article>
   </RouterLink>

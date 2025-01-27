@@ -1,5 +1,14 @@
 <script setup>
 import {
+  ref,
+  onMounted,
+  onBeforeUnmount,
+  defineProps,
+  watchEffect,
+  computed,
+  inject,
+} from "vue";
+import {
   Button,
   Column,
   DataTable,
@@ -9,40 +18,22 @@ import {
   Listbox,
   Textarea,
 } from "primevue";
-import { RouterLink } from "vue-router";
-import {
-  ref,
-  onMounted,
-  onBeforeUnmount,
-  defineProps,
-  watchEffect,
-  computed,
-} from "vue";
-import statusSolved from "@/assets/icons/problem-board/status-solved.svg";
-import statusWrong from "@/assets/icons/problem-board/status-wrong.svg";
-import minus from "@/assets/icons/problem-board/minus.svg";
-import plus from "@/assets/icons/problem-board/plus.svg";
-import { useAuthStore } from "@/store/authStore";
 import { storeToRefs } from "pinia";
-import checkedMyProblem from "@/assets/icons/my-problems/color-my-problems.svg";
-import seeMyProblems from "@/assets/icons/my-problems/see-my-problems.svg";
-import sharedIcon from "@/assets/icons/my-problem-sets/share.svg";
-import { workbookAPI } from "@/api/workbook";
+import { RouterLink } from "vue-router";
+
+import router from "@/router";
 import { problemAPI } from "@/api/problem";
-
-const authStore = useAuthStore();
-const { user } = storeToRefs(authStore);
-const emit = defineEmits(["open-dialog"]);
-
-const handleAddClick = () => {
-  emit("open-dialog");
-};
-
-const SORTS = ref([
-  { name: "최신순", value: "최신순" },
-  { name: "좋아요 많은 순", value: "좋아요 많은 순" },
-]);
-const sort = ref({ name: "최신순", value: "최신순" });
+import { SORT, SORTS } from "@/const/sorts";
+import EmptyText from "./EmptyText.vue";
+import { workbookAPI } from "@/api/workbook";
+import { useAuthStore } from "@/store/authStore";
+import plus from "@/assets/icons/problem-board/plus.svg";
+import minus from "@/assets/icons/problem-board/minus.svg";
+import sharedIcon from "@/assets/icons/my-problem-sets/share.svg";
+import statusWrong from "@/assets/icons/problem-board/status-wrong.svg";
+import statusSolved from "@/assets/icons/problem-board/status-solved.svg";
+import seeMyProblems from "@/assets/icons/my-problems/see-my-problems.svg";
+import checkedMyProblem from "@/assets/icons/my-problems/color-my-problems.svg";
 
 const props = defineProps({
   problems: {
@@ -52,6 +43,10 @@ const props = defineProps({
   showCheckbox: {
     type: Boolean,
     default: true,
+  },
+  showDelete: {
+    type: Boolean,
+    default: false,
   },
   showMinus: {
     type: Boolean,
@@ -89,15 +84,28 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  workbookId: String,
 });
 
-const selectedProblems = ref([]);
 const title = ref("");
-const description = ref("");
-
 const popup = ref(null);
+const sorts = ref(SORTS);
+const sort = ref(SORTS[0]);
 const problemSets = ref([]);
+const description = ref("");
+const selectedProblems = ref([]);
 const showProblemSet = ref(false);
+const authStore = useAuthStore();
+const { user } = storeToRefs(authStore);
+
+const handleAddClick = () => {
+  emit("open-dialog");
+};
+const emit = defineEmits(["open-dialog"]);
+
+const problemAdd = inject("problemAdd");
+const addedProblemDelete = inject("addedProblemDelete");
+
 const ShowProblemSetPopup = () => {
   showProblemSet.value = true;
 };
@@ -112,12 +120,21 @@ const addProblemToProblemSet = async (problemSetId, problems) => {
   await problemAPI.addMultiple(problemSetId, problemIds);
   alert(`해당 문제집에 문제 ${problems.length}개가 추가되었습니다.`);
 };
+
 const addProblemSet = async () => {
   const problemSet = await workbookAPI.add(title.value, description.value);
   problemSets.value = [...problemSets.value, problemSet];
   showAddProblemSet.value = false;
 };
 
+const deleteProblem = async (problem_id) => {
+  const realDelete = confirm("문제집에서 해당 문제를 뺴시겠습니까?");
+  if (realDelete) {
+    await workbookAPI.removeProblem(props.workbookId, problem_id);
+    router.go(0);
+  }
+  return;
+};
 const getStatus = (status) => {
   switch (status) {
     case "corrected":
@@ -155,21 +172,17 @@ const handleClickOutside = (event) => {
     if (showAddProblemSet.value) showAddProblemSet.value = false;
   }
 };
-watchEffect(async () => {
-  if (!user.value) return;
-  problemSets.value = await workbookAPI.getAll(user.value.id);
-});
 
 const sortedProblems = computed(() => {
   if (!props.problems) return [];
 
   const problems = [...props.problems];
-  switch (sort.value.value) {
-    case "최신순":
+  switch (sort.value?.value) {
+    case SORT.latest:
       return problems.sort(
         (a, b) => new Date(b.created_at) - new Date(a.created_at),
       );
-    case "좋아요 많은 순":
+    case SORT.likes:
       return problems.sort(
         (a, b) => (b.likes.length || 0) - (a.likes.length || 0),
       );
@@ -178,9 +191,15 @@ const sortedProblems = computed(() => {
   }
 });
 
+watchEffect(async () => {
+  if (!user.value) return;
+  problemSets.value = await workbookAPI.getAll(user.value.id);
+});
+
 onMounted(() => {
   window.addEventListener("click", handleClickOutside);
 });
+
 onBeforeUnmount(() => {
   window.removeEventListener("click", handleClickOutside);
 });
@@ -206,10 +225,10 @@ onBeforeUnmount(() => {
           label="내 문제만 보기"
           size="small"
           severity="secondary"
-          class="bg-navy-4 text-white text-sm"
+          class="text-sm text-white bg-navy-4"
         >
           <template #icon>
-            <img :src="seeMyProblems" alt="seeMyProblemsIcon" class="h-5 w-5" />
+            <img :src="seeMyProblems" alt="seeMyProblemsIcon" class="w-5 h-5" />
           </template>
         </Button>
         <Button
@@ -217,10 +236,10 @@ onBeforeUnmount(() => {
           label="공유한 문제"
           size="small"
           severity="secondary"
-          class="bg-navy-4 text-white text-sm"
+          class="text-sm text-white bg-navy-4"
         >
           <template #icon>
-            <img :src="sharedIcon" alt="sharedIcon" class="h-5 w-5" />
+            <img :src="sharedIcon" alt="sharedIcon" class="w-5 h-5" />
           </template>
         </Button>
         <button
@@ -234,14 +253,14 @@ onBeforeUnmount(() => {
       <Select
         v-if="showSelect"
         v-model="sort"
-        :options="SORTS"
+        :options="sorts"
         optionLabel="name"
         class="w-40"
       />
     </div>
 
     <!-- 테이블 -->
-    <div class="border border-black-5 rounded-2xl overflow-hidden">
+    <div class="overflow-hidden border border-black-5 rounded-2xl">
       <DataTable
         v-model:selection="selectedProblems"
         :value="sortedProblems"
@@ -252,9 +271,7 @@ onBeforeUnmount(() => {
       >
         <!-- 검색 결과가 없는 경우 -->
         <template #empty>
-          <div class="flex items-center justify-center p-6 text-gray-500">
-            검색된 문제가 없습니다...
-          </div>
+          <EmptyText class="py-6">검색된 문제가 없습니다...</EmptyText>
         </template>
 
         <!-- 체크박스 선택 -->
@@ -263,17 +280,24 @@ onBeforeUnmount(() => {
           selectionMode="multiple"
           headerStyle="width: 3rem"
         ></Column>
-        <Column v-if="showMinus" header="제거" field="minus">
+        <Column v-if="showDelete" header="제거" field="delete">
           <template #body="slotProps">
-            <button @click="minusProblem(slotProps.data.id)">
+            <button @click="deleteProblem(slotProps.data.id)">
               <img :src="minus" alt="문제 제거" />
             </button>
           </template>
         </Column>
         <Column v-if="showPlus" header="추가" field="plus">
           <template #body="slotProps">
-            <button @click="plusProblem(slotProps.data.id)">
+            <button @click="problemAdd(slotProps.data)">
               <img :src="plus" alt="문제 추가" />
+            </button>
+          </template>
+        </Column>
+        <Column v-if="showMinus" header="빼기" field="minus">
+          <template #body="slotProps">
+            <button @click="addedProblemDelete(slotProps.data)">
+              <img :src="minus" alt="넣은 문제 빼기" />
             </button>
           </template>
         </Column>
@@ -301,7 +325,7 @@ onBeforeUnmount(() => {
                     : '/problem-board'
                 }/${slotProps.data.id}`"
               >
-                <span class="cursor-pointer w-full">{{
+                <span class="w-full cursor-pointer">{{
                   slotProps.data.title
                 }}</span>
               </RouterLink>
@@ -309,7 +333,7 @@ onBeforeUnmount(() => {
                 v-if="slotProps.data.uid === user?.id"
                 :src="checkedMyProblem"
                 alt="checkedMyProblemIcon"
-                class="h-5 w-5"
+                class="w-5 h-5"
                 v-tooltip.top="'내가 만든 문제'"
               />
             </div>
@@ -332,7 +356,7 @@ onBeforeUnmount(() => {
 
     <!-- 팝업 -->
     <div class="h-24"></div>
-    <div ref="popup" class="absolute -translate-x-1/2 left-1/2 bottom-0">
+    <div ref="popup" class="absolute bottom-0 -translate-x-1/2 left-1/2">
       <Button
         v-if="selectedProblems.length"
         type="button"

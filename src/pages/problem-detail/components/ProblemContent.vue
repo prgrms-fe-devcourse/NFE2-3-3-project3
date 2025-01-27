@@ -2,8 +2,8 @@
 defineProps({
   problem: {
     type: Object,
-    required: true
-  }
+    required: true,
+  },
 });
 </script>
 
@@ -24,34 +24,48 @@ defineProps({
     <div v-if="problem?.problem_type === 'multiple_choice'" class="space-y-4">
       <ol class="list-decimal space-y-2 text-gray-700">
         <li v-if="problem.option_one" class="flex items-center gap-2">
-          <strong class="text-xs rounded-full bg-black-6 w-7 h-7 font-normal item-middle">1</strong>
+          <strong
+            class="text-xs rounded-full bg-black-6 w-7 h-7 font-normal item-middle"
+            >1</strong
+          >
           <span>{{ problem.option_one }}</span>
         </li>
         <li v-if="problem.option_two" class="flex items-center gap-2">
-          <strong class="text-xs rounded-full bg-black-6 w-7 h-7 font-normal item-middle">2</strong>
+          <strong
+            class="text-xs rounded-full bg-black-6 w-7 h-7 font-normal item-middle"
+            >2</strong
+          >
           <span>{{ problem.option_two }}</span>
         </li>
         <li v-if="problem.option_three" class="flex items-center gap-2">
-          <strong class="text-xs rounded-full bg-black-6 w-7 h-7 font-normal item-middle">3</strong>
+          <strong
+            class="text-xs rounded-full bg-black-6 w-7 h-7 font-normal item-middle"
+            >3</strong
+          >
           <span>{{ problem.option_three }}</span>
         </li>
         <li v-if="problem.option_four" class="flex items-center gap-2">
-          <strong class="text-xs rounded-full bg-black-6 w-7 h-7 font-normal item-middle">4</strong>
+          <strong
+            class="text-xs rounded-full bg-black-6 w-7 h-7 font-normal item-middle"
+            >4</strong
+          >
           <span>{{ problem.option_four }}</span>
         </li>
       </ol>
     </div>
 
     <!-- OX 보기 -->
-    <div v-if="problem?.problem_type === 'OX'" class="space-y-4">
-      <ul>
-        <li v-if="problem?.option_one" class="flex items-center gap-2 rounded border border-gray-200">
-          <strong class="text-lg font-normal item-middle inline-block border-gray-200 h-full border-r px-4 py-2 bg-black-6">O</strong>
-          <span class="inline-block px-4 py-2">{{ problem.option_one }}</span>
+    <div v-if="problem?.problem_type === 'ox'" class="space-y-4">
+      <ul class="item-between gap-4">
+        <li
+          class="flex items-center gap-2 rounded border border-gray-200 w-1/2 text-lg font-normal item-middle h-full border-r px-4 py-2 bg-black-6 hover:bg-orange-2 shadow-sm"
+        >
+          O
         </li>
-        <li v-if="problem?.option_two" class="flex items-center gap-2 rounded border border-gray-200">
-          <strong class="text-lg font-normal item-middle inline-block border-gray-200 h-full border-r px-4 py-2 bg-black-6">X</strong>
-          <span class="inline-block px-4 py-2">{{ problem.option_two }}</span>
+        <li
+          class="flex items-center gap-2 rounded border border-gray-200 w-1/2 text-lg font-normal item-middle h-full border-r px-4 py-2 bg-black-6  hover:bg-orange-2 shadow-sm"
+        >
+          X
         </li>
       </ul>
     </div>

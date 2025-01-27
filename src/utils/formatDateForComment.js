@@ -1,4 +1,4 @@
-import { simpleDateTimeFormat } from "./SimpleDateTimeFormat";
+import { simpleDateTimeFormat } from "./simpleDateTimeFormat";
 
 export const formatDateForComment = (date) => {
   // 초 (밀리초)

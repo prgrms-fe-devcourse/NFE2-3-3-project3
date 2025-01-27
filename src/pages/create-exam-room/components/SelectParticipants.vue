@@ -13,23 +13,20 @@ import { userAPI } from "@/api/user";
 const props = defineProps({
   participants: {
     type: Array,
+
     required: true,
-  },
-  shareOption: {
-    type: String,
-    default: "share",
   },
 });
 
-const emit = defineEmits(["update:participants", "update:shareOption"]);
+const emit = defineEmits(["update:participants"]);
 
 const toast = useToast();
-const shareOption = ref(props.shareOption);
 const newParticipant = ref("");
 const selectedUsers = ref([]);
 const followingUsers = ref([]);
 const searchResults = ref([]);
 const authStore = useAuthStore();
+const isSearching = ref(false);
 
 const fetchFollowing = async () => {
   try {
@@ -44,6 +41,7 @@ const fetchFollowing = async () => {
         email: item.following.email,
         nickname: item.following.name || item.following.email.split("@")[0],
         profileImage: item.following.avatar_url,
+        uid: item.following.id, // uid 값을 올바르게 설정
       }));
     }
   } catch (error) {
@@ -59,29 +57,49 @@ const fetchFollowing = async () => {
 };
 
 const searchUserByEmail = async () => {
-  if (!newParticipant.value) return;
+  if (!newParticipant.value) {
+    searchResults.value = [];
+    return;
+  }
 
   try {
-    const foundUser = await userAPI.getOneByEmail(newParticipant.value);
-    if (foundUser) {
-      searchResults.value = [
-        {
-          email: foundUser.email,
-          nickname: foundUser.name || foundUser.email.split("@")[0],
-          profileImage: foundUser.avatar_url,
-        },
-      ];
-    } else {
+    isSearching.value = true;
+    const results = await userAPI.searchUsersByEmail(newParticipant.value);
+
+    // 현재 로그인한 사용자와 이미 초대된 사용자 제외
+    searchResults.value = results
+      .filter(
+        (user) =>
+          user.id !== authStore.user?.id &&
+          !selectedUsers.value.some(
+            (selected) => selected.email === user.email,
+          ),
+      )
+      .map((user) => ({
+        email: user.email,
+        nickname: user.name || user.email.split("@")[0],
+        profileImage: user.avatar_url,
+        uid: user.id,
+      }));
+
+    if (searchResults.value.length === 0) {
       toast.add({
-        severity: "warn",
-        summary: "사용자 없음",
+        severity: "info",
+        summary: "검색 결과 없음",
         detail: "해당 이메일의 사용자를 찾을 수 없습니다.",
         life: 3000,
       });
     }
   } catch (error) {
     console.error("사용자 검색 중 오류:", error);
-    searchResults.value = [];
+    toast.add({
+      severity: "error",
+      summary: "검색 실패",
+      detail: "사용자 검색 중 문제가 발생했습니다.",
+      life: 3000,
+    });
+  } finally {
+    isSearching.value = false;
   }
 };
 
@@ -131,11 +149,6 @@ const addParticipantByEmail = async () => {
   newParticipant.value = "";
 };
 
-const handleShareOptionChange = (value) => {
-  shareOption.value = value;
-  emit("update:shareOption", value);
-};
-
 // 초기화 및 감시
 watchEffect(() => {
   if (authStore.isAuthenticated) {
@@ -145,7 +158,6 @@ watchEffect(() => {
 
 watchEffect(() => {
   selectedUsers.value = props.participants;
-  shareOption.value = props.shareOption;
 });
 
 // 사용자 정보 설정
@@ -185,6 +197,14 @@ watchEffect(() => {
     console.error("세션 정보 파싱 중 에러 발생:", error);
   }
 });
+
+watchEffect(() => {
+  selectedUsers.value = props.participants.map((user) => ({
+    ...user,
+    uid: user.uid || user.id, // uid 값을 올바르게 설정
+  }));
+  // console.log("Selected users:", selectedUsers.value); // 선택된 사용자 로그 출력
+});
 </script>
 
 <template>
@@ -209,7 +229,9 @@ watchEffect(() => {
         </Button>
       </div>
 
-      <section class="rounded-xl bg-beige-1 w-full px-5 py-3 h-full flex-1">
+      <section
+        class="rounded-xl bg-beige-1 w-full px-5 py-3 h-full flex-1 overflow-y-auto"
+      >
         <!-- 검색 결과 -->
         <div v-if="searchResults?.length" class="mb-4">
           <h4 class="font-semibold mb-4">검색 결과</h4>
@@ -229,7 +251,7 @@ watchEffect(() => {
 
         <!-- 팔로잉 목록 -->
         <h4 class="font-semibold mb-4">팔로잉</h4>
-        <div class="overflow-auto h-full">
+        <div class="overflow-auto">
           <div
             v-if="followingUsers.length === 0"
             class="text-center text-gray-500 py-4 h-[80%] w-full item-middle"
@@ -256,9 +278,11 @@ watchEffect(() => {
     </div>
 
     <!-- 초대된 참가자 목록 -->
-    <section class="rounded-xl bg-beige-1 w-full px-5 py-3 h-full">
+    <section
+      class="rounded-xl bg-beige-1 w-full px-5 py-3 h-full flex flex-col"
+    >
       <h4 class="font-medium mb-4">초대된 참가자</h4>
-      <ul class="overflow-auto divide-y divide-gray-100">
+      <ul class="overflow-auto divide-y divide-gray-100 flex-grow">
         <UserListItem
           v-for="user in selectedUsers"
           :key="user.email"
@@ -271,36 +295,4 @@ watchEffect(() => {
     </section>
   </div>
 
-  <!-- 결과 공유 설정 -->
-  <div class="mb-8">
-    <h3 class="text-lg font-medium mb-4">결과 공유 설정</h3>
-    <div class="flex gap-3 flex-col">
-      <div class="flex items-center gap-2">
-        <RadioButton
-          v-model="shareOption"
-          @change="handleShareOptionChange"
-          inputId="share"
-          name="share"
-          value="share"
-        />
-        <label for="share">공유함</label>
-        <span class="text-sm text-gray-1">
-          (참가자들의 이름, 성적이 모든 참가자에게 전달됩니다.)
-        </span>
-      </div>
-      <div class="flex items-center gap-2">
-        <RadioButton
-          v-model="shareOption"
-          @change="handleShareOptionChange"
-          inputId="private"
-          name="share"
-          value="private"
-        />
-        <label for="private">공유하지 않음</label>
-        <span class="text-sm text-gray-1">
-          (참가자들은 본인의 성적만 열람이 가능합니다.)
-        </span>
-      </div>
-    </div>
-  </div>
 </template>

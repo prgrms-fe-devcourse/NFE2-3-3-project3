@@ -6,9 +6,19 @@ import timeFastIcon from "@/assets/icons/exam-room/fi-rr-time-fast.svg";
 import pencilIcon from "@/assets/icons/exam-room/fi-rr-pencil.svg";
 import trashIcon from "@/assets/icons/exam-room/fi-rr-trash.svg";
 import { computed } from "vue";
+import { formatterIntlKR } from "@/utils/formatterIntlKR.js";
+import { formatMsToHourMinute } from "@/utils/formatMsToHour";
+import { ref, watchEffect } from "vue";
+import { inviteAPI } from "@/api/invite";
+import { useConfirm } from "primevue/useconfirm";
+import { testCenterAPI } from "@/api/testCenter";
+import { useToast } from "primevue/usetoast";
+
+const emit = defineEmits(["delete-exam"]);
+const toast = useToast();
 
 const props = defineProps({
-  id: Number,
+  id: Number, // 테스트센터 아이디
   workbook_id: Number,
   workbook: {
     type: Object,
@@ -16,26 +26,61 @@ const props = defineProps({
   },
   start_date: String,
   end_date: String,
+  showEditButtons: {
+    type: Boolean,
+    default: false,
+  },
+  workbook: Object,
+  showEditButtons: Boolean,
 });
+
+const confirm = useConfirm();
+const isProcessing = ref(false);
+const participantCount = ref(0);
+
+const handleDelete = async () => {
+  if (isProcessing.value) return;
+  isProcessing.value = true;
+  try {
+    await testCenterAPI.deleteTestCenter(props.id);
+    toast.add({
+      severity: 'success', 
+      summary: '삭제 완료',
+      detail: '시험이 삭제되었습니다.',
+      life: 3000
+    });
+    emit('delete-exam');
+  } catch (error) {
+    console.error(error);
+    toast.add({
+      severity: 'error',
+      summary: '삭제 실패', 
+      detail: '삭제 요청 처리 중 오류가 발생했습니다.',
+      life: 3000
+    });
+  } finally {
+    isProcessing.value = false;
+  }
+};
+
+const confirmDelete = () => {
+  confirm.require({
+    message: "정말 이 시험을 삭제하시겠습니까?",
+    header: "시험 삭제 확인",
+    icon: "pi pi-exclamation-triangle",
+    accept: handleDelete,
+  });
+};
 
 const examDuration = computed(() => {
   if (!props.start_date || !props.end_date) return "";
   const diff = new Date(props.end_date) - new Date(props.start_date);
-  const hours = Math.floor(diff / (1000 * 60 * 60));
-  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  return `${hours}시간 ${minutes}분`;
+  return formatMsToHourMinute(diff);
 });
 
 const formattedDate = computed(() => {
-  return props.start_date
-    ? new Date(props.start_date).toLocaleString("ko-KR", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : "";
+  if (!props.start_date) return "";
+  return formatterIntlKR.format(new Date(props.start_date));
 });
 
 const problemCount = computed(() => {
@@ -45,7 +90,6 @@ const problemCount = computed(() => {
 watchEffect(async () => {
  if (props.id) {
    participantCount.value = await inviteAPI.getParticipantCount(props.id);
-   console.log("getParticipantCount 결괏값", participantCount.value)
  }
 });
 </script>
@@ -53,35 +97,64 @@ watchEffect(async () => {
 <template>
   <div class="bg-orange-3 rounded-lg p-4 w-full text-gray-2">
     <div class="item-between mb-4">
-      <h3 class="font-medium text-lg">{{ workbook?.title }}</h3>
+      <!-- 문제집 이름 -->
+      <h3
+        class="font-medium text-lg line-clamp-1"
+        v-tooltip.top="workbook?.title"
+      >
+        {{ workbook?.title }}
+      </h3>
+      <!-- 수정 및 삭제 버튼 -->
+      <div v-if="showEditButtons" class="flex gap-2">
+        <button
+          class="flex items-center justify-center w-8 h-8 bg-black-1/5 rounded-full hover:bg-black-1/10"
+          @click="confirmDelete"
+        >
+          <img :src="trashIcon" alt="delete icon" class="w-4 h-4" />
+        </button>
+      </div>
     </div>
-    <div class="flex flex-col gap-2">
-      <!-- 참가자 수 표시 추가 -->
-      <div class="flex items-center gap-2 text-sm">
+    <ul class="flex flex-col gap-2">
+      <!-- 응시자 표시 -->
+      <li class="flex items-center gap-2 text-sm">
         <img :src="userIcon" alt="user icon" class="w-3 h-3" />
-        <span>{{ (confirmed_count?.[0]?.count || 0) + 1 }}명</span>
-      </div>
-      <div class="flex items-center gap-2 text-sm">
-        <img :src="folderIcon" alt="folder icon" class="w-3 h-3" />
-        <span>{{ workbook?.title }}</span>
-      </div>
-      <div class="flex items-center gap-2 text-sm">
+        <span>{{ participantCount + 1 }}명</span>
+      </li>
+      <!-- 시작 시간 -->
+      <li class="flex items-center gap-2 text-sm">
         <img :src="calendarIcon" alt="calendar icon" class="w-3 h-3" />
         <span>{{ formattedDate }}</span>
-      </div>
-      <div class="flex items-center justify-between">
+      </li>
+      <!-- 소요 시간 -->
+      <li class="flex items-center justify-between">
         <div class="flex items-center gap-2 text-sm">
           <img :src="timeFastIcon" alt="time icon" class="w-3 h-3" />
           <span>{{ examDuration }} 소요</span>
         </div>
+        <!-- 문제 갯수 -->
         <span class="font-semibold">{{ problemCount }}문제</span>
-      </div>
-    </div>
+      </li>
+    </ul>
   </div>
 </template>
 
 <style scoped>
 * {
   color: #4f4f4f;
+}
+
+.line-clamp-1 {
+  display: -webkit-box;
+  line-clamp: 1;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.p-confirm-dialog .p-confirm-dialog-accept,
+.p-confirm-dialog .p-confirm-dialog-reject {
+  padding: 0.5rem 1.5rem !important;
+  border: none;
 }
 </style>
