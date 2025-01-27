@@ -175,6 +175,7 @@ onMounted(async () => {
     @problem-add="problemAdd"
     @added-problem-minus="addedProblemDelete"
     :workbookId="route.params.problemSetId"
+    :showStatus="false"
   />
 
   <Dialog

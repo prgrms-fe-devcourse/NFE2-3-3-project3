@@ -1,38 +1,56 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
+import { Paginator } from "primevue";
 import Comment from "@/components/layout/Comment.vue";
 import { commentAPI } from "@/api/comment";
 import { authAPI } from "@/api/auth";
 
-const prpos = defineProps({
+const props = defineProps({
   comments: {
     type: Array,
     required: true,
   },
   workbookId: {
-    type: String,
+    type: [String, Number],
+    required: true,
   },
-  currentPage: Number,
-  totalPages: Number,
+  currentPage: {
+    type: Number,
+    required: true,
+  },
+  totalRecords: {
+    type: Number,
+    required: true,
+  },
+  itemsPerPage: {
+    type: Number,
+    required: true,
+  },
 });
 
-const text = ref(null);
+const emit = defineEmits(["page-change", "comment-change"]);
+const text = ref("");
 const userId = ref(null);
 
+const onCommentChange = () => {
+  emit("comment-change");
+};
+
 const onPageChange = (event) => {
-  emit("page-change", event.page);
+  emit("page-change", event.page + 1);
 };
 
 const handleKeyPress = async (event) => {
   if (event.key === "Enter" && !event.shiftKey) {
     event.preventDefault();
     await handleSubmitComment();
+    emit("comment-change");
   }
 };
 const handleSubmitComment = async () => {
   if (!text.value.trim()) return;
   await commentAPI.createComment({
-    workbook_id: prpos.workbookId,
+    workbook_id: props.workbookId,
     comment: text.value,
     uid: userId.value,
   });
@@ -45,11 +63,16 @@ onMounted(async () => {
 });
 </script>
 <template>
-  <div class="w-[876px] flex flex-col">
+  <div class="flex flex-col w-full">
     <div class="text-[24px] text-[#6A718B]">댓글</div>
 
-    <div class="w-[862px]">
-      <Comment v-for="comment in prpos.comments" :comment />
+    <div class="w-full">
+      <Comment
+        v-for="comment in comments"
+        :key="comment.id"
+        :comment="comment"
+        @comment-change="onCommentChange"
+      />
     </div>
 
     <textarea
@@ -60,9 +83,9 @@ onMounted(async () => {
     ></textarea>
   </div>
   <Paginator
-    :rows="10"
-    :totalRecords="totalPages"
-    :page="currentPage"
+    :rows="itemsPerPage"
+    :totalRecords="totalRecords"
+    :first="(currentPage - 1) * itemsPerPage"
     @page="onPageChange"
   />
 </template>
