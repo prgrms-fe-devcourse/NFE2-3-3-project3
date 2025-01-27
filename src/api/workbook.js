@@ -26,18 +26,43 @@ const workbookProblemAdd = async (body) => {
   }
 };
 
+const sharedWorkbookAdd = async (body) => {
+  try {
+    const { data, error } = await supabase
+      .from("shared_workbook")
+      .insert(body)
+      .select();
+    if (error) throw error;
+  } catch (error) {
+    throw error;
+  }
+};
+
 // READ
 const getWorkbookProblems = async (workbookId) => {
   const { data, error } = await supabase.rpc("workbook_problem_info", {
     workbook_id: workbookId,
   });
-
   if (error) {
     console.error("Error fetching workbook problems:", error);
     return null;
   }
-
   return data;
+};
+
+const getSharedWorkbook = async (workbookId, uid) => {
+  try {
+    const { data, error } = await supabase
+      .from("shared_workbook")
+      .select("uid")
+      .eq("uid", uid)
+      .eq("workbook_id", workbookId);
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 const getOne = async (id) => {
@@ -151,27 +176,43 @@ const search = async (keyword, startDate, endDate) => {
   return data;
 };
 
+const checkWorkbookInsert = async () => {
+  const { data, error } = await supabase
+    .from("workbook")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(1);
+
+  if (error) {
+    console.error("Error fetching workbook data:", error);
+  } else {
+    if (data && data.length > 0) {
+      console.log("Latest workbook entry:", data[0]);
+    } else {
+      console.log("No workbook entries found");
+    }
+  }
+};
+
 // UPDATE
 const updated_at = new Date();
-const workbookCommentInfo = async (workbookId) => {
+const workbookCommentInfo = async (workbookId, page, pageSize) => {
   try {
-    const { data, error } = await supabase
-      .rpc("workbook_comment_info", {
-        workbook_id: workbookId,
-      })
-      .order("updated_at", { ascending: false });
+    const { data, error } = await supabase.rpc("workbook_comment_info", {
+      workbook_id: workbookId,
+      page_number: page,
+      page_size: pageSize,
+    });
 
     if (error) {
       console.error("Error fetching workbook comments:", error);
       return null;
     }
-    return data;
+    return { data, totalCount: data[0]?.total_count || 0 };
   } catch (error) {
     console.error("실패:", error);
   }
 };
-
-// UPDATE
 
 /**
  *
@@ -221,21 +262,16 @@ const removeProblem = async (workbook_id, problem_id) => {
   }
 };
 
-const checkWorkbookInsert = async () => {
-  const { data, error } = await supabase
-    .from("workbook")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(1);
+const removeWorkbook = async (workbook_id) => {
+  try {
+    const { data, error } = await supabase
+      .from("workbook")
+      .delete()
+      .eq("id", workbook_id);
 
-  if (error) {
-    console.error("Error fetching workbook data:", error);
-  } else {
-    if (data && data.length > 0) {
-      console.log("Latest workbook entry:", data[0]);
-    } else {
-      console.log("No workbook entries found");
-    }
+    if (error) throw error;
+  } catch (error) {
+    throw error;
   }
 };
 
@@ -278,4 +314,7 @@ export const workbookAPI = {
   workbookCommentInfo,
   workbookProblemAdd,
   getWorkbookProblemCount,
+  getSharedWorkbook,
+  sharedWorkbookAdd,
+  removeWorkbook,
 };

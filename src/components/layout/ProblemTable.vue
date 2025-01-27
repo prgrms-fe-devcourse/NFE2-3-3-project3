@@ -30,9 +30,11 @@ import { useAuthStore } from "@/store/authStore";
 import plus from "@/assets/icons/problem-board/plus.svg";
 import minus from "@/assets/icons/problem-board/minus.svg";
 import sharedIcon from "@/assets/icons/my-problem-sets/share.svg";
+import wrong from "@/assets/icons/problem-set-board-detail/wrong.svg";
 import statusWrong from "@/assets/icons/problem-board/status-wrong.svg";
 import statusSolved from "@/assets/icons/problem-board/status-solved.svg";
 import seeMyProblems from "@/assets/icons/my-problems/see-my-problems.svg";
+import corrected from "@/assets/icons/problem-set-board-detail/corrected.svg";
 import checkedMyProblem from "@/assets/icons/my-problems/color-my-problems.svg";
 import { useRoute } from "vue-router";
 import { useRouter } from "vue-router";
@@ -84,6 +86,10 @@ const props = defineProps({
     default: true,
   },
   showCount: {
+    type: Boolean,
+    default: true,
+  },
+  showStatus: {
     type: Boolean,
     default: true,
   },
@@ -339,7 +345,7 @@ onBeforeUnmount(() => {
             </button>
           </template>
         </Column>
-        <Column field="history[0].status" header="상태">
+        <Column field="history[0].status" header="상태" v-if="showStatus">
           <template #body="slotProps">
             <div
               v-if="slotProps.data.history?.length"
@@ -349,6 +355,22 @@ onBeforeUnmount(() => {
                 v-if="getStatus(slotProps.data.history[0].status) !== ''"
                 :src="getStatus(slotProps.data.history[0].status)"
                 alt="상태 아이콘"
+              />
+            </div>
+          </template>
+        </Column>
+        <Column field="history[0].status" header="상태" v-if="!showStatus">
+          <template #body="slotProps">
+            <div>
+              <img
+                v-if="slotProps.data.latest_status === 'corrected'"
+                :src="corrected"
+                alt="맞힌 문제"
+              />
+              <img
+                v-else-if="slotProps.data.latest_status === 'wrong'"
+                :src="wrong"
+                alt="틀린 문제"
               />
             </div>
           </template>
@@ -387,7 +409,12 @@ onBeforeUnmount(() => {
             <Tag v-else value="O / X" severity="secondary"></Tag>
           </template>
         </Column>
-        <Column field="category.name" header="카테고리"></Column>
+
+        <Column field="category.name" header="카테고리">
+          <template #body="slotProps">
+            {{ slotProps.data.category_name }}
+          </template>
+        </Column>
         <Column field="origin_source" header="출처"></Column>
       </DataTable>
     </div>

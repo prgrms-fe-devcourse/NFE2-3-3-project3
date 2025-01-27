@@ -11,6 +11,8 @@ const { comment } = defineProps({
   },
 });
 
+const emit = defineEmits(["comment-change"]);
+
 const text = ref(null);
 const userId = ref(null);
 const isReadOnly = ref(true);
@@ -32,6 +34,7 @@ const commentDelete = async () => {
   if (realDelete) {
     isVisible.value = false;
     await commentAPI.deleteComment(comment.id);
+    emit("comment-change");
   }
   return;
 };
