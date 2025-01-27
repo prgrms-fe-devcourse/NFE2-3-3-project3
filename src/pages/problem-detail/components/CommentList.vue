@@ -200,7 +200,7 @@ watchEffect(async () => {
         <div class="flex justify-between items-center mb-2">
           <!-- 유저 프로필 -> 클릭시 해당 유저 상세 페이지 -->
           <RouterLink
-            to="/"
+            :to="{ name: 'UserProfile', params: { userId: comment.uid }}"
             aria-label="유저 프로필"
             class="flex items-center gap-2 flex-grow"
           >
