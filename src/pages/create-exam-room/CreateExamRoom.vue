@@ -105,26 +105,16 @@ const submitExam = async () => {
   try {
     const currentUser = authStore.user;
 
-    // 시작 시간 (한국 시간대 기준)
-    const start_date = examData.value.examDateTime;
-    // UTC offset을 더해서 한국 시간으로 조정
-    const koreaOffset = 9 * 60 * 60 * 1000; // 한국은 UTC+9
-    const koreanStartDate = new Date(start_date.getTime() + koreaOffset);
-
-    // 종료 시간도 같은 방식으로 처리
-    const end_date = new Date(
-      start_date.getTime() + examData.value.duration * 60000,
-    );
-    const koreanEndDate = new Date(end_date.getTime() + koreaOffset);
-
     const body = {
       uid: currentUser?.id,
       workbook_id: examData.value.selectedWorkbook?.id,
-      start_date: koreanStartDate,
-      end_date: koreanEndDate,
+      start_date: examData.value.examDateTime,
+      end_date: new Date(
+        examData.value.examDateTime.getTime() + examData.value.duration * 60000,
+      ),
     };
 
-    console.log("시험 데이터 로그:", body); // 데이터 확인용
+    console.log("시험 데이터 로그:", body); // 시험 데이터 로그 출력
 
     const result = await testCenterAPI.add(body);
 
