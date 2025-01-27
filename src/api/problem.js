@@ -303,6 +303,69 @@ const getById = async (id) => {
   }
 };
 
+/**
+ * @description 특정 문제가 사용자의 북마크에 있는지 확인
+ * @param {string} uid - 사용자 ID
+ * @param {number} problem_id - 문제 ID
+ * @returns {boolean} 북마크 여부 (true: 북마크됨, false: 북마크되지 않음)
+ */
+const checkIsShared = async (uid, problem_id) => {
+  try {
+    const { data, error } = await supabase
+      .from("shared_problem")
+      .select("id")
+      .eq("uid", uid)
+      .eq("problem_id", problem_id)
+      .single();
+
+    if (error) throw error;
+    return !!data;
+  } catch (error) {
+    console.error("북마크 상태 확인 실패:", error);
+    return false;
+  }
+};
+
+/**
+ * @description 문제를 사용자의 북마크에 추가
+ * @param {number} problem_id - 북마크할 문제 ID
+ * @returns {object} 생성된 북마크 데이터
+ */
+const addShare = async (problem_id, uid) => {
+  try {
+    const { data, error } = await supabase
+      .from("shared_problem")
+      .insert([{ problem_id, uid }])
+      .select();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error("북마크 추가 실패:", error);
+    throw error;
+  }
+};
+
+/**
+ * @description 문제를 사용자의 북마크에서 제거
+ * @param {number} problem_id - 삭제할 북마크의 문제 ID
+ * @returns {boolean} 삭제 성공 여부
+ */
+const removeShare = async (problem_id) => {
+  try {
+    const { error } = await supabase
+      .from("shared_problem")
+      .delete()
+      .eq("problem_id", problem_id);
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error("북마크 삭제 실패:", error);
+    throw error;
+  }
+};
+
 export const problemAPI = {
   getAllShared,
   getAllByUserId,
@@ -313,4 +376,7 @@ export const problemAPI = {
   addMultiple,
   update,
   deleteOne,
+  checkIsShared,
+  addShare,
+  removeShare,
 };
