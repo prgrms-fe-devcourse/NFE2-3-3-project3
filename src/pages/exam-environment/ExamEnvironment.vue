@@ -8,6 +8,7 @@ import { testCenterAPI } from "@/api/testCenter";
 import { testResultAPI } from "@/api/testResult";
 import { authAPI } from "@/api/auth";
 import { useToast } from "primevue";
+import { problemHistoryAPI } from "@/api/problemHistory";
 
 let intervalId;
 const toast = useToast();
@@ -59,9 +60,22 @@ const selectAnswer = (num) => {
 };
 
 const submitAnswers = async () => {
-  const correctCount = problems.value.reduce((acc, { problem }, index) => {
-    return problem.answer === userAnswers.value[index] ? acc + 1 : acc;
-  }, 0);
+  let correctCount = 0;
+
+  const problemHistoryPromise = problems.value.map(
+    async ({ problem }, index) => {
+      const myOption = userAnswers.value[index];
+      const corrected = problem.answer === myOption;
+      if (corrected) correctCount += 1;
+
+      await problemHistoryAPI.add({
+        problem_id: problem.id,
+        test_center_id: testCenter.value.id,
+        status: corrected ? "corrected" : "wrong",
+        my_option: myOption,
+      });
+    },
+  );
 
   const testResult = await testResultAPI.add({
     test_center_id: testCenter.value.id,
@@ -69,6 +83,8 @@ const submitAnswers = async () => {
     total_count: problems.value.length,
     time: elapsedTime.value,
   });
+
+  await Promise.all(problemHistoryPromise, testResult);
   router.push(`/exam-result/${testResult.id}`);
 };
 
@@ -143,7 +159,7 @@ watch(
           class="flex justify-center items-center w-full h-16 bg-black-6 mb-14"
         >
           <h1 class="font-semibold text-xl">
-            {{ testCenter.workbook.title }} 시험장
+            {{ testCenter?.workbook?.title }} 시험장
           </h1>
         </div>
         <TestProblem
