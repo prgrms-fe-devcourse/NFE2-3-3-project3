@@ -102,7 +102,7 @@ const handleEditSubmit = async (event) => {
     
     try {
       const response = await commentAPI.updateComment(editingCommentId.value, {
-        content: editingContent.value
+        comment: editingContent.value
       });
       
       if (response) {
