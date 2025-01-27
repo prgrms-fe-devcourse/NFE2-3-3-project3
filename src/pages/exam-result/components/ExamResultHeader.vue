@@ -17,10 +17,18 @@ const profileImage = computed(
   () => user.value?.user_metadata?.avatar_url || "@/assets/harp seal.jpg",
 );
 
-onMounted(async () => {
+async function initializeAuth() {
   if (!user.value) {
-    await authStore.initializeAuth();
+    try {
+      await authStore.initializeAuth();
+    } catch (error) {
+      console.error("Failed to initialize auth:", error);
+    }
   }
+}
+
+onMounted(() => {
+  initializeAuth();
 });
 </script>
 <template>

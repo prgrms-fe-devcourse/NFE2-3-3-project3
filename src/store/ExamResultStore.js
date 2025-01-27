@@ -184,10 +184,6 @@ export const useExamResultStore = defineStore("examResult", {
           problem_id: record.problem_id,
           status: record.status,
         }));
-        console.log("fetchMyOption 완료:", {
-          myOption: this.myOption,
-          status: this.status,
-        });
       } catch (error) {
         console.error("fetchMyOption 오류:", error);
         this.error = "사용자 선택 데이터를 가져오는 중 오류가 발생했습니다.";
