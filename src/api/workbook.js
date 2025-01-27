@@ -1,10 +1,10 @@
 import { supabase } from ".";
 
 // CREATE
-const add = async (title, description) => {
+const add = async (title, description, shared) => {
   const { data, error } = await supabase
     .from("workbook")
-    .insert([{ title, description }])
+    .insert([{ title, description, shared }])
     .select()
     .single();
 
