@@ -12,9 +12,6 @@ import ExamHistory from "@/pages/exam-history/ExamHistory.vue";
 import ProblemSetBoardDetail from "@/pages/problem-set-detail/ProblemSetDetail.vue";
 import CreateExamRoom from "@/pages/create-exam-room/CreateExamRoom.vue";
 import ProblemBoardDetail from "@/pages/problem-detail/ProblemBoardDetail.vue";
-import MyProblemsDetail from "@/pages/MyProblemsDetail.vue";
-import ExamMake from "@/pages/ExamMake.vue";
-import MyProblemSetsDetail from "@/pages/MyProblemSetsDetail.vue";
 import MyProblemSetsUpdate from "@/pages/MyProblemSetsUpdate.vue";
 import Mypage from "@/pages/Mypage/Mypage.vue";
 import ProblemBoardDetailUpdate from "@/pages/ProblemBoardDetailUpdate.vue";
@@ -76,27 +73,15 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
-        path: "my-problems/:myProblemId",
-        name: "MyProblemsDetail",
-        component: MyProblemsDetail,
-        meta: { requiresAuth: true },
-      },
-      {
         path: "my-problem-sets",
         name: "MyProblemSets",
         component: MyProblemSets,
         meta: { requiresAuth: true },
       },
       {
-        path: "my-problem-sets-update/:problemSetId",
+        path: "problem-set-board-update/:problemSetId",
         name: "MyProblemSetsUpdate",
         component: MyProblemSetsUpdate,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "my-problem-sets/:problemSetId",
-        name: "MyProblemSetsDetail",
-        component: MyProblemSetsDetail,
         meta: { requiresAuth: true },
       },
       {
@@ -130,13 +115,7 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
-        path: "exam-make/:problemSetId",
-        name: "ExamMake",
-        component: ExamMake,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "problem-set-board-detail/:problemSetId",
+        path: "problem-set-board/:problemSetId",
         name: "ProblemSetBoardDetail",
         component: ProblemSetBoardDetail,
         meta: { requiresAuth: true },
@@ -147,7 +126,6 @@ const routes = [
         component: ProblemBoardDetail,
         meta: { requiresAuth: true },
       },
-
       {
         path: "problem-board-update/:problemId",
         name: "ProblemBoardDetailUpdate",
