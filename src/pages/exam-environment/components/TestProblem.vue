@@ -2,7 +2,14 @@
 import { againViewProblemAPI } from "@/api/againViewProblem";
 import { authAPI } from "@/api/auth";
 import { Button, useToast } from "primevue";
-import { computed, watch, ref, onBeforeUnmount } from "vue";
+import {
+  computed,
+  watch,
+  ref,
+  onBeforeUnmount,
+  onMounted,
+  watchEffect,
+} from "vue";
 import Viewer from "@toast-ui/editor/dist/toastui-editor-viewer";
 
 const el = ref(null);
@@ -49,6 +56,30 @@ const deleteAgainViewProblem = async () => {
   });
 };
 
+const handleImageClick = (event) => {
+  const img = event.target;
+  console.log(img);
+  if (img.requestFullscreen) {
+    img.requestFullscreen();
+  } else if (img.mozRequestFullScreen) {
+    // Firefox
+    img.mozRequestFullScreen();
+  } else if (img.webkitRequestFullscreen) {
+    // Chrome, Safari and Opera
+    img.webkitRequestFullscreen();
+  } else if (img.msRequestFullscreen) {
+    // IE/Edge
+    img.msRequestFullscreen();
+  }
+};
+
+const addImageClickListeners = () => {
+  const images = document.querySelectorAll("img");
+  images.forEach((img) => {
+    img.addEventListener("click", handleImageClick);
+  });
+};
+
 watch(
   () => problem.id,
   async (problemId) => {
@@ -59,6 +90,10 @@ watch(
         initialValue: problem.question,
       });
     }
+
+    // 이미지 전체화면 이벤트리스너 등록
+    addImageClickListeners();
+
     // 다시 볼 문제 여부 체크
     const user = await authAPI.getCurrentUser();
     const data = await againViewProblemAPI.getByProblemId(user.id, problemId);
@@ -121,4 +156,10 @@ onBeforeUnmount(() => {
     </div>
   </article>
 </template>
-<style scoped></style>
+<style scoped>
+:deep(img) {
+  max-width: 100%;
+  cursor: pointer;
+  object-fit: cover;
+}
+</style>
