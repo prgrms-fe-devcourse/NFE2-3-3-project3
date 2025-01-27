@@ -154,8 +154,6 @@ onMounted(async () => {
       :source="problemStore.problem?.origin_source"
     />
 
-    <hr class="w-full mb-10 border border-slate-100" />
-
     <CommentList
       :comments="comments"
       :isLoading="isLoadingComments"
@@ -166,7 +164,7 @@ onMounted(async () => {
       :workbookId="problemStore.problem.workbook_id"
       @submit-comment="handleSubmitComment"
       @page-change="handlePageChange"
-    ></CommentList>
+    />
 
     <!-- 삭제 확인 다이얼로그 -->
     <Dialog

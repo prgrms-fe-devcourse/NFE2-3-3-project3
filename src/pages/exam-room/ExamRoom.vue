@@ -60,9 +60,9 @@ const visibleMyExams = computed(() => {
 });
 
 // visibleMyExams 값 확인
-watchEffect(() => {
-  console.log("visibleMyExams(내가 만든 시험)", visibleMyExams.value);
-});
+// watchEffect(() => {
+//   console.log("visibleMyExams(내가 만든 시험)", visibleMyExams.value);
+// });
 
 // 현재 표시되는 초대된 시험 목록
 const visibleInvitedExams = computed(() => {
@@ -70,9 +70,9 @@ const visibleInvitedExams = computed(() => {
 });
 
 // visibleInvitedExams 값 확인
-watchEffect(() => {
-  console.log("visibleInvitedExams (초대된 시험)",visibleInvitedExams.value);
-});
+// watchEffect(() => {
+//   console.log("visibleInvitedExams (초대된 시험)",visibleInvitedExams.value);
+// });
 
 // 진행중인 시험 더보기 버튼 표시 여부
 const showOngoingExamsMoreButton = computed(() => {
