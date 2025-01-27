@@ -1,18 +1,19 @@
 <script setup>
-import { ref } from "vue";
+import { ref, watch } from "vue";
+import { useExamResultStore } from "@/store/ExamResultStore";
 import Chart from "primevue/chart";
 
-// 차트 데이터
+const examResultStore = useExamResultStore();
+
 const chartData = ref({
   labels: ["내 점수", "평균 점수"],
   datasets: [
     {
       backgroundColor: ["#F6C085", "#8992B5"],
-      data: [56, 28], // 내 점수와 평균 점수
+      data: [examResultStore.correctCount, examResultStore.averageCount],
     },
   ],
 });
-
 // 차트 옵션
 const chartOptions = ref({
   responsive: true, // 부모 래핑 박스 크기에 맞춤
@@ -26,7 +27,7 @@ const chartOptions = ref({
   scales: {
     x: {
       beginAtZero: true,
-      max: 60, // 최대 점수
+      max: examResultStore.totalCount, // 최대 점수
       grid: {
         display: false,
       },
@@ -38,6 +39,18 @@ const chartOptions = ref({
     },
   },
 });
+
+watch(
+  () => [
+    examResultStore.correctCount,
+    examResultStore.averageCount,
+    examResultStore.totalCount,
+  ],
+  ([newCorrect, newAverage, newTotal]) => {
+    chartData.value.datasets[0].data = [newCorrect, newAverage];
+    chartOptions.value.scales.x.max = newTotal;
+  },
+);
 </script>
 
 <template>

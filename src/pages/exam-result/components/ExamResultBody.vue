@@ -4,49 +4,89 @@ import correctedProblem from "@/assets/icons/exam-result/correctProblem.svg";
 import average from "@/assets/icons/exam-result/average.svg";
 import ExamResultChart from "./ExamResultChart.vue";
 import ExamResultTable from "./ExamResultTable.vue";
-import { dummyData } from "./DummyData";
-import { ref, onMounted } from "vue";
 import ExamResultProblems from "./ExamResultProblems.vue";
 
+import { ref, onMounted, watch } from "vue";
+import { storeToRefs } from "pinia";
+import { useAuthStore } from "@/store/authStore";
+import { useExamResultStore } from "@/store/ExamResultStore";
+import { useRoute } from "vue-router";
+import { testResultAPI } from "@/api/testResult";
+
+const authStore = useAuthStore();
+const examResultStore = useExamResultStore();
+const route = useRoute();
+
+// 토글 관리
 const isCollapsed = ref(true);
+const isShowed = ref(false);
 
 const toggleProblemSolution = () => {
   isCollapsed.value = !isCollapsed.value;
 };
 
-//api 바인딩하시면 그냥 싹 지우셔도 됨니다.. ㅎㅎ
-
-// 테이블 데이터 관리
-const isShowed = ref(false);
-const tableData = ref([]);
-const loading = ref(true);
-
-// 데이터를 가져오는 함수
-const fetchTableData = async () => {
-  loading.value = true;
-  try {
-    // 더미 데이터를 로드하는 가상 API 호출
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // 가상 딜레이
-    tableData.value = dummyData; // DummyData 데이터를 테이블에 바인딩
-  } catch (error) {
-    console.error("Error loading data:", error);
-  } finally {
-    loading.value = false; // 로딩 상태 해제
-  }
-};
 // 토글 함수 추가
 const toggleShowGrade = async () => {
-  isShowed.value = !isShowed.value;
-  if (isShowed.value && tableData.value.length === 0) {
-    // 테이블이 처음 열릴 때 데이터를 로드
-    await fetchTableData();
+  if (isShowed.value) {
+    isShowed.value = false;
+    return;
+  }
+  isShowed.value = true;
+};
+
+const {
+  currentProblem,
+  correctCount,
+  totalCount,
+  averageCount,
+  isFetchingProblems,
+  isTableData,
+  isLoading,
+  error,
+} = storeToRefs(examResultStore);
+
+const initializeData = async () => {
+  try {
+    if (isFetchingProblems.value) return;
+
+    // 초기화 상태 설정
+    examResultStore.isFetchingProblems = true;
+    examResultStore.error = null;
+
+    if (!authStore.user) {
+      await authStore.initializeAuth();
+    }
+
+    const testResultId = Number(route.params.examResultId);
+    if (!testResultId) throw new Error("잘못된 test_result_id");
+
+    await Promise.all([
+      examResultStore.initializeExamData(authStore.user.id, testResultId),
+      examResultStore.fetchProblems(testResultId),
+    ]);
+
+    const testCenterId = await testResultAPI.fetchTestCenterId(testResultId);
+    if (testCenterId) {
+      await examResultStore.getScoresByTestCenter(testCenterId);
+    }
+  } catch (err) {
+    console.error("초기화 실패, catchError :", error);
+    examResultStore.error = err.message || "문제를 불러오는 데 실패했습니다.";
+  } finally {
+    examResultStore.isFetchingProblems = false;
   }
 };
 
-// 컴포넌트 마운트 시 데이터 로드
-onMounted(() => {
-  fetchTableData();
-});
+onMounted(initializeData);
+
+watch(
+  () => route.params.examResultId,
+  async (newId, oldId) => {
+    if (newId && newId !== oldId) {
+      await initializeData();
+    }
+  },
+);
 </script>
 
 <template>
@@ -58,7 +98,7 @@ onMounted(() => {
       >
         <div class="space-y-1 flex-shrink-0">
           <p class="text-lg">전체 문제</p>
-          <span class="text-5xl">57</span>
+          <span class="text-5xl">{{ totalCount }}</span>
         </div>
         <div class="flex items-center pt-8 pl-12 flex-shrink-0">
           <img :src="allProblem" alt="전체문제" />
@@ -70,7 +110,7 @@ onMounted(() => {
       >
         <div class="space-y-1 flex-shrink-0">
           <p class="text-lg">맞힌 문제</p>
-          <span class="text-5xl">56</span>
+          <span class="text-5xl">{{ correctCount }}</span>
         </div>
         <div class="flex items-center pt-8 ml-1 flex-shrink-0">
           <img :src="correctedProblem" alt="맞힌 문제" />
@@ -81,7 +121,7 @@ onMounted(() => {
       >
         <div class="space-y-1 flex-shrink-0">
           <p class="text-lg">평균 정답 갯수</p>
-          <span class="text-5xl">28</span>
+          <span class="text-5xl">{{ averageCount }}</span>
         </div>
         <div class="flex items-center pt-8 flex-shrink-0">
           <img :src="average" alt="평균정답갯수" />
@@ -101,28 +141,11 @@ onMounted(() => {
         class="flex items-center justify-between px-4 py-3 cursor-pointer"
         @click="toggleProblemSolution"
       >
-        <!-- 타이틀 -->
         <h3 class="font-bold text-gray-700">문제 풀이 보기</h3>
-
         <svg
-          v-if="isCollapsed"
           xmlns="http://www.w3.org/2000/svg"
-          class="h-6 w-6 text-gray-600 transition-transform transform"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M9 5l7 7-7 7"
-          />
-        </svg>
-        <svg
-          v-else
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-6 w-6 text-gray-600 transition-transform transform rotate-90 duration-300 ease-in-out"
+          class="h-6 w-6 text-gray-600 transition-transform duration-300 ease-in-out"
+          :class="{ 'rotate-90': !isCollapsed }"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -135,23 +158,18 @@ onMounted(() => {
           />
         </svg>
       </div>
-      <!-- 컨텐츠 -->
+
+      <!-- 컨텐츠 영역 -->
       <div
         :class="[
           'overflow-hidden transition-all duration-300 ease-in-out',
-          isCollapsed ? 'max-h-0 opacity-0' : 'max-h-[200px] opacity-100',
+          isCollapsed ? 'max-h-0 opacity-0' : 'max-h-[2000px] opacity-100',
         ]"
       >
-        <div class="px-4 py-3 text-gray-800 border-t border-gray-300">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua.
+        <div class="px-8 py-4 mb-6 text-gray-800 border-t border-gray-300">
+          <ExamResultProblems />
         </div>
       </div>
-    </div>
-
-    <!-- 선택한 문제 보여주기 -->
-    <div class="rounded-2xl border border-gray-300 mt-8 p-2">
-      <ExamResultProblems />
     </div>
 
     <!-- 다른 사용자 점수 보기 -->
@@ -164,28 +182,13 @@ onMounted(() => {
       >
         <h3 class="font-bold text-gray-700">다른 사용자 점수 보기</h3>
         <svg
-          v-if="isShowed"
           xmlns="http://www.w3.org/2000/svg"
-          class="h-6 w-6 text-gray-600 transition-transform transform"
+          class="h-6 w-6 text-gray-600 transition-transform transform duration-300 ease-in-out"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
           stroke-width="2"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M9 5l7 7-7 7"
-          />
-        </svg>
-        <svg
-          v-else
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-6 w-6 text-gray-600 transition-transform transform rotate-90 duration-300 ease-in-out"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          stroke-width="2"
+          :class="{ 'rotate-90': isShowed }"
         >
           <path
             stroke-linecap="round"
@@ -194,32 +197,22 @@ onMounted(() => {
           />
         </svg>
       </div>
-
+      <!--점수 테이블 -->
       <div v-if="isShowed">
-        <div v-if="loading" class="text-center text-gray-500">Loading...</div>
-        <table
-          v-else
-          class="w-full text-left border-t border-gray-300 border-collapse border-spacing-0 mt-4"
-        >
+        <table class="table-auto border-collapse border border-gray-300 w-full">
           <thead>
-            <tr class="bg-gray-100">
-              <th
-                v-for="(header, index) in Object.keys(tableData[0] || {})"
-                :key="index"
-                class="px-4 py-2 border-b border-r border-gray-300"
-              >
-                {{ header }}
-              </th>
+            <tr>
+              <th class="border border-gray-400 px-2 py-2">Name</th>
+              <th class="border border-gray-400 px-2 py-2">Score</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(row, rowIndex) in tableData.slice(1)" :key="rowIndex">
-              <td
-                v-for="(value, colIndex) in Object.values(row)"
-                :key="colIndex"
-                class="px-4 py-2 border-b border-r border-gray-300"
-              >
-                {{ value }}
+            <tr v-for="item in isTableData" :key="item.uid">
+              <td class="border border-gray-400 px-2 py-1 text-center">
+                {{ item.userName }}
+              </td>
+              <td class="border border-gray-400 px-2 py-1 text-center">
+                {{ item.correct_count }}
               </td>
             </tr>
           </tbody>
@@ -228,4 +221,3 @@ onMounted(() => {
     </div>
   </section>
 </template>
-<style scoped></style>

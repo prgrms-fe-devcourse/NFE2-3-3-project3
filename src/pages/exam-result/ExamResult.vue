@@ -1,10 +1,8 @@
 <script setup>
 import Sidebar from "@/components/layout/Sidebar.vue";
-
-import { useRoute } from "vue-router";
-
 import ExamResultHeader from "./components/ExamResultHeader.vue";
 import ExamResultBody from "./components/ExamResultBody.vue";
+import { useRoute } from "vue-router";
 
 const route = useRoute();
 </script>

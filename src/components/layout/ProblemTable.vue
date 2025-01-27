@@ -117,8 +117,8 @@ const handleAddClick = () => {
 };
 const emit = defineEmits(["open-dialog"]);
 
-const problemAdd = inject("problemAdd");
-const addedProblemDelete = inject("addedProblemDelete");
+const problemAdd = inject("problems");
+const addedProblemDelete = inject("problems");
 
 const ShowProblemSetPopup = () => {
   showProblemSet.value = true;

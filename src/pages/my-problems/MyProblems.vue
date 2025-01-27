@@ -2,6 +2,7 @@
 import ProblemTable from "@/components/layout/ProblemTable.vue";
 import Search from "@/components/layout/Search.vue";
 import { ref } from "vue";
+import { provide } from "vue";
 
 const problems = ref([
   {
@@ -50,6 +51,7 @@ const problems = ref([
     ismade: true,
   },
 ]);
+provide("problems", problems);
 </script>
 <template>
   <section class="flex flex-col gap-16 w-[1000px] mx-auto mt-[72px] relative">

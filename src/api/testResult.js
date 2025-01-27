@@ -132,9 +132,162 @@ const search = async (userId, keyword, startDate, endDate) => {
   }
 };
 
+// 내 시험 점수
+const getScore = async (testResultId) => {
+  try {
+    if (!testResultId) {
+      console.error("유효하지 않은 testResultId:", testResultId);
+      return { total: 0, correct: 0 };
+    }
+
+    const { data, error } = await supabase
+      .from("test_result")
+      .select("correct_count, total_count")
+      .eq("id", testResultId);
+
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      console.warn("데이터가 없습니다. testResultId:", testResultId);
+      return { total: 0, correct: 0 };
+    }
+
+    const result = data.reduce(
+      (acc, row) => {
+        acc.total += row.total_count || 0;
+        acc.correct += row.correct_count || 0;
+        return acc;
+      },
+      { total: 0, correct: 0 },
+    );
+
+    return result;
+  } catch (error) {
+    console.error("Error fetching score:", error);
+    return;
+  }
+};
+
+// 평균값 계산
+const getAverage = async (testResultId) => {
+  try {
+    const { data: testResultData, error: testResultError } = await supabase
+      .from("test_result")
+      .select("test_center_id")
+      .eq("id", testResultId)
+      .single();
+
+    if (testResultError) throw testResultError;
+
+    if (!testResultData || !testResultData.test_center_id) {
+      console.warn("No test_center_id found for testResultId:", testResultId);
+      return 0;
+    }
+
+    const testCenterId = testResultData.test_center_id;
+
+    // Step 2: 해당 시험장의 모든 데이터 가져오기
+    const { data: results, error: resultsError } = await supabase
+      .from("test_result")
+      .select("uid, correct_count, created_at")
+      .eq("test_center_id", testCenterId)
+      .order("created_at", { ascending: false }); // 가장 최근 시험 결과 우선 정렬
+
+    if (resultsError) throw resultsError;
+
+    if (!results || results.length === 0) {
+      console.warn("No data found for test_center_id:", testCenterId);
+      return 0;
+    }
+
+    // Map으로 중복 uid 제거 (최신 데이터 유지)
+    const latestResults = Array.from(
+      new Map(results.map((row) => [row.uid, row])).values(),
+    );
+
+    const totalCorrect = latestResults.reduce(
+      (sum, row) => sum + (row.correct_count || 0),
+      0,
+    );
+    const uniqueUsersCount = latestResults.length;
+
+    const averageScore =
+      uniqueUsersCount > 0 ? totalCorrect / uniqueUsersCount : 0;
+    return Math.round(averageScore);
+  } catch (error) {
+    console.error("평균 계산 오류", error);
+    return 0;
+  }
+};
+
+//유저의 scores 가져오기
+const getUsersScores = async (testCenterId) => {
+  try {
+    if (!testCenterId) throw new Error("유효하지 않은 testCenterId");
+
+    const { data, error } = await supabase
+      .from("test_result")
+      .select("uid, test_center_id, correct_count, user_info(name)")
+      .eq("test_center_id", testCenterId)
+      .order("correct_count", { ascending: false });
+
+    if (error) {
+      console.error("Supabase 에러:", error);
+      throw error;
+    }
+    return (
+      data?.map((item) => ({
+        uid: item.uid,
+        name: item.user_info?.name || "Unknown User",
+        test_center_id: item.test_center_id,
+        correct_count: item.correct_count ?? 0,
+      })) || []
+    );
+  } catch (error) {
+    console.error("시험장 사용자 점수 가져오기 오류:", error);
+    throw error;
+  }
+};
+
+// 시험장 ID 가져오기
+const fetchTestCenterId = async (testResultId) => {
+  try {
+    if (!testResultId) {
+      console.error("유효하지 않은 testResultId:", testResultId);
+      return null;
+    }
+
+    const { data, error } = await supabase
+      .from("test_result")
+      .select("test_center_id")
+      .eq("id", testResultId);
+
+    if (error) {
+      console.error("시험장 ID 가져오기 실패:", error);
+      throw error;
+    }
+
+    if (data && data.length > 0) {
+      return data[0].test_center_id;
+    } else {
+      console.error(
+        "해당 testResultId에 대한 test_center_id를 찾을 수 없습니다.",
+      );
+      return null;
+    }
+  } catch (error) {
+    console.error("시험장 ID 가져오는 중 오류 발생:", error);
+    throw error;
+  }
+};
+
 export const testResultAPI = {
   add,
   getAllByUserId,
   checkIsSubmitted,
   search,
+  getScore,
+  getAverage,
+  getUsersScores,
+  fetchTestCenterId,
 };

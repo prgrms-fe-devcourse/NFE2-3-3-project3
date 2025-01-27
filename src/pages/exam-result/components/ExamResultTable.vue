@@ -1,79 +1,91 @@
 <script setup>
-import { ref } from "vue";
+import { computed, watch, onUnmounted } from "vue";
+import { storeToRefs } from "pinia";
+import { useExamResultStore } from "@/store/ExamResultStore";
+import { useRoute } from "vue-router";
 
-// 문제 데이터 초기화
-const problems = ref(
-  Array.from({ length: 27 }, (_, i) => ({
-    number: i + 1, // 문제 번호
-    flagged: false, // 플래그 상태
-    highlight: false, // 강조 상태
-  })),
-);
+const examResultStore = useExamResultStore();
+const route = useRoute();
+const testResultId = computed(() => route.params.examResultId);
 
-// 문제 클릭 시 강조 처리 (토글 방식)
-const toggleHighlight = (problem) => {
-  // 현재 문제의 강조 상태를 토글
-  problem.highlight = !problem.highlight;
+const { tableData, isFetchingProblems, problems } =
+  storeToRefs(examResultStore);
+const { selectProblem, toggleFlag, fetchProblems } = examResultStore;
 
-  // 다른 문제의 강조 상태를 해제
-  problems.value.forEach((p) => {
-    if (p !== problem) {
-      p.highlight = false; // 현재 문제 외에는 강조 해제
+let abortController = new AbortController();
+onUnmounted(() => abortController.abort());
+
+const loadProblems = async (id) => {
+  try {
+    if (!id || isFetchingProblems.value) return;
+    abortController.abort();
+    abortController = new AbortController();
+    await fetchProblems(id, { signal: abortController.signal });
+  } catch (error) {
+    if (error.name !== "AbortError") {
+      examResultStore.error = error.message;
+      console.error("Load error:", error);
     }
-  });
+  }
 };
 
-// 플래그 토글
-const toggleFlag = (problem) => {
-  problem.flagged = !problem.flagged; // 플래그 상태 토글
-};
-
-// 행과 열 크기 설정
-const rows = 3;
-const columns = 10;
-
-// 테이블 데이터를 행렬 형태로 변환
-const tableData = ref([]);
-for (let i = 0; i < rows; i++) {
-  tableData.value.push(problems.value.slice(i * columns, (i + 1) * columns));
-}
+watch(
+  testResultId,
+  (newId, oldId) => {
+    if (newId !== oldId) loadProblems(newId);
+  },
+  { immediate: true },
+);
+onUnmounted(() => {
+  examResultStore.$reset(); // Store 상태 초기화
+});
 </script>
 
 <template>
-  <div class="border border-[#D4D4D4] rounded-[16px] mt-8 overflow-hidden">
-    <table class="custom-table">
-      <tbody>
-        <!-- 숫자행 + 플래그행 반복 -->
-        <template v-for="(row, rowIndex) in tableData" :key="'row-' + rowIndex">
-          <!-- 숫자 행 -->
-          <tr>
-            <td
-              v-for="(cell, colIndex) in row"
-              :key="'number-cell-' + colIndex"
-              :class="['cell problem-cell', { highlighted: cell.highlight }]"
-              @click="toggleHighlight(cell)"
-            >
-              <button>{{ cell.number }}</button>
-            </td>
-          </tr>
-          <!-- 플래그 행 -->
-          <tr>
-            <td
-              v-for="(cell, colIndex) in row"
-              :key="'flag-cell-' + colIndex"
-              class="cell flag-cell"
-              @click="toggleFlag(cell)"
-            >
-              <i
-                v-if="cell.flagged"
-                class="pi pi-flag"
-                style="color: blue; cursor: pointer"
-              ></i>
-            </td>
-          </tr>
-        </template>
-      </tbody>
-    </table>
+  <div class="container mx-auto mt-8">
+    <!-- 문제 테이블 -->
+    <div class="border border-[#D4D4D4] rounded-[16px] overflow-hidden mb-8">
+      <table class="custom-table">
+        <tbody>
+          <template
+            v-for="(row, rowIndex) in tableData"
+            :key="'row-' + rowIndex"
+          >
+            <!-- 숫자 행 -->
+            <tr>
+              <td
+                v-for="(cell, colIndex) in row"
+                :key="'number-cell-' + colIndex"
+                class="cell problem-cell"
+                :class="{
+                  highlighted: cell === examResultStore.currentProblem,
+                }"
+                @click="selectProblem(cell)"
+              >
+                <button class="w-full py-2">
+                  {{ cell.number }}
+                </button>
+              </td>
+            </tr>
+            <!-- 플래그 행 -->
+            <tr>
+              <td
+                v-for="(cell, colIndex) in row"
+                :key="'flag-cell-' + colIndex"
+                class="cell flag-cell"
+                @click="toggleFlag(cell)"
+              >
+                <i
+                  v-if="cell.flagged"
+                  class="pi pi-flag"
+                  style="color: blue; cursor: pointer"
+                ></i>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>
 

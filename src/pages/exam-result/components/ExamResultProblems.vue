@@ -1,84 +1,233 @@
 <script setup>
-import example from "@/assets/Problem14.png";
 import { Button } from "primevue";
+import { storeToRefs } from "pinia";
+import { watch, computed, onMounted } from "vue";
+import { useRoute } from "vue-router";
+import { useExamResultStore } from "@/store/ExamResultStore";
+import { useAuthStore } from "@/store/authStore";
+
+const route = useRoute();
+const examResultStore = useExamResultStore();
+const authStore = useAuthStore();
+const testResultId = computed(() => route.params.examResultId);
+const currentUserId = computed(() => authStore.user?.id);
+
+const selectedMyOption = computed(() =>
+  myOption.value.find((item) => item.problem_id === currentProblem.value?.id),
+);
+
+const selectedStatus = computed(() =>
+  status.value.find((item) => item.problem_id === currentProblem.value?.id),
+);
+
+const { fetchProblems, fetchMyOption } = examResultStore;
+const { currentProblem, isFetchingProblems, problems, myOption, status } =
+  storeToRefs(examResultStore);
+
+const fetchData = async (id) => {
+  try {
+    if (!id || isFetchingProblems.value) return;
+    examResultStore.isFetchingProblems = true;
+    examResultStore.error = null;
+    await fetchProblems(id);
+
+    if (problems.value.length > 0 && !currentProblem.value) {
+      examResultStore.selectProblem(problems.value[0]);
+    }
+  } catch (error) {
+    console.error("문제 불러오기 실패:", error);
+    examResultStore.error = error.message || "문제를 불러오는 데 실패했습니다.";
+  } finally {
+    examResultStore.isFetchingProblems = false;
+  }
+};
+
+const fetchOptionData = async () => {
+  if (!problems.value || !problems.value.length === 0) {
+    console.warn("문제id 값을 못찾음");
+    return;
+  }
+  const selectedProblem = problems.value.find(
+    (problem) => problem.id === currentProblem.value?.id,
+  );
+  if (!selectedProblem) {
+    console.warn("현재 선택된 문제가 없습니다.");
+    return;
+  }
+  try {
+    await fetchMyOption(currentUserId.value, testResultId.value);
+  } catch (error) {
+    console.error("사용자 선택 데이터 가져오기 실패:", error);
+  }
+};
+
+// 문제 변경 시 사용자 선택 데이터 로드
+watch(currentProblem, (newProblem) => {
+  if (newProblem && currentUserId.value) {
+    fetchOptionData();
+  }
+});
+
+// 시험 결과 ID 변경 시 문제 데이터 로드
+watch(
+  testResultId,
+  async (newId) => {
+    if (newId) {
+      await fetchData(newId);
+      if (currentProblem.value) {
+        fetchOptionData();
+      }
+    }
+  },
+  { immediate: true },
+);
+
+// 초기 데이터 로드
+onMounted(() => {
+  if (currentUserId.value && currentProblem.value) {
+    fetchOptionData();
+  } else {
+    console.warn("초기 데이터가 로드되지 않았습니다. Watch로 처리 중...");
+  }
+});
 </script>
 
 <template>
   <div class="bg-white p-6 rounded-lg w-full mx-auto">
-    <!-- 문제 번호와 다시 볼 문제 버튼 -->
-    <div class="flex items-center justify-left gap-4 pb-4 mb-4">
-      <h2 class="text-lg font-bold">문제 14.</h2>
-      <Button
-        label="다시 볼 문제"
-        icon="pi pi-flag"
-        size="small"
-        severity="secondary"
-        class="!bg-navy-4 !text-white"
-      />
-    </div>
+    <template v-if="examResultStore.isLoading">
+      <div class="text-center py-10 text-gray-500">
+        문제를 불러오는 중입니다...
+      </div>
+    </template>
 
-    <!-- 문제 내용 -->
-    <div class="text-gray-800 mb-6">
-      <p class="mb-4">
-        화재 예방을 위해 건물의 소방 설비를 점검하는 과정에서 화재 경보기의
-        배터리가 모두 방전되어 작동하지 않는 것을 발견했습니다. 건물주는 이를
-        교체할 예산이 부족하다고 주장하며 당장 조치를 취하기 어렵다고
-        말했습니다. 이러한 상황에서 소방 공무원으로서 어떤 절차를 통해 문제를
-        해결할 것인지 구체적으로 설명하세요. 또한, 건물주의 협조를 얻기 위한
-        설득 방법과 이를 실행하지 않을 경우의 법적 조치에 대해 설명하세요.
-        마지막으로, 이런 일이 반복되지 않도록 예방 조치를 제안해보세요.
-      </p>
-    </div>
+    <template v-else-if="examResultStore.error">
+      <div class="text-red-500 text-center py-10">
+        {{ examResultStore.error }}
+      </div>
+    </template>
 
-    <!-- 이미지 -->
-    <div class="flex justify-center mb-6">
-      <img :src="example" alt="Diagram" class="max-w-full h-auto" />
-    </div>
+    <template v-else>
+      <div v-if="examResultStore.currentProblem">
+        <!-- 지역 변수 캐싱 -->
+        <div v-if="(currentProblem = examResultStore.currentProblem)">
+          <div
+            class="flex items-center justify-between gap-4 pb-4 mb-4 border-b border-gray-300"
+          >
+            <h2 class="text-xl font-bold">문제 {{ currentProblem.number }}</h2>
+            <Button
+              label="다시 볼 문제"
+              icon="pi pi-flag"
+              size="small"
+              severity="secondary"
+              class="!bg-navy-4 !text-white"
+              aria-label="again-view-problem"
+              title="나중에 복습할 문제 표시"
+            />
+          </div>
 
-    <!-- 내 선택 -->
-    <div class="mb-6">
-      <h3 class="font-bold text-gray-900 mb-2">내 선택</h3>
-      <div class="flex items-start space-x-4 border-b pb-4">
-        <div
-          class="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-gray-200 text-black font-bold"
-        >
-          5
+          <!-- question -->
+          <div class="text-gray-800 mb-6">
+            <p class="text-lg mb-4 font-medium">
+              {{ currentProblem.question }}
+            </p>
+          </div>
+
+          <!-- image -->
+          <div v-if="currentProblem.image_src" class="flex justify-center mb-6">
+            <img
+              :src="currentProblem.image_src"
+              :alt="`문제 ${currentProblem.number} 이미지`"
+              loading="lazy"
+              class="max-w-full h-auto rounded-lg shadow-md"
+            />
+          </div>
+
+          <!-- 객관식 선택지 -->
+          <div
+            v-if="currentProblem.problem_type === 'multiple_choice'"
+            class="mt-4"
+          >
+            <h3 class="font-bold text-lg mb-2">선택지</h3>
+            <ul>
+              <li
+                v-for="(option, idx) in currentProblem.options"
+                :key="'option-' + currentProblem.id + '-' + idx"
+                class="text-gray-700 bg-gray-100 p-2 rounded-lg mb-2"
+              >
+                {{ idx + 1 }}. {{ option }}
+              </li>
+            </ul>
+          </div>
+
+          <!-- 내 선택 -->
+          <div class="mb-6">
+            <h3 class="font-bold text-lg mb-2">내 선택</h3>
+            <div class="flex items-center gap-4 border-b pb-4">
+              <template v-if="currentProblem">
+                <div
+                  class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-black font-bold"
+                >
+                  {{ selectedMyOption.my_option }}
+                </div>
+
+                <span
+                  v-if="selectedStatus?.status === 'corrected'"
+                  class="text-green-500"
+                >
+                  정답
+                </span>
+                <span
+                  v-else-if="selectedStatus?.status === 'wrong'"
+                  class="text-red-500"
+                >
+                  오답
+                </span>
+                <p v-else class="text-gray-800 flex-grow">
+                  아직 답안을 선택하지 않았습니다.
+                </p>
+              </template>
+            </div>
+          </div>
+
+          <!-- 정답 -->
+          <div class="mb-6">
+            <h3 class="font-bold text-lg mb-3">정답</h3>
+            <div class="flex items-start gap-3">
+              <!-- 정답 번호 표시 -->
+              <span
+                class="shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-orange-3 text-red-1 font-bold"
+                :class="{
+                  'w-10 h-10': currentProblem.answer >= 10,
+                  'text-sm': currentProblem.answer >= 10,
+                }"
+              >
+                {{ currentProblem.answer }}
+              </span>
+
+              <!-- 선택지 내용 -->
+              <div class="flex-1">
+                <p class="text-gray-800 font-medium leading-relaxed">
+                  {{ currentProblem.options[currentProblem.answer - 1] }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 풀이 섹션 -->
+          <div
+            v-if="currentProblem.explanation"
+            class="bg-gray-50 p-4 rounded-lg"
+          >
+            <h3 class="font-bold text-lg mb-2 text-gray-700">상세 풀이</h3>
+            <p class="text-gray-600 leading-relaxed">
+              {{ currentProblem.explanation }}
+            </p>
+          </div>
         </div>
-        <p class="text-gray-800 flex-grow">
-          건물주에게 소방 설비의 중요성을 설명하고, 관련 법규에 따라 일정 기한
-          내 배터리를 교체하지 않을 경우 과태료가 부과될 것임을 고지한다.
-        </p>
       </div>
-    </div>
-
-    <!-- 답 -->
-    <div class="mb-6">
-      <h3 class="font-bold text-gray-900 mb-2">답</h3>
-      <div class="flex items-center space-x-4">
-        <span
-          class="flex items-center justify-center w-6 h-6 rounded-full bg-gray-200 text-black font-bold"
-        >
-          1
-        </span>
-        <p class="text-gray-800">
-          건물주에게 배터리 교체 대신 매일 밤 잠을 자지 말고 건물 안을 직접
-          순찰하라고 조언한다.
-        </p>
+      <div v-else class="text-center py-10 text-gray-500">
+        표시할 문제가 없습니다
       </div>
-    </div>
-
-    <!-- 풀이 -->
-    <div>
-      <h3 class="font-bold text-gray-900 mb-2">풀이</h3>
-      <p class="text-gray-800">
-        건물주에게 배터리 교체 대신 매일 밤 잠을 자지 말고 건물 안을 직접
-        순찰하라고 조언하면 배터리 교체에 돈이 들지 않기 때문에 돈이 들지
-        않습니다.
-      </p>
-    </div>
+    </template>
   </div>
 </template>
-
-<style scoped>
-/* 필요한 경우 Tailwind CSS를 보완할 추가 스타일을 작성할 수 있습니다. */
-</style>
