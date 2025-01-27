@@ -12,4 +12,7 @@ export default defineConfig({
   define: {
     __VUE_PROD_DEVTOOLS__: true, // 개발자 도구 활성화
   },
+  optimizeDeps: {
+    exclude: ['chart.js/auto']
+  }
 });
