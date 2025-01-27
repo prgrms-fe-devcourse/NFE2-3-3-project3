@@ -164,7 +164,7 @@ onMounted(async () => {
       :workbookId="problemStore.problem.workbook_id"
       @submit-comment="handleSubmitComment"
       @page-change="handlePageChange"
-    ></CommentList>
+    />
 
     <!-- 삭제 확인 다이얼로그 -->
     <Dialog

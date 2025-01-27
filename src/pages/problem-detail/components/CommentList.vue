@@ -1,13 +1,12 @@
 <script setup>
-import { ref, watch, watchEffect, computed } from "vue";
+import { ref, watch, watchEffect } from "vue";
 import { useAuthStore } from "@/store/authStore";
 import { commentAPI } from "@/api/comment";
 import { formatDateForComment } from "@/utils/formatDateForComment";
 import { supabase } from "@/api/index.js";
-import Panel from "primevue/panel";
 import Avatar from "primevue/avatar";
-import Button from "primevue/button";
-import { useToast } from 'primevue/usetoast';
+import { useToast } from "primevue/usetoast";
+import { RouterLink } from "vue-router";
 const toast = useToast();
 
 const props = defineProps({
@@ -49,10 +48,20 @@ const handleSubmitComment = async () => {
     alert("로그인이 필요한 기능입니다.");
     return;
   }
-  await commentAPI.createComment({
+  const newComment = await commentAPI.createComment({
     problem_id: props.problemId,
     comment: props.value,
     uid: userId.value,
+  });
+  const userProfile = await getUserProfile(userId.value);
+  formattedComments.value.push({
+    id: newComment.id,
+    comment: newComment.comment,
+    uid: newComment.uid,
+    created_at: newComment.created_at,
+    avatar_url: userProfile.avatar_url,
+    name: userProfile.name,
+    formattedDate: formatDateForComment(new Date(newComment.created_at)),
   });
   emit("update:value", "");
   emit("submit-comment");
@@ -60,23 +69,21 @@ const handleSubmitComment = async () => {
 
 const handleDeleteComment = async (id) => {
   try {
-    console.log('Comment ID:', id, typeof id); // id 값과 타입 확인
     const response = await commentAPI.deleteComment(id);
-    console.log('Delete response:', response);
-
     if (response) {
       toast.add({
-        severity: 'success', 
-        summary: '삭제 완료',
-        detail: '댓글이 삭제되었습니다.'
+        severity: "success",
+        summary: "삭제 완료",
+        detail: "댓글이 삭제되었습니다.",
       });
+      formattedComments.value = formattedComments.value.filter(comment => comment.id !== id);
       emit("submit-comment");
     }
   } catch (error) {
-    console.error('Delete error:', error);
+    console.error("Delete error:", error);
     toast.add({
-      severity: 'error',
-      detail: '댓글 삭제 중 오류가 발생했습니다.'
+      severity: "error",
+      detail: "댓글 삭제 중 오류가 발생했습니다.",
     });
   }
 };
@@ -130,47 +137,52 @@ watchEffect(async () => {
     </div>
 
     <div v-else class="w-full">
-      <h3 class="text-gray-2 text-2xl mb-4">댓글</h3>
-      <div v-if="comments?.length === 0" class="text-center text-gray-500 py-4 mb-6">
+      <h3 class="text-gray-700 text-2xl mb-6">댓글</h3>
+      <div
+        v-if="comments?.length === 0"
+        class="text-center text-gray-500 py-4 mb-"
+      >
         첫 번째 댓글을 작성해보세요.
       </div>
       <div
         v-else
         v-for="comment in formattedComments"
         :key="comment.id"
-        class="mb-4"
+        class="mb-10"
       >
-        <Panel class="w-full">
-          <template #header>
-            <div class="flex items-center gap-2">
-              <Avatar :image="comment.avatar_url" shape="circle" />
+          <div class="flex justify-between items-center mb-2">
+            <!-- 유저 프로필 -> 클릭시 해당 유저 상세 페이지 -->
+            <RouterLink
+              to="/"
+              aria-label="유저 프로필"
+              class="flex items-center gap-2 flex-grow"
+            >
+              <img :src="comment.avatar_url" class="rounded-full w-7 h-7" />
               <span class="font-bold">{{ comment.name }}</span>
-              <span class="text-gray-500 text-sm">{{
+              <span class="text-gray-400 text-sm">{{
                 comment.formattedDate
               }}</span>
-            </div>
-          </template>
-          <p>{{ comment.comment }}</p>
-          <template #footer>
+            </RouterLink>
+            <!-- 댓글 수정 / 삭제 버튼 -->
             <div
               v-if="isCommentAuthor(comment.uid)"
-              class="flex gap-2 w-full justify-end"
+              class="flex gap-2 flex-shrink-0"
             >
               <button
-                class="w-8 h-8 rounded-full hover:bg-black-1/5 transition item-middle"
+                class="w-8 h-8 rounded-full hover:bg-gray-200 transition flex items-center justify-center"
                 @click="handleEditComment(comment)"
               >
                 <i class="pi pi-pencil text-gray-400"></i>
               </button>
               <button
-                class="w-8 h-8 rounded-full hover:bg-black-1/5 transition item-middle"
+                class="w-8 h-8 rounded-full hover:bg-gray-200 transition flex items-center justify-center"
                 @click="handleDeleteComment(comment.id)"
               >
                 <i class="pi pi-trash text-gray-400"></i>
               </button>
             </div>
-          </template>
-        </Panel>
+          </div>
+          <p class="text-gray-500">{{ comment.comment }}</p>
       </div>
     </div>
 
@@ -178,7 +190,7 @@ watchEffect(async () => {
       :value="value"
       @input="emit('update:value', $event.target.value)"
       @keypress="handleKeyPress"
-      class="w-full h-[133px] resize-none pt-3 px-6 rounded-lg pretend text-[14px] bg-[#f0f0f0] border-[#d4d4d4]"
+      class="w-full h-32 resize-none pt-3 px-6 rounded-lg text-sm bg-gray-100 border border-gray-300"
       placeholder="문제집에 대해 어떻게 생각하시나요?"
     ></textarea>
 
