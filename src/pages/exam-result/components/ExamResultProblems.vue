@@ -1,16 +1,27 @@
 <script setup>
 import { Button } from "primevue";
 import { storeToRefs } from "pinia";
-import { watch, computed } from "vue";
+import { watch, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useExamResultStore } from "@/store/ExamResultStore";
+import { useAuthStore } from "@/store/authStore";
 
-const examResultStore = useExamResultStore();
 const route = useRoute();
+const examResultStore = useExamResultStore();
+const authStore = useAuthStore();
 const testResultId = computed(() => route.params.examResultId);
+const currentUserId = computed(() => authStore.user?.id);
 
-const { fetchProblems } = examResultStore;
-const { currentProblem, isFetchingProblems, error, problems } =
+const selectedMyOption = computed(() =>
+  myOption.value.find((item) => item.problem_id === currentProblem.value?.id),
+);
+
+const selectedStatus = computed(() =>
+  status.value.find((item) => item.problem_id === currentProblem.value?.id),
+);
+
+const { fetchProblems, fetchMyOption } = examResultStore;
+const { currentProblem, isFetchingProblems, problems, myOption, status } =
   storeToRefs(examResultStore);
 
 const fetchData = async (id) => {
@@ -20,7 +31,6 @@ const fetchData = async (id) => {
     examResultStore.error = null;
     await fetchProblems(id);
 
-    // 첫번째 문제부터 선택
     if (problems.value.length > 0 && !currentProblem.value) {
       examResultStore.selectProblem(problems.value[0]);
     }
@@ -32,97 +42,54 @@ const fetchData = async (id) => {
   }
 };
 
+const fetchOptionData = async () => {
+  if (!problems.value || !problems.value.length === 0) {
+    console.warn("문제id 값을 못찾음");
+    return;
+  }
+  const selectedProblem = problems.value.find(
+    (problem) => problem.id === currentProblem.value?.id,
+  );
+  if (!selectedProblem) {
+    console.warn("현재 선택된 문제가 없습니다.");
+    return;
+  }
+  try {
+    await fetchMyOption(currentUserId.value, testResultId.value);
+  } catch (error) {
+    console.error("사용자 선택 데이터 가져오기 실패:", error);
+  }
+};
+
+// 문제 변경 시 사용자 선택 데이터 로드
+watch(currentProblem, (newProblem) => {
+  if (newProblem && currentUserId.value) {
+    fetchOptionData();
+  }
+});
+
+// 시험 결과 ID 변경 시 문제 데이터 로드
 watch(
   testResultId,
-  (newId) => {
-    if (newId) fetchData(newId);
+  async (newId) => {
+    if (newId) {
+      await fetchData(newId);
+      if (currentProblem.value) {
+        fetchOptionData();
+      }
+    }
   },
   { immediate: true },
 );
 
-// 문제 데이터를 가져오는 함수
-// const fetchData = async (testResultId) => {
-//   if (!testResultId) {
-//     console.error("Missing testResultId. Cannot fetch problems.");
-//     examResultStore.error = "유효한 테스트 ID가 없습니다.";
-//     return;
-//   }
-
-//   if (examResultStore.isFetchingProblems) {
-//     console.log(
-//       "Fetch is already in progress. Skipping fetch for testResultId:",
-//       testResultId,
-//     );
-//     return;
-//   }
-
-//   try {
-//     examResultStore.isFetchingProblems = true; // 중복 호출 방지 시작
-//     console.log("Fetching problems for testResultId:", testResultId);
-//     await examResultStore.fetchProblems(testResultId); // Pinia 액션 호출
-//     console.log("Problems fetched successfully:", examResultStore.problems);
-//   } catch (error) {
-//     console.error("문제 불러오기 실패:", error);
-//     examResultStore.error = error.message || "문제를 불러오는 데 실패했습니다.";
-//   } finally {
-//     examResultStore.isFetchingProblems = false; // 중복 호출 방지 해제
-//   }
-// };
-
-// testResultId 변경 감지 및 데이터 로드
-// watch(
-//   testResultId,
-//   async (testResultId) => {
-//     if (testResultId) {
-//       console.log(
-//         "testResultId changed or route updated. Fetching problems for testResultId =",
-//         testResultId,
-//       );
-//       await fetchData(testResultId);
-//     }
-//   },
-//   { immediate: true }, // 초기 로드 포함
-// );
-
-// onMounted(() => {
-//   if (testResultId.value) {
-//     fetchData(testResultId.value); // 데이터를 초기화
-//   } else {
-//     console.error("testResultId is undefined or null.");
-//     examResultStore.error = "유효한 테스트 ID가 없습니다.";
-//   }
-// });
-
-// watch(
-//   () => route.params.examResultId,
-//   async (newId) => {
-//     if (newId && newId !== testResultId.value) {
-//       testResultId.value = newId;
-//       await fetchData(newId);
-//     }
-//   },
-//   { immediate: true },
-// );
-
-// const fetchData = async (id) => {
-//   try {
-//     console.log("Fetching problems for testResultId:", id);
-//     await examResultStore.fetchProblems(id);
-//   } catch (error) {
-//     console.error("문제 불러오기 실패:", error);
-//     examResultStore.error = error.message || "문제를 불러오는 데 실패했습니다";
-//   }
-// };
-
-// onMounted(() => {
-//   testResultId.value = route.params.examResultId;
-//   if (testResultId.value) {
-//     fetchData(testResultId.value);
-//   } else {
-//     examResultStore.error = "유효한 테스트 ID가 없습니다";
-//     console.error("testResultId가 정의되지 않았습니다.");
-//   }
-// });
+// 초기 데이터 로드
+onMounted(() => {
+  if (currentUserId.value && currentProblem.value) {
+    fetchOptionData();
+  } else {
+    console.warn("초기 데이터가 로드되지 않았습니다. Watch로 처리 중...");
+  }
+});
 </script>
 
 <template>
@@ -196,14 +163,29 @@ watch(
           <div class="mb-6">
             <h3 class="font-bold text-lg mb-2">내 선택</h3>
             <div class="flex items-center gap-4 border-b pb-4">
-              <div
-                class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-black font-bold"
-              >
-                ?
-              </div>
-              <p class="text-gray-800 flex-grow">
-                아직 답안을 선택하지 않았습니다.
-              </p>
+              <template v-if="currentProblem">
+                <div
+                  class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-black font-bold"
+                >
+                  {{ selectedMyOption.my_option }}
+                </div>
+
+                <span
+                  v-if="selectedStatus?.status === 'corrected'"
+                  class="text-green-500"
+                >
+                  정답
+                </span>
+                <span
+                  v-else-if="selectedStatus?.status === 'wrong'"
+                  class="text-red-500"
+                >
+                  오답
+                </span>
+                <p v-else class="text-gray-800 flex-grow">
+                  아직 답안을 선택하지 않았습니다.
+                </p>
+              </template>
             </div>
           </div>
 

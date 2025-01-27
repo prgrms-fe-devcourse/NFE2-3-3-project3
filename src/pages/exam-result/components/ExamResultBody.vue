@@ -6,7 +6,7 @@ import ExamResultChart from "./ExamResultChart.vue";
 import ExamResultTable from "./ExamResultTable.vue";
 import ExamResultProblems from "./ExamResultProblems.vue";
 
-import { ref, onMounted, watch, onUnmounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useAuthStore } from "@/store/authStore";
 import { useExamResultStore } from "@/store/ExamResultStore";

@@ -21,7 +21,6 @@ const loadProblems = async (id) => {
     abortController.abort();
     abortController = new AbortController();
     await fetchProblems(id, { signal: abortController.signal });
-    console.log("Problems loaded:", problems.value);
   } catch (error) {
     if (error.name !== "AbortError") {
       examResultStore.error = error.message;

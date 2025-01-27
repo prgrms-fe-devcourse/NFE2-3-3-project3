@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { testResultAPI } from "@/api/testResult";
 import { fetchProblemsForTestResult } from "@/api/workbookProblem";
+import { problemHistoryAPI } from "@/api/problemHistory";
 
 export const useExamResultStore = defineStore("examResult", {
   state: () => ({
@@ -16,6 +17,8 @@ export const useExamResultStore = defineStore("examResult", {
     error: null, // 에러 메시지
     isFetchingProblems: false, //상태관리를 위한 변수들
     isInitializing: false,
+    myOption: null,
+    status: null,
   }),
   getters: {
     rows: (state) => Math.ceil(state.problems.length / state.columns),
@@ -143,6 +146,55 @@ export const useExamResultStore = defineStore("examResult", {
       }
     },
 
+    async fetchMyOption(userId, testCenterId) {
+      // 매개변수 유효성 검증
+      if (!userId) {
+        console.error("유효하지 않은 사용자 ID:", userId);
+        return;
+      }
+
+      this.isLoading = true;
+      this.error = null;
+
+      try {
+        const data = await problemHistoryAPI.getMyOption(userId, testCenterId);
+
+        if (!data || data.length === 0) {
+          console.warn("fetchMyOption: 데이터가 없습니다.");
+          this.myOption = [];
+          this.status = [];
+          return;
+        }
+
+        // 최신 데이터만 필터링 (각 problem_id 기준 최신 created_at)
+        const latestData = data.reduce((acc, curr) => {
+          if (!acc[curr.problem_id]) {
+            acc[curr.problem_id] = curr;
+          }
+          return acc;
+        }, {});
+
+        const latestRecords = Object.values(latestData);
+        // 상태 업데이트
+        this.myOption = latestRecords.map((record) => ({
+          problem_id: record.problem_id,
+          my_option: record.my_option,
+        }));
+        this.status = latestRecords.map((record) => ({
+          problem_id: record.problem_id,
+          status: record.status,
+        }));
+        console.log("fetchMyOption 완료:", {
+          myOption: this.myOption,
+          status: this.status,
+        });
+      } catch (error) {
+        console.error("fetchMyOption 오류:", error);
+        this.error = "사용자 선택 데이터를 가져오는 중 오류가 발생했습니다.";
+      } finally {
+        this.isLoading = false;
+      }
+    },
     // 문제 선택
     selectProblem(problem) {
       this.currentProblem = problem;
@@ -170,6 +222,8 @@ export const useExamResultStore = defineStore("examResult", {
           "testCenterId",
           "problems",
           "currentProblem",
+          "myOption",
+          "status",
         ],
       },
     ],
