@@ -17,8 +17,6 @@ import "swiper/css/effect-cards";
 import { useAuthStore } from "@/store/authStore";
 import { testCenterAPI } from "@/api/testCenter";
 import { inviteAPI } from "@/api/invite";
-import { formatToKoreanDateTime } from "@/utils/formatToKoreanDateTime";
-
 
 const swiperInstance = ref(null);
 const currentTab = ref(0);
@@ -39,7 +37,6 @@ const examData = ref({
   examDateTime: null,
   duration: null,
   participants: [],
-  shareOption: "share",
 });
 
 // 완료 버튼 활성화 여부
@@ -62,9 +59,7 @@ const dateTimeChip = computed(() => {
 const participantsChip = computed(() => {
   const participants = examData.value.participants;
   if (!participants.length) return "";
-  return `${
-    examData.value.shareOption === "share" ? "공유함" : "공유하지 않음"
-  }, 시험 인원 ${participants.length}명`;
+  return `시험 인원 ${participants.length}명`;
 });
 
 const onSwiper = (swiper) => {
@@ -109,14 +104,14 @@ const handleSubmit = () => {
 const submitExam = async () => {
   try {
     const currentUser = authStore.user;
-    const start_date = new Date(formatToKoreanDateTime(examData.value.examDateTime));
-    const end_date = new Date(start_date.getTime() + examData.value.duration * 60000);
 
     const body = {
       uid: currentUser?.id,
       workbook_id: examData.value.selectedWorkbook?.id,
-      start_date,
-      end_date,
+      start_date: examData.value.examDateTime,
+      end_date: new Date(
+        examData.value.examDateTime.getTime() + examData.value.duration * 60000,
+      ),
     };
 
     console.log("시험 데이터 로그:", body); // 시험 데이터 로그 출력
@@ -128,7 +123,7 @@ const submitExam = async () => {
     // 시험장 생성이 성공하면 초대 생성
     if (result && result.id) {
       const invites = examData.value.participants
-        .filter(participant => participant.email !== currentUser.email) // 로그인한 계정 제외
+        .filter((participant) => participant.email !== currentUser.email) // 로그인한 계정 제외
         .map((participant) => ({
           target_uid: participant.uid,
           test_center_id: result.id,
@@ -145,7 +140,10 @@ const submitExam = async () => {
         throw new Error("초대 생성 실패");
       }
     } else {
-      console.error("시험장 생성 실패: result 객체가 유효하지 않습니다.", result);
+      console.error(
+        "시험장 생성 실패: result 객체가 유효하지 않습니다.",
+        result,
+      );
       throw new Error("시험장 생성 실패");
     }
   } catch (error) {
@@ -158,7 +156,6 @@ const submitExam = async () => {
     });
   }
 };
-
 </script>
 
 <template>
@@ -329,10 +326,7 @@ const submitExam = async () => {
             />
           </div>
 
-          <SelectParticipants
-            v-model:participants="examData.participants"
-            v-model:shareOption="examData.shareOption"
-          />
+          <SelectParticipants v-model:participants="examData.participants" />
           <div
             class="absolute top-32 transition-all duration-300 z-20"
             :style="{ right: '-3rem' }"
@@ -391,10 +385,6 @@ const submitExam = async () => {
         <p>
           <span class="font-medium">시험 응시 시간:</span>
           {{ examData.duration }}분
-        </p>
-        <p>
-          <span class="font-medium">공유 여부:</span>
-          {{ examData.shareOption === "share" ? "공개" : "비공개" }}
         </p>
       </div>
     </div>
