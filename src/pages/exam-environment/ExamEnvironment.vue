@@ -55,10 +55,6 @@ const setPrevProblemIndex = () => {
 };
 
 const selectAnswer = (num) => {
-  if (showWarning.value) {
-    showWarning.value = false;
-  }
-
   userAnswers.value[currentProblemIndex.value] = num;
 };
 
@@ -146,7 +142,9 @@ watch(
         <div
           class="flex justify-center items-center w-full h-16 bg-black-6 mb-14"
         >
-          <h1 class="font-semibold text-xl">소방공무원 제 2차 시험장</h1>
+          <h1 class="font-semibold text-xl">
+            {{ testCenter.workbook.title }} 시험장
+          </h1>
         </div>
         <TestProblem
           v-if="problems.length"
