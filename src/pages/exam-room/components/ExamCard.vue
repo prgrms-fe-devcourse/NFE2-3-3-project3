@@ -13,6 +13,7 @@ import { inviteAPI } from "@/api/invite";
 import { useConfirm } from "primevue/useconfirm";
 import { testCenterAPI } from "@/api/testCenter";
 import { useToast } from "primevue/usetoast";
+import { workbookAPI } from "@/api/workbook";
 
 const emit = defineEmits(["delete-exam"]);
 const toast = useToast();
@@ -37,6 +38,7 @@ const props = defineProps({
 const confirm = useConfirm();
 const isProcessing = ref(false);
 const participantCount = ref(0);
+const problemCount = ref(0);
 
 const handleDelete = async () => {
   if (isProcessing.value) return;
@@ -83,13 +85,24 @@ const formattedDate = computed(() => {
   return formatterIntlKR.format(new Date(props.start_date));
 });
 
-const problemCount = computed(() => {
-  return props.workbook?.workbook_problem?.[0]?.count ?? 0;
-});
+const fetchProblemCount = async () => {
+  console.log('fetchProblemCount 함수 실행됨');
+  try {
+    // API 호출 전
+    // console.log('API 호출 시작:', props.workbook_id);
+    problemCount.value = await workbookAPI.getWorkbookProblemCount(props.workbook_id);
+    // API 호출 후
+    // console.log('받아온 문제 수:', problemCount.value);
+  } catch (error) {
+    console.error("문제 수를 가져오는 데 실패했습니다:", error);
+  }
+};
 
 watchEffect(async () => {
- if (props.id) {
+ if (props.id && props.workbook_id) {
+  //  console.log('watchEffect 실행:', { id: props.id, workbook_id: props.workbook_id });
    participantCount.value = await inviteAPI.getParticipantCount(props.id);
+   await fetchProblemCount();
  }
 });
 </script>
