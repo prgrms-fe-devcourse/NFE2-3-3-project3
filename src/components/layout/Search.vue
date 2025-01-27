@@ -4,22 +4,31 @@ import dropdownDown from "@/assets/icons/problem-set-board/dropdown-down.svg";
 import search from "@/assets/icons/problem-set-board/search.svg";
 import { Chip, DatePicker, RadioButton } from "primevue";
 import { formatDate } from "@/utils/formatDate";
+import { useRoute } from "vue-router";
 
 const STATUSES = ["안 푼 문제", "푼 문제", "틀린 문제"];
+const route = useRoute();
 const { showStatus } = defineProps({
   showStatus: {
     type: Boolean,
     required: true,
   },
 });
+const {
+  keyword: keywordFromQuery,
+  startDate: startDateFromQuery,
+  endDate: endDateFromQuery,
+  status: statusFromQuery,
+  sort,
+} = route.query;
 
-const keyword = ref("");
+const keyword = ref(keywordFromQuery);
 const isOpen = ref(false);
-const status = ref();
+const status = ref(statusFromQuery);
 const dropdown = ref(null);
 
-const startDate = ref();
-const endDate = ref();
+const startDate = ref(startDateFromQuery);
+const endDate = ref(endDateFromQuery);
 
 const emit = defineEmits(["search"]);
 
@@ -42,7 +51,9 @@ onBeforeUnmount(() => {
 <template>
   <div class="flex flex-col gap-2">
     <form
-      @submit.prevent="emit('search', keyword, startDate, endDate, status)"
+      @submit.prevent="
+        emit('search', keyword, startDate, endDate, sort, status)
+      "
       class="flex justify-between items-center bg-beige-2 has-[:focus]:border-orange-1 rounded-2xl h-12 p-4 border border-black-4"
     >
       <input
@@ -101,6 +112,7 @@ onBeforeUnmount(() => {
             class="w-[116px] h-6"
             id="startTime"
             dateFormat="yy-mm-dd"
+            showButtonBar
           />
           <span>종료일</span>
           <DatePicker
@@ -109,6 +121,7 @@ onBeforeUnmount(() => {
             id="endTime"
             :minDate="new Date(startDate)"
             dateFormat="yy-mm-dd"
+            showButtonBar
           />
         </div>
       </div>

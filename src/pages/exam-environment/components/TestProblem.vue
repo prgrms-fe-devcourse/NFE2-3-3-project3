@@ -2,7 +2,19 @@
 import { againViewProblemAPI } from "@/api/againViewProblem";
 import { authAPI } from "@/api/auth";
 import { Button, useToast } from "primevue";
-import { computed, watch, ref } from "vue";
+import {
+  computed,
+  watch,
+  ref,
+  onBeforeUnmount,
+  onMounted,
+  watchEffect,
+} from "vue";
+import Viewer from "@toast-ui/editor/dist/toastui-editor-viewer";
+
+const el = ref(null);
+const viewer = ref(null);
+const emit = defineEmits(["selectAnswer"]);
 
 const toast = useToast();
 const { problem, currentProblemIndex, userAnswers } = defineProps({
@@ -12,12 +24,13 @@ const { problem, currentProblemIndex, userAnswers } = defineProps({
 });
 
 const isAgainViewProblem = ref(false);
-const options = computed(() =>
-  Object.entries(problem)
-    .filter(([key]) => key.startsWith("option"))
-    .map(([, value]) => value),
-);
-const emit = defineEmits(["selectAnswer"]);
+
+const options = computed(() => [
+  problem.option_one,
+  problem.option_two,
+  problem.option_three,
+  problem.option_four,
+]);
 
 const addAgainViewProblem = async () => {
   await againViewProblemAPI.addAgainViewProblem({
@@ -43,22 +56,64 @@ const deleteAgainViewProblem = async () => {
   });
 };
 
+const handleImageClick = (event) => {
+  const img = event.target;
+  console.log(img);
+  if (img.requestFullscreen) {
+    img.requestFullscreen();
+  } else if (img.mozRequestFullScreen) {
+    // Firefox
+    img.mozRequestFullScreen();
+  } else if (img.webkitRequestFullscreen) {
+    // Chrome, Safari and Opera
+    img.webkitRequestFullscreen();
+  } else if (img.msRequestFullscreen) {
+    // IE/Edge
+    img.msRequestFullscreen();
+  }
+};
+
+const addImageClickListeners = () => {
+  const images = document.querySelectorAll("img");
+  images.forEach((img) => {
+    img.addEventListener("click", handleImageClick);
+  });
+};
+
 watch(
   () => problem.id,
   async (problemId) => {
+    // 마크다운 Viewer 설정
+    if (el.value && problem.question) {
+      viewer.value = new Viewer({
+        el: el.value,
+        initialValue: problem.question,
+      });
+    }
+
+    // 이미지 전체화면 이벤트리스너 등록
+    addImageClickListeners();
+
+    // 다시 볼 문제 여부 체크
     const user = await authAPI.getCurrentUser();
     const data = await againViewProblemAPI.getByProblemId(user.id, problemId);
-    if (data) {
+    if (data.length) {
       isAgainViewProblem.value = true;
     }
   },
   { immediate: true },
 );
+
+onBeforeUnmount(() => {
+  if (viewer.value) {
+    viewer.value.destroy();
+  }
+});
 </script>
 <template>
   <article class="flex flex-col w-[1000px] mx-auto">
     <div class="flex items-center gap-4 pb-6 w-full border-b">
-      <h2>문제 {{ currentProblemIndex + 1 }} : {{ problem.title }}</h2>
+      <h2>문제 {{ currentProblemIndex + 1 }} : {{ problem?.title }}</h2>
       <Button
         v-if="isAgainViewProblem"
         @click="deleteAgainViewProblem"
@@ -76,19 +131,7 @@ watch(
         severity="secondary"
       />
     </div>
-    <div
-      v-if="problem.image_src"
-      v-html="
-        `<p class='mt-6 break-keep'>${problem.question}</p>
-        <div class='flex justify-center mt-6 mb-12'>
-          <img src='${problem.image_src}' alt='문제 이미지' />
-        </div>`
-      "
-    ></div>
-    <div
-      v-else
-      v-html="`<p class='mt-6 mb-12 break-keep'>${problem.question}</p>`"
-    ></div>
+    <div ref="el" class="w-full overflow-hidden mt-6 mb-12"></div>
     <div class="flex flex-col gap-4 mb-20">
       <div
         v-for="(option, index) in options"
@@ -103,7 +146,7 @@ watch(
             'flex justify-center items-center border-2 border-solid w-6 h-6 rounded-full',
             userAnswers[currentProblemIndex] === String(index + 1)
               ? 'border-orange-1 bg-orange-1 text-white'
-              : 'border-gray-3 text-gray-3',
+              : 'text-gray-3',
           ]"
         >
           {{ index + 1 }}
@@ -113,4 +156,10 @@ watch(
     </div>
   </article>
 </template>
-<style></style>
+<style scoped>
+:deep(img) {
+  max-width: 100%;
+  cursor: pointer;
+  object-fit: cover;
+}
+</style>

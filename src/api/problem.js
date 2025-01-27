@@ -109,13 +109,13 @@ const search = async (userId, keyword, startDate, endDate, status) => {
       const { data: historyData } = await supabase
         .from("problem_history")
         .select("*, user_info(*)")
-        .eq("uid", userId);
+        .eq("uid", userId)
+        .order("created_at", { ascending: false })
+        .single();
 
-      data = data.filter((problem) =>
-        historyData.some(
-          (history) =>
-            problem.id === history.problem_id && history.status === "wrong",
-        ),
+      data = data.filter(
+        (problem) =>
+          problem.id === historyData.problem_id && history.status === "wrong",
       );
     }
 
@@ -220,11 +220,19 @@ const addMultiple = async (workbook_id, problemIds) => {
 
     const { data, error } = await supabase
       .from("workbook_problem")
-      .upsert(workbookProblems);
+      .upsert(workbookProblems, { onConflict: ["workbook_id", "problem_id"] })
+      .select();
 
     if (error) throw new Error(`데이터 삽입 중 오류 발생: ${error.message}`);
 
-    return data;
+    // 추가된 행의 개수 계산
+    const existingSet = new Set(
+      workbookProblems.map((wp) => `${wp.workbook_id}-${wp.problem_id}`),
+    );
+    const insertedCount = data.filter(
+      (wp) => !existingSet.has(`${wp.workbook_id}-${wp.problem_id}`),
+    ).length;
+    return { data, insertedCount };
   } catch (error) {
     console.error(error);
     return null;
