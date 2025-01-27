@@ -96,6 +96,7 @@ button {
 a {
   text-decoration: none;
   color: inherit;
+  @apply transition-colors;
 }
 
 input:focus,

@@ -7,10 +7,16 @@ import { SORT, SORTS } from "@/const/sorts";
 import { workbookAPI } from "@/api/workbook";
 import { formatDate } from "@/utils/formatDate";
 import EmptyText from "@/components/layout/EmptyText.vue";
+import { useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 
+const route = useRoute();
+const router = useRouter();
+const { keyword, startDate, endDate, sort: sortFromQuery } = route.query;
 const problemSets = ref([]);
 const sorts = ref(SORTS);
-const sort = ref(SORTS[0]);
+const currentSort = sortFromQuery === SORT.likes ? SORTS[1] : SORTS[0];
+const sort = ref(currentSort);
 const first = ref(0);
 const rows = ref(8);
 
@@ -30,25 +36,35 @@ const sortedProblemSets = computed(() => {
   }
 });
 
-const search = async (keyword, startDate, endDate) => {
+const search = async (keyword, startDate, endDate, sort) => {
   first.value = 0;
   problemSets.value = await workbookAPI.search(
     keyword,
     formatDate(startDate),
     formatDate(endDate),
   );
+
+  router.push({
+    query: {
+      keyword,
+      startDate: formatDate(startDate),
+      endDate: formatDate(endDate),
+      sort: sort.value,
+    },
+  });
 };
 
 watch(
   () => sort.value,
   () => {
     first.value = 0;
+    search(keyword, startDate, endDate, sort.value);
   },
 );
 
 watchEffect(async () => {
-  problemSets.value = await workbookAPI.search(null, null, null);
-});
+  problemSets.value = await workbookAPI.search(keyword, startDate, endDate);
+}); 
 </script>
 <template>
   <div class="relative flex flex-col gap-14">
