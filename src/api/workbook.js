@@ -1,10 +1,10 @@
 import { supabase } from ".";
 
 // CREATE
-const add = async (title, description) => {
+const add = async (title, description, shared) => {
   const { data, error } = await supabase
     .from("workbook")
-    .insert([{ title, description }])
+    .insert([{ title, description, shared }])
     .select()
     .single();
 
@@ -238,6 +238,27 @@ const checkWorkbookInsert = async () => {
     }
   }
 };
+
+/**
+ * @description 특정 workbook에 포함된 문제의 총 개수를 조회합니다
+ * @param {number} workbookId - 조회할 workbook의 ID
+ * @returns {number} 해당 workbook에 포함된 문제의 총 개수
+ */
+const getWorkbookProblemCount = async (workbookId) => {
+  try {
+    const { data, count, error } = await supabase
+      .from("workbook_problem")
+      .select("*", { count: "exact" })
+      .eq("workbook_id", workbookId);
+
+    if (error) throw error;
+    return count;
+  } catch (error) {
+    console.error("문제 수 조회 실패:", error);
+    throw error;
+  }
+};
+
 export const workbookAPI = {
   add,
   getAll,
@@ -256,4 +277,5 @@ export const workbookAPI = {
   checkWorkbookInsert,
   workbookCommentInfo,
   workbookProblemAdd,
+  getWorkbookProblemCount,
 };

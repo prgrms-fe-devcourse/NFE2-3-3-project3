@@ -13,8 +13,7 @@ export const againViewProblemAPI = {
         .from("again_view_problem")
         .select("problem_id")
         .eq("problem_id", problemId)
-        .eq("uid", userId)
-        .single();
+        .eq("uid", userId);
 
       if (error) throw error;
       return data;

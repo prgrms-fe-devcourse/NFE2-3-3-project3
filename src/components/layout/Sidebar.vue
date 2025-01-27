@@ -18,7 +18,7 @@ const testPath = new URL("@/assets/icons/test.svg", import.meta.url).href;
     <!-- 버튼 -->
     <RouterLink to="/problem-editor">
       <button
-        class="bg-orange-1 text-white text-lg border-none px-8 py-2.5 rounded-lg hover:bg-orange-hover cursor-pointer mb-[24px]"
+        class="bg-orange-1 text-white text-lg border-none px-8 py-2.5 rounded-lg hover:bg-orange-hover cursor-pointer mb-[24px] transition-colors"
         to="/problem-editor"
       >
         새로운 문제 만들기

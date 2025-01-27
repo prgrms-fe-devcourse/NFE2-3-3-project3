@@ -6,12 +6,23 @@ import { ref, watch } from "vue";
 import { formatDate } from "@/utils/formatDate";
 import { useAuthStore } from "@/store/authStore";
 import { storeToRefs } from "pinia";
+import { useRouter } from "vue-router";
+import { SORT } from "@/const/sorts";
 
+const router = useRouter();
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
 const problems = ref([]);
+const queries = router.currentRoute.value.query;
+const { keyword, startDate, endDate, status, sort } = queries;
 
-const search = async (keyword, startDate, endDate, status) => {
+const search = async (
+  keyword,
+  startDate,
+  endDate,
+  sort = SORT.latest,
+  status,
+) => {
   problems.value = await problemAPI.search(
     user.value.id,
     keyword,
@@ -19,19 +30,21 @@ const search = async (keyword, startDate, endDate, status) => {
     formatDate(endDate),
     status,
   );
-};
-
-const fetchInitialData = async () => {
-  if (!user.value) return;
-  problems.value = await problemAPI.getAllShared(user.value.id);
+  router.push({
+    query: {
+      keyword,
+      startDate: formatDate(startDate),
+      endDate: formatDate(endDate),
+      status,
+      sort,
+    },
+  });
 };
 
 watch(
-  () => user.value,
-  (newUser) => {
-    if (newUser) {
-      fetchInitialData();
-    }
+  () => queries,
+  () => {
+    search(keyword, startDate, endDate, sort, status);
   },
   { immediate: true },
 );

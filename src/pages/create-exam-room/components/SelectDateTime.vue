@@ -74,27 +74,23 @@ watch([durationHours, durationMinutes], () => {
         <div class="flex gap-4 w-full mb-20">
           <div class="w-full">
             <label class="text-sm text-gray-600 mb-1 block">시간</label>
-            <InputNumber
+            <input
+              type="number"
               v-model="startHours"
               :min="0"
               :max="23"
-              class="w-full"
-              :showButtons="false"
-              buttonLayout="horizontal"
-              spinnerMode="horizontal"
+              class="w-full border border-gray-300 rounded-md p-2 shadow-sm [appearance:textfield]"
             />
           </div>
           <div class="w-full">
             <label class="text-sm text-gray-600 mb-1 block">분</label>
-            <InputNumber
+            <input
+              type="number"
               v-model="startMinutes"
               :min="0"
               :max="59"
               :step="5"
-              class="w-full"
-              :showButtons="false"
-              buttonLayout="horizontal"
-              spinnerMode="horizontal"
+              class="w-full border border-gray-300 rounded-md p-2 shadow-sm [appearance:textfield]"
             />
           </div>
         </div>
@@ -105,27 +101,23 @@ watch([durationHours, durationMinutes], () => {
           <div class="flex gap-4 w-full">
             <div class="w-full">
               <label class="text-sm text-gray-600 mb-1 block">시간</label>
-              <InputNumber
+              <input
+                type="number"
                 v-model="durationHours"
                 :min="0"
                 :max="23"
-                class="w-full"
-                :showButtons="false"
-                buttonLayout="horizontal"
-                spinnerMode="horizontal"
+                class="w-full border border-gray-300 rounded-md p-2 shadow-sm [appearance:textfield]"
               />
             </div>
             <div class="w-full">
               <label class="text-sm text-gray-600 mb-1 block">분</label>
-              <InputNumber
+              <input
+                type="number"
                 v-model="durationMinutes"
                 :min="0"
                 :max="59"
                 :step="5"
-                class="w-full"
-                :showButtons="false"
-                buttonLayout="horizontal"
-                spinnerMode="horizontal"
+                class="w-full border border-gray-300 rounded-md p-2 shadow-sm [appearance:textfield]"
               />
             </div>
           </div>
@@ -134,3 +126,12 @@ watch([durationHours, durationMinutes], () => {
     </div>
   </div>
 </template>
+
+<style scoped>
+/* 스피너 버튼 보이게 하기 */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  opacity: 1;
+  height: auto;
+}
+</style>

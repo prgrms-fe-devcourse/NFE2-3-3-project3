@@ -23,7 +23,7 @@ const requireConfirmation = () => {
 </script>
 <template>
   <aside
-    class="sticky top-0 flex flex-col min-w-72 w-72 h-screen border-l border-black-4"
+    class="sticky top-0 flex flex-col min-w-72 w-72 h-screen border-l border-black-4 bg-white"
   >
     <div class="flex flex-col justify-center items-center h-16 bg-black-5">
       <p class="font-semibold text-xl">남은 시간</p>

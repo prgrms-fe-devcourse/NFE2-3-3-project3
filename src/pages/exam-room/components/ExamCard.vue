@@ -6,7 +6,7 @@ import timeFastIcon from "@/assets/icons/exam-room/fi-rr-time-fast.svg";
 import pencilIcon from "@/assets/icons/exam-room/fi-rr-pencil.svg";
 import trashIcon from "@/assets/icons/exam-room/fi-rr-trash.svg";
 import { computed } from "vue";
-import { formatToKoreanDateTime } from "@/utils/formatToKoreanDateTime";
+import { formatterIntlKR } from "@/utils/formatterIntlKR.js";
 import { formatMsToHourMinute } from "@/utils/formatMsToHour";
 import { ref, watchEffect } from "vue";
 import { inviteAPI } from "@/api/invite";
@@ -79,7 +79,8 @@ const examDuration = computed(() => {
 });
 
 const formattedDate = computed(() => {
-  return formatToKoreanDateTime(props.start_date);
+  if (!props.start_date) return "";
+  return formatterIntlKR.format(new Date(props.start_date));
 });
 
 const problemCount = computed(() => {

@@ -7,8 +7,13 @@ import { supabase } from ".";
  * @returns
  */
 const add = async (body) => {
-  await supabase.from("problem_history").insert(body).select();
-  console.log(data);
+  const { data, error } = await supabase
+    .from("problem_history")
+    .insert([body])
+    .select();
+
+  if (error) throw error;
+  return data;
 };
 
 // READ
