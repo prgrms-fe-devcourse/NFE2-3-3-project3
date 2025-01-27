@@ -109,13 +109,13 @@ const search = async (userId, keyword, startDate, endDate, status) => {
       const { data: historyData } = await supabase
         .from("problem_history")
         .select("*, user_info(*)")
-        .eq("uid", userId);
+        .eq("uid", userId)
+        .order("created_at", { ascending: false })
+        .single();
 
-      data = data.filter((problem) =>
-        historyData.some(
-          (history) =>
-            problem.id === history.problem_id && history.status === "wrong",
-        ),
+      data = data.filter(
+        (problem) =>
+          problem.id === historyData.problem_id && history.status === "wrong",
       );
     }
 
