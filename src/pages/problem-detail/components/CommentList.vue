@@ -22,6 +22,9 @@ const emit = defineEmits(["update:value", "submit-comment", "page-change"]);
 
 const authStore = useAuthStore();
 const userId = ref(authStore.user?.id);
+const formattedComments = ref([]);
+const editingCommentId = ref(null);
+const editingContent = ref("");
 
 const isCommentAuthor = (commentUid) => {
   return commentUid === authStore.user?.id;
@@ -89,8 +92,54 @@ const handleDeleteComment = async (id) => {
 };
 
 const handleEditComment = (comment) => {
-  // 수정 로직 구현 필요
-  console.log("Edit comment:", comment);
+  editingCommentId.value = comment.id;
+  editingContent.value = comment.comment;
+};
+
+const handleEditSubmit = async (event) => {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    
+    try {
+      const response = await commentAPI.updateComment(editingCommentId.value, {
+        content: editingContent.value
+      });
+      
+      if (response) {
+        // 수정된 댓글을 찾아서 업데이트
+        const index = formattedComments.value.findIndex(
+          comment => comment.id === editingCommentId.value
+        );
+        if (index !== -1) {
+          formattedComments.value[index].comment = editingContent.value;
+        }
+        
+        // 수정 모드 종료
+        editingCommentId.value = null;
+        editingContent.value = "";
+        
+        toast.add({
+          severity: "success",
+          summary: "수정 완료",
+          detail: "댓글이 수정되었습니다.",
+        });
+      }
+    } catch (error) {
+      console.error("Edit error:", error);
+      toast.add({
+        severity: "error",
+        detail: "댓글 수정 중 오류가 발생했습니다.",
+      });
+    }
+  }
+};
+
+// ESC 키로 수정 취소
+const handleEditCancel = (event) => {
+  if (event.key === "Escape") {
+    editingCommentId.value = null;
+    editingContent.value = "";
+  }
 };
 
 const onPageChange = (event) => {
@@ -111,8 +160,6 @@ const getUserProfile = async (uid) => {
 
   return data;
 };
-
-const formattedComments = ref([]);
 
 watchEffect(async () => {
   const comments = await Promise.all(
@@ -150,39 +197,48 @@ watchEffect(async () => {
         :key="comment.id"
         class="mb-10"
       >
-          <div class="flex justify-between items-center mb-2">
-            <!-- 유저 프로필 -> 클릭시 해당 유저 상세 페이지 -->
-            <RouterLink
-              to="/"
-              aria-label="유저 프로필"
-              class="flex items-center gap-2 flex-grow"
+        <div class="flex justify-between items-center mb-2">
+          <!-- 유저 프로필 -> 클릭시 해당 유저 상세 페이지 -->
+          <RouterLink
+            to="/"
+            aria-label="유저 프로필"
+            class="flex items-center gap-2 flex-grow"
+          >
+            <img :src="comment.avatar_url" class="rounded-full w-7 h-7" />
+            <span class="font-bold">{{ comment.name }}</span>
+            <span class="text-gray-400 text-sm">{{
+              comment.formattedDate
+            }}</span>
+          </RouterLink>
+          <!-- 댓글 수정 / 삭제 버튼 -->
+          <div
+            v-if="isCommentAuthor(comment.uid)"
+            class="flex gap-2 flex-shrink-0"
+          >
+            <button
+              class="w-8 h-8 rounded-full hover:bg-gray-200 transition flex items-center justify-center"
+              @click="handleEditComment(comment)"
             >
-              <img :src="comment.avatar_url" class="rounded-full w-7 h-7" />
-              <span class="font-bold">{{ comment.name }}</span>
-              <span class="text-gray-400 text-sm">{{
-                comment.formattedDate
-              }}</span>
-            </RouterLink>
-            <!-- 댓글 수정 / 삭제 버튼 -->
-            <div
-              v-if="isCommentAuthor(comment.uid)"
-              class="flex gap-2 flex-shrink-0"
+              <i class="pi pi-pencil text-gray-400"></i>
+            </button>
+            <button
+              class="w-8 h-8 rounded-full hover:bg-gray-200 transition flex items-center justify-center"
+              @click="handleDeleteComment(comment.id)"
             >
-              <button
-                class="w-8 h-8 rounded-full hover:bg-gray-200 transition flex items-center justify-center"
-                @click="handleEditComment(comment)"
-              >
-                <i class="pi pi-pencil text-gray-400"></i>
-              </button>
-              <button
-                class="w-8 h-8 rounded-full hover:bg-gray-200 transition flex items-center justify-center"
-                @click="handleDeleteComment(comment.id)"
-              >
-                <i class="pi pi-trash text-gray-400"></i>
-              </button>
-            </div>
+              <i class="pi pi-trash text-gray-400"></i>
+            </button>
           </div>
-          <p class="text-gray-500">{{ comment.comment }}</p>
+        </div>
+        <!-- 수정 모드일 때는 textarea 표시 -->
+        <textarea
+          v-if="editingCommentId === comment.id"
+          v-model="editingContent"
+          @keypress="handleEditSubmit"
+          @keydown.esc="handleEditCancel"
+          class="w-full min-h-[80px] resize-none pt-3 px-4 rounded-lg text-sm bg-gray-100 border border-gray-300"
+        ></textarea>
+        <!-- 일반 모드일 때는 텍스트로 표시 -->
+        <p v-else class="text-gray-500">{{ comment.comment }}</p>
       </div>
     </div>
 

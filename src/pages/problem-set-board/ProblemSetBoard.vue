@@ -76,7 +76,7 @@ watchEffect(async () => {
           v-for="problemSet in sortedProblemSets"
           :problemSet="problemSet"
           :key="problemSet.id"
-          :to="`/problem-set-board-detail/${problemSet.id}`"
+          :to="`/problem-set-board/${problemSet.id}`"
         />
       </div>
     </section>

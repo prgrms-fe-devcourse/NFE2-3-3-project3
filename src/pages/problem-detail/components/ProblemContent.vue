@@ -57,14 +57,14 @@ watch(() => props.problem, (newProblem) => {
 
     <!-- OX 보기 -->
     <div v-if="props.problem?.problem_type === 'ox'" class="space-y-4">
-      <ul class="item-between gap-4">
+      <ul class="flex gap-4">
         <li
-          class="flex items-center gap-2 rounded border border-gray-200 w-1/2 text-lg item-middle h-full border-r px-4 py-2 bg-black-6 hover:bg-orange-2 shadow-sm transition"
+          class="flex items-center gap-2 rounded-xl  w-1/2 h-24 text-4xl font-extrabold item-middle border-r px-4 py-2 bg-orange-1 hover:bg-orange-2 text-white shadow-sm transition"
         >
           O
         </li>
         <li
-          class="flex items-center gap-2 rounded border border-gray-200 w-1/2 text-lg item-middle h-full border-r px-4 py-2 bg-black-6 hover:bg-orange-2 shadow-sm transition"
+          class="flex items-center gap-2 rounded-xl w-1/2 h-24 text-4xl item-middle px-4 py-2 bg-black-6 hover:bg-orange-2 text-gray-1 shadow-sm transition"
         >
           X
         </li>
