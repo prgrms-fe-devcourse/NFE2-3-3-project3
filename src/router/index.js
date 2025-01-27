@@ -76,27 +76,15 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
-        path: "my-problems/:myProblemId",
-        name: "MyProblemsDetail",
-        component: MyProblemsDetail,
-        meta: { requiresAuth: true },
-      },
-      {
         path: "my-problem-sets",
         name: "MyProblemSets",
         component: MyProblemSets,
         meta: { requiresAuth: true },
       },
       {
-        path: "my-problem-sets-update/:problemSetId",
+        path: "problem-set-board-update/:problemSetId",
         name: "MyProblemSetsUpdate",
         component: MyProblemSetsUpdate,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "my-problem-sets/:problemSetId",
-        name: "MyProblemSetsDetail",
-        component: MyProblemSetsDetail,
         meta: { requiresAuth: true },
       },
       {
@@ -130,13 +118,7 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
-        path: "exam-make/:problemSetId",
-        name: "ExamMake",
-        component: ExamMake,
-        meta: { requiresAuth: true },
-      },
-      {
-        path: "problem-set-board-detail/:problemSetId",
+        path: "problem-set-board/:problemSetId",
         name: "ProblemSetBoardDetail",
         component: ProblemSetBoardDetail,
         meta: { requiresAuth: true },
@@ -147,7 +129,6 @@ const routes = [
         component: ProblemBoardDetail,
         meta: { requiresAuth: true },
       },
-
       {
         path: "problem-board-update/:problemId",
         name: "ProblemBoardDetailUpdate",
