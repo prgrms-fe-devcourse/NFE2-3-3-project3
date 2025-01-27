@@ -64,7 +64,7 @@ watch(
 
 watchEffect(async () => {
   problemSets.value = await workbookAPI.search(keyword, startDate, endDate);
-}); 
+});
 </script>
 <template>
   <div class="relative flex flex-col gap-14">
@@ -92,7 +92,7 @@ watchEffect(async () => {
           v-for="problemSet in sortedProblemSets"
           :problemSet="problemSet"
           :key="problemSet.id"
-          :to="`/problem-set-board-detail/${problemSet.id}`"
+          :to="`/problem-set-board/${problemSet.id}`"
         />
       </div>
     </section>
