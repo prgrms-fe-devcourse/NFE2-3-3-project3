@@ -1,16 +1,16 @@
-/**
- * 날짜를 한국 날짜 + 오전 / 오후로 표시
- * @param {string | Date} date - 포맷팅할 날짜
- * @returns {string} 형식: "YYYY. MM. DD HH:mm"
- */
-export const formatToKoreanDateTime = (date) => {
-  if (!date) return "";
+export const formatToKoreanDateTime = (dateString) => {
+  if (!dateString) return "";
   
-  return new Date(date).toLocaleString("ko-KR", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit"
-  });
+  try {
+    // ISO 문자열에서 시간 부분을 직접 추출
+    const matches = dateString.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+    if (!matches) return "";
+    
+    const [_, year, month, day, hours, minutes] = matches;
+    
+    return `${year}.${month}.${day} ${hours}:${minutes}`;
+  } catch (error) {
+    console.error('Date formatting error:', error);
+    return "";
+  }
 };

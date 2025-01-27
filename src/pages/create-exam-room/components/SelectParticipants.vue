@@ -16,16 +16,11 @@ const props = defineProps({
 
     required: true,
   },
-  shareOption: {
-    type: String,
-    default: "share",
-  },
 });
 
-const emit = defineEmits(["update:participants", "update:shareOption"]);
+const emit = defineEmits(["update:participants"]);
 
 const toast = useToast();
-const shareOption = ref(props.shareOption);
 const newParticipant = ref("");
 const selectedUsers = ref([]);
 const followingUsers = ref([]);
@@ -39,7 +34,7 @@ const fetchFollowing = async () => {
       const followData = await followAPI.getFollowing(authStore.user.id);
 
       // 데이터 확인
-      console.log("followData:", followData);
+      // console.log("followData:", followData);
 
       // followingUsers 값 생성
       followingUsers.value = followData.map((item) => ({
@@ -154,11 +149,6 @@ const addParticipantByEmail = async () => {
   newParticipant.value = "";
 };
 
-const handleShareOptionChange = (value) => {
-  shareOption.value = value;
-  emit("update:shareOption", value);
-};
-
 // 초기화 및 감시
 watchEffect(() => {
   if (authStore.isAuthenticated) {
@@ -168,7 +158,6 @@ watchEffect(() => {
 
 watchEffect(() => {
   selectedUsers.value = props.participants;
-  shareOption.value = props.shareOption;
 });
 
 // 사용자 정보 설정
@@ -214,8 +203,7 @@ watchEffect(() => {
     ...user,
     uid: user.uid || user.id, // uid 값을 올바르게 설정
   }));
-  shareOption.value = props.shareOption;
-  console.log("Selected users:", selectedUsers.value); // 선택된 사용자 로그 출력
+  // console.log("Selected users:", selectedUsers.value); // 선택된 사용자 로그 출력
 });
 </script>
 
@@ -307,36 +295,4 @@ watchEffect(() => {
     </section>
   </div>
 
-  <!-- 결과 공유 설정 -->
-  <div class="mb-8">
-    <h3 class="text-lg font-medium mb-4">결과 공유 설정</h3>
-    <div class="flex gap-3 flex-col">
-      <div class="flex items-center gap-2">
-        <RadioButton
-          v-model="shareOption"
-          @change="handleShareOptionChange"
-          inputId="share"
-          name="share"
-          value="share"
-        />
-        <label for="share">공유함</label>
-        <span class="text-sm text-gray-1">
-          (참가자들의 이름, 성적이 모든 참가자에게 전달됩니다.)
-        </span>
-      </div>
-      <div class="flex items-center gap-2">
-        <RadioButton
-          v-model="shareOption"
-          @change="handleShareOptionChange"
-          inputId="private"
-          name="share"
-          value="private"
-        />
-        <label for="private">공유하지 않음</label>
-        <span class="text-sm text-gray-1">
-          (참가자들은 본인의 성적만 열람이 가능합니다.)
-        </span>
-      </div>
-    </div>
-  </div>
 </template>

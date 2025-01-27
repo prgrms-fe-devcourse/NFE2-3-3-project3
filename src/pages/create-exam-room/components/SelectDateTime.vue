@@ -82,6 +82,7 @@ watch([durationHours, durationMinutes], () => {
               :showButtons="false"
               buttonLayout="horizontal"
               spinnerMode="horizontal"
+              showButtons
             />
           </div>
           <div class="w-full">
@@ -95,6 +96,7 @@ watch([durationHours, durationMinutes], () => {
               :showButtons="false"
               buttonLayout="horizontal"
               spinnerMode="horizontal"
+              showButtons
             />
           </div>
         </div>
