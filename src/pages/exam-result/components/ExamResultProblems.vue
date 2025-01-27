@@ -1,51 +1,138 @@
 <script setup>
-import { Button, Panel } from "primevue";
-import { onMounted, ref, watch } from "vue";
+import { Button } from "primevue";
+import { storeToRefs } from "pinia";
+import { watch, computed } from "vue";
 import { useRoute } from "vue-router";
 import { useExamResultStore } from "@/store/ExamResultStore";
 
 const examResultStore = useExamResultStore();
 const route = useRoute();
-const testResultId = ref(null);
+const testResultId = computed(() => route.params.examResultId);
 
-watch(
-  () => route.params.examResultId,
-  (newId) => {
-    testResultId.value = newId;
-    if (newId) fetchData(newId);
-  },
-);
+const { fetchProblems } = examResultStore;
+const { currentProblem, isFetchingProblems, error, problems } =
+  storeToRefs(examResultStore);
 
 const fetchData = async (id) => {
   try {
-    await examResultStore.fetchProblems(id);
+    if (!id || isFetchingProblems.value) return;
+    examResultStore.isFetchingProblems = true;
+    examResultStore.error = null;
+    await fetchProblems(id);
+
+    // 첫번째 문제부터 선택
+    if (problems.value.length > 0 && !currentProblem.value) {
+      examResultStore.selectProblem(problems.value[0]);
+    }
   } catch (error) {
     console.error("문제 불러오기 실패:", error);
-    examResultStore.error = error.message || "문제를 불러오는 데 실패했습니다";
+    examResultStore.error = error.message || "문제를 불러오는 데 실패했습니다.";
+  } finally {
+    examResultStore.isFetchingProblems = false;
   }
 };
 
-onMounted(() => {
-  testResultId.value = route.params.examResultId;
-  if (testResultId.value) {
-    fetchData(testResultId.value);
-  } else {
-    examResultStore.error = "유효한 테스트 ID가 없습니다";
-    console.error("testResultId가 정의되지 않았습니다.");
-  }
-});
+watch(
+  testResultId,
+  (newId) => {
+    if (newId) fetchData(newId);
+  },
+  { immediate: true },
+);
+
+// 문제 데이터를 가져오는 함수
+// const fetchData = async (testResultId) => {
+//   if (!testResultId) {
+//     console.error("Missing testResultId. Cannot fetch problems.");
+//     examResultStore.error = "유효한 테스트 ID가 없습니다.";
+//     return;
+//   }
+
+//   if (examResultStore.isFetchingProblems) {
+//     console.log(
+//       "Fetch is already in progress. Skipping fetch for testResultId:",
+//       testResultId,
+//     );
+//     return;
+//   }
+
+//   try {
+//     examResultStore.isFetchingProblems = true; // 중복 호출 방지 시작
+//     console.log("Fetching problems for testResultId:", testResultId);
+//     await examResultStore.fetchProblems(testResultId); // Pinia 액션 호출
+//     console.log("Problems fetched successfully:", examResultStore.problems);
+//   } catch (error) {
+//     console.error("문제 불러오기 실패:", error);
+//     examResultStore.error = error.message || "문제를 불러오는 데 실패했습니다.";
+//   } finally {
+//     examResultStore.isFetchingProblems = false; // 중복 호출 방지 해제
+//   }
+// };
+
+// testResultId 변경 감지 및 데이터 로드
+// watch(
+//   testResultId,
+//   async (testResultId) => {
+//     if (testResultId) {
+//       console.log(
+//         "testResultId changed or route updated. Fetching problems for testResultId =",
+//         testResultId,
+//       );
+//       await fetchData(testResultId);
+//     }
+//   },
+//   { immediate: true }, // 초기 로드 포함
+// );
+
+// onMounted(() => {
+//   if (testResultId.value) {
+//     fetchData(testResultId.value); // 데이터를 초기화
+//   } else {
+//     console.error("testResultId is undefined or null.");
+//     examResultStore.error = "유효한 테스트 ID가 없습니다.";
+//   }
+// });
+
+// watch(
+//   () => route.params.examResultId,
+//   async (newId) => {
+//     if (newId && newId !== testResultId.value) {
+//       testResultId.value = newId;
+//       await fetchData(newId);
+//     }
+//   },
+//   { immediate: true },
+// );
+
+// const fetchData = async (id) => {
+//   try {
+//     console.log("Fetching problems for testResultId:", id);
+//     await examResultStore.fetchProblems(id);
+//   } catch (error) {
+//     console.error("문제 불러오기 실패:", error);
+//     examResultStore.error = error.message || "문제를 불러오는 데 실패했습니다";
+//   }
+// };
+
+// onMounted(() => {
+//   testResultId.value = route.params.examResultId;
+//   if (testResultId.value) {
+//     fetchData(testResultId.value);
+//   } else {
+//     examResultStore.error = "유효한 테스트 ID가 없습니다";
+//     console.error("testResultId가 정의되지 않았습니다.");
+//   }
+// });
 </script>
 
 <template>
   <div class="bg-white p-6 rounded-lg w-full mx-auto">
-    <!-- 로딩 -->
     <template v-if="examResultStore.isLoading">
       <div class="text-center py-10 text-gray-500">
         문제를 불러오는 중입니다...
       </div>
     </template>
 
-    <!-- 에러  -->
     <template v-else-if="examResultStore.error">
       <div class="text-red-500 text-center py-10">
         {{ examResultStore.error }}
@@ -105,7 +192,7 @@ onMounted(() => {
             </ul>
           </div>
 
-          <!-- 답안 섹션 -->
+          <!-- 내 선택 -->
           <div class="mb-6">
             <h3 class="font-bold text-lg mb-2">내 선택</h3>
             <div class="flex items-center gap-4 border-b pb-4">
@@ -120,7 +207,7 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- 정답 표시 섹션 -->
+          <!-- 정답 -->
           <div class="mb-6">
             <h3 class="font-bold text-lg mb-3">정답</h3>
             <div class="flex items-start gap-3">

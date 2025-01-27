@@ -1,47 +1,44 @@
 <script setup>
-import { computed, onMounted } from "vue";
+import { computed, watch, onUnmounted } from "vue";
+import { storeToRefs } from "pinia";
 import { useExamResultStore } from "@/store/ExamResultStore";
 import { useRoute } from "vue-router";
 
 const examResultStore = useExamResultStore();
 const route = useRoute();
-const testResultId = route.params.examResultId;
+const testResultId = computed(() => route.params.examResultId);
 
-const rows = computed(() => examResultStore.rows);
-const tableData = computed(() => examResultStore.tableData);
+const { tableData, isFetchingProblems, problems } =
+  storeToRefs(examResultStore);
+const { selectProblem, toggleFlag, fetchProblems } = examResultStore;
 
-// 문제 클릭 시 선택 처리
-const selectProblem = (problem) => {
-  examResultStore.selectProblem(problem);
-};
+let abortController = new AbortController();
+onUnmounted(() => abortController.abort());
 
-// 플래그 토글
-const toggleFlag = (problem) => {
-  examResultStore.toggleFlag(problem);
-};
-
-// 데이터 디버깅 및 문제 로드
-onMounted(async () => {
-  console.log("Mounted Table: Initializing data...");
-
-  if (!testResultId) {
-    console.error("Missing testResultId. Cannot fetch problems.");
-    return;
-  }
-
+const loadProblems = async (id) => {
   try {
-    console.log("Calling fetchProblems with testResultId =", testResultId);
-    await examResultStore.fetchProblems(testResultId); // Pinia 액션 호출
-    console.log("Fetched problems:", examResultStore.problems);
+    if (!id || isFetchingProblems.value) return;
+    abortController.abort();
+    abortController = new AbortController();
+    await fetchProblems(id, { signal: abortController.signal });
+    console.log("Problems loaded:", problems.value);
   } catch (error) {
-    console.error("Error while fetching problems:", error);
+    if (error.name !== "AbortError") {
+      examResultStore.error = error.message;
+      console.error("Load error:", error);
+    }
   }
+};
 
-  console.log("Mounted Table: Data loaded", {
-    problems: examResultStore.problems,
-    rows: rows.value,
-    tableData: tableData.value,
-  });
+watch(
+  testResultId,
+  (newId, oldId) => {
+    if (newId !== oldId) loadProblems(newId);
+  },
+  { immediate: true },
+);
+onUnmounted(() => {
+  examResultStore.$reset(); // Store 상태 초기화
 });
 </script>
 

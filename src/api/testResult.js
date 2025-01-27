@@ -132,63 +132,87 @@ const search = async (userId, keyword, startDate, endDate) => {
   }
 };
 
-//total_count, correct_count
-const getScore = async (userId) => {
+// 내 시험 점수
+const getScore = async (testResultId) => {
   try {
-    const { data, error } = await supabase
-      .from("test_result")
-      .select("total_count, correct_count")
-      .eq("uid", userId);
-
-    // 에러 처리
-    if (error) throw error;
-
-    // 데이터가 없으면 초기값 반환
-    if (!data || data.length === 0) {
-      console.warn("No data found for userId:", userId);
+    if (!testResultId) {
+      console.error("유효하지 않은 testResultId:", testResultId);
       return { total: 0, correct: 0 };
     }
 
-    // total_count와 correct_count 합산
-    const score = data.reduce(
-      (acc, result) => {
-        acc.total += result.total_count || 0;
-        acc.correct += result.correct_count || 0;
+    const { data, error } = await supabase
+      .from("test_result")
+      .select("correct_count, total_count")
+      .eq("id", testResultId);
+
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      console.warn("데이터가 없습니다. testResultId:", testResultId);
+      return { total: 0, correct: 0 };
+    }
+
+    const result = data.reduce(
+      (acc, row) => {
+        acc.total += row.total_count || 0;
+        acc.correct += row.correct_count || 0;
         return acc;
       },
       { total: 0, correct: 0 },
     );
 
-    console.log("Fetched score:", score);
-    return score;
+    return result;
   } catch (error) {
     console.error("Error fetching score:", error);
-    return { total: 0, correct: 0 };
+    return;
   }
 };
 
-//평균값 계산
-const getAverage = async (testCenterId) => {
+// 평균값 계산
+const getAverage = async (testResultId) => {
   try {
-    // 특정 시험장에 속한 모든 사용자의 데이터를 가져옴
-    const { data, error } = await supabase
+    const { data: testResultData, error: testResultError } = await supabase
       .from("test_result")
-      .select("correct_count")
-      .eq("test_center_id", testCenterId);
+      .select("test_center_id")
+      .eq("id", testResultId)
+      .single();
 
-    if (error) throw error;
-    // 데이터가 없을 경우 0 반환
-    if (!data || data.length === 0) {
-      console.warn("데이터가 없습니다");
+    if (testResultError) throw testResultError;
+
+    if (!testResultData || !testResultData.test_center_id) {
+      console.warn("No test_center_id found for testResultId:", testResultId);
       return 0;
     }
 
-    // 모든 correct_count의 평균
-    const totalScore = data.reduce(
-      (acc, result) => acc + (result.correct_count || 0),
+    const testCenterId = testResultData.test_center_id;
+
+    // Step 2: 해당 시험장의 모든 데이터 가져오기
+    const { data: results, error: resultsError } = await supabase
+      .from("test_result")
+      .select("uid, correct_count, created_at")
+      .eq("test_center_id", testCenterId)
+      .order("created_at", { ascending: false }); // 가장 최근 시험 결과 우선 정렬
+
+    if (resultsError) throw resultsError;
+
+    if (!results || results.length === 0) {
+      console.warn("No data found for test_center_id:", testCenterId);
+      return 0;
+    }
+
+    // Map으로 중복 uid 제거 (최신 데이터 유지)
+    const latestResults = Array.from(
+      new Map(results.map((row) => [row.uid, row])).values(),
+    );
+
+    const totalCorrect = latestResults.reduce(
+      (sum, row) => sum + (row.correct_count || 0),
       0,
     );
-    const averageScore = totalScore / data.length;
+    const uniqueUsersCount = latestResults.length;
+
+    const averageScore =
+      uniqueUsersCount > 0 ? totalCorrect / uniqueUsersCount : 0;
     return Math.round(averageScore);
   } catch (error) {
     console.error("평균 계산 오류", error);
@@ -196,33 +220,64 @@ const getAverage = async (testCenterId) => {
   }
 };
 
-//시험장의 user들의 점수
-const getScoresByTestCenter = async (testCenterId) => {
+//유저의 scores 가져오기
+const getUsersScores = async (testCenterId) => {
   try {
+    if (!testCenterId) throw new Error("유효하지 않은 testCenterId");
+
     const { data, error } = await supabase
       .from("test_result")
-      .select("uid, correct_count, user_info:uid (name)")
-      .eq("test_center_id", testCenterId);
+      .select("uid, test_center_id, correct_count, user_info(name)")
+      .eq("test_center_id", testCenterId)
+      .order("correct_count", { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.error("Supabase 에러:", error);
+      throw error;
+    }
+    return (
+      data?.map((item) => ({
+        uid: item.uid,
+        name: item.user_info?.name || "Unknown User",
+        test_center_id: item.test_center_id,
+        correct_count: item.correct_count ?? 0,
+      })) || []
+    );
+  } catch (error) {
+    console.error("시험장 사용자 점수 가져오기 오류:", error);
+    throw error;
+  }
+};
 
-    // 데이터가 없을 경우 빈 배열 반환
-    if (!data || data.length === 0) {
-      console.warn("데이터가 없습니다");
-      return [];
+// 시험장 ID 가져오기
+const fetchTestCenterId = async (testResultId) => {
+  try {
+    if (!testResultId) {
+      console.error("유효하지 않은 testResultId:", testResultId);
+      return null;
     }
 
-    // uid와 correct_count를 기반으로 테이블 데이터 생성
-    const tableData = data.map((result) => ({
-      uid: result.uid,
-      correct_count: result.correct_count || 0,
-      userName: result.user_info?.name || "누구세요",
-    }));
+    const { data, error } = await supabase
+      .from("test_result")
+      .select("test_center_id")
+      .eq("id", testResultId);
 
-    return tableData;
+    if (error) {
+      console.error("시험장 ID 가져오기 실패:", error);
+      throw error;
+    }
+
+    if (data && data.length > 0) {
+      return data[0].test_center_id;
+    } else {
+      console.error(
+        "해당 testResultId에 대한 test_center_id를 찾을 수 없습니다.",
+      );
+      return null;
+    }
   } catch (error) {
-    console.error("fetch 에러 발생", error);
-    return [];
+    console.error("시험장 ID 가져오는 중 오류 발생:", error);
+    throw error;
   }
 };
 
@@ -233,5 +288,6 @@ export const testResultAPI = {
   search,
   getScore,
   getAverage,
-  getScoresByTestCenter,
+  getUsersScores,
+  fetchTestCenterId,
 };

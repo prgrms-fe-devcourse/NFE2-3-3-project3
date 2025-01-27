@@ -6,24 +6,24 @@ import ExamResultChart from "./ExamResultChart.vue";
 import ExamResultTable from "./ExamResultTable.vue";
 import ExamResultProblems from "./ExamResultProblems.vue";
 
-import { ref, computed, onMounted } from "vue";
+import { ref, onMounted, watch, onUnmounted } from "vue";
+import { storeToRefs } from "pinia";
 import { useAuthStore } from "@/store/authStore";
-import { useExamResultStore } from "@/store/ExamResultStore.js";
+import { useExamResultStore } from "@/store/ExamResultStore";
+import { useRoute } from "vue-router";
+import { testResultAPI } from "@/api/testResult";
 
 const authStore = useAuthStore();
 const examResultStore = useExamResultStore();
-
-const toggleProblemSolution = () => {
-  isCollapsed.value = !isCollapsed.value;
-};
+const route = useRoute();
 
 // 토글 관리
 const isCollapsed = ref(true);
 const isShowed = ref(false);
-// 계산 속성
 
-const currentProblem = computed(() => examResultStore.currentProblem);
-const userId = computed(() => authStore.user?.id);
+const toggleProblemSolution = () => {
+  isCollapsed.value = !isCollapsed.value;
+};
 
 // 토글 함수 추가
 const toggleShowGrade = async () => {
@@ -34,17 +34,59 @@ const toggleShowGrade = async () => {
   isShowed.value = true;
 };
 
-// 데이터 초기화
+const {
+  currentProblem,
+  correctCount,
+  totalCount,
+  averageCount,
+  isFetchingProblems,
+  isTableData,
+  isLoading,
+  error,
+} = storeToRefs(examResultStore);
+
 const initializeData = async () => {
   try {
-    if (!authStore.user) await authStore.initializeAuth();
-    if (userId.value) await examResultStore.initializeExamData(userId.value);
-  } catch (error) {
-    console.error("데이터 초기화 오류:", error);
+    if (isFetchingProblems.value) return;
+
+    // 초기화 상태 설정
+    examResultStore.isFetchingProblems = true;
+    examResultStore.error = null;
+
+    if (!authStore.user) {
+      await authStore.initializeAuth();
+    }
+
+    const testResultId = Number(route.params.examResultId);
+    if (!testResultId) throw new Error("잘못된 test_result_id");
+
+    await Promise.all([
+      examResultStore.initializeExamData(authStore.user.id, testResultId),
+      examResultStore.fetchProblems(testResultId),
+    ]);
+
+    const testCenterId = await testResultAPI.fetchTestCenterId(testResultId);
+    if (testCenterId) {
+      await examResultStore.getScoresByTestCenter(testCenterId);
+    }
+  } catch (err) {
+    console.error("초기화 실패, catchError :", error);
+    examResultStore.error = err.message || "문제를 불러오는 데 실패했습니다.";
+  } finally {
+    examResultStore.isFetchingProblems = false;
   }
 };
 
 onMounted(initializeData);
+
+watch(
+  () => route.params.examResultId,
+  async (newId, oldId) => {
+    if (newId && newId !== oldId) {
+      await initializeData();
+    }
+  },
+);
 </script>
 
 <template>
@@ -56,7 +98,7 @@ onMounted(initializeData);
       >
         <div class="space-y-1 flex-shrink-0">
           <p class="text-lg">전체 문제</p>
-          <span class="text-5xl">{{ examResultStore.totalCount }}</span>
+          <span class="text-5xl">{{ totalCount }}</span>
         </div>
         <div class="flex items-center pt-8 pl-12 flex-shrink-0">
           <img :src="allProblem" alt="전체문제" />
@@ -68,7 +110,7 @@ onMounted(initializeData);
       >
         <div class="space-y-1 flex-shrink-0">
           <p class="text-lg">맞힌 문제</p>
-          <span class="text-5xl">{{ examResultStore.correctCount }}</span>
+          <span class="text-5xl">{{ correctCount }}</span>
         </div>
         <div class="flex items-center pt-8 ml-1 flex-shrink-0">
           <img :src="correctedProblem" alt="맞힌 문제" />
@@ -79,7 +121,7 @@ onMounted(initializeData);
       >
         <div class="space-y-1 flex-shrink-0">
           <p class="text-lg">평균 정답 갯수</p>
-          <span class="text-5xl">{{ examResultStore.averageCount }}</span>
+          <span class="text-5xl">{{ averageCount }}</span>
         </div>
         <div class="flex items-center pt-8 flex-shrink-0">
           <img :src="average" alt="평균정답갯수" />
@@ -202,10 +244,7 @@ onMounted(initializeData);
             </tr>
           </thead>
           <tbody>
-            <tr
-              v-for="(item, index) in examResultStore.isTableData"
-              :key="index"
-            >
+            <tr v-for="item in isTableData" :key="item.uid">
               <td class="border border-gray-400 px-2 py-1 text-center">
                 {{ item.userName }}
               </td>
