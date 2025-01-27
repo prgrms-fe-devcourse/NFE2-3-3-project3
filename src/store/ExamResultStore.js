@@ -1,7 +1,6 @@
 import { defineStore } from "pinia";
 import { testResultAPI } from "@/api/testResult";
-import { fetchProblemsForTestResult } from "@/api/workbook_problem";
-import { storeToRefs } from "pinia";
+import { fetchProblemsForTestResult } from "@/api/workbookProblem";
 
 export const useExamResultStore = defineStore("examResult", {
   state: () => ({
