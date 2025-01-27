@@ -15,13 +15,12 @@ const getOne = async (userId) => {
   }
 };
 
-const getOneByEmail = async (email) => {
+const searchUsersByEmail = async (email) => {
   try {
     const { data, error } = await supabase
       .from("user_info")
       .select("id, avatar_url, name, email")
       .ilike("email", `%${email}%`)
-      .single();
     if (error) throw error;
     return data;
   } catch (error) {
@@ -67,7 +66,7 @@ const deleteOne = async (id) => {
 
 export const userAPI = {
   getOne,
-  getOneByEmail,
+  searchUsersByEmail,
   update,
   deleteOne,
 };
