@@ -141,8 +141,7 @@ export const useExamResultStore = defineStore("examResult", {
           error.message || "데이터를 가져오는 중 오류가 발생했습니다.";
       } finally {
         this.isLoading = false;
-        this.isInitializing = false; // 추가 필요
-        this.isLoading = false;
+        this.isInitializing = false;
       }
     },
 
