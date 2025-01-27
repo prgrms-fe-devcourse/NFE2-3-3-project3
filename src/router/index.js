@@ -151,9 +151,15 @@ router.beforeEach(async (to, _, next) => {
   const session = await authAPI.getSession();
 
   if (!session && to.meta.requiresAuth) {
-    next("/");
+    next({
+      path: "/",
+      query: to.query,
+    });
   } else if (session && to.meta.landing) {
-    next("/home");
+    next({
+      path: "/home",
+      query: to.query,
+    });
   } else {
     next();
   }
