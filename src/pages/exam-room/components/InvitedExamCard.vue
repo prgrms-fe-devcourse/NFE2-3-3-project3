@@ -9,7 +9,7 @@ import { workbookAPI } from "@/api/workbook";
 import { userAPI } from "@/api/user";
 import { authAPI } from "@/api/auth";
 import { formatMsToHourMinute } from "@/utils/formatMsToHour";
-import { formatToKoreanDateTime } from "@/utils/formatToKoreanDateTime";
+import { formatterIntlKR } from "@/utils/formatterIntlKR.js";
 import { useToast } from "primevue/usetoast";
 
 const props = defineProps({
@@ -39,7 +39,8 @@ const examDuration = computed(() => {
 });
 
 const formattedDate = computed(() => {
-  return formatToKoreanDateTime(props.testCenter.start_date);
+  if (!props.testCenter.start_date) return "";
+  return formatterIntlKR.format(new Date(props.testCenter.start_date));
 });
 
 const fetchWorkbookTitle = async () => {
