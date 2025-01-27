@@ -9,6 +9,7 @@ import thumbsUpIcon from "@/assets/icons/problem-board/fi-rr-thumbs-up.svg";
 import defaultProfileIMG from "@/assets/default-profile-image.svg";
 import { problemLikeAPI } from "@/api/problemLike";
 import { supabase } from "@/api/index.js";
+import { RouterLink } from "vue-router";
 
 const props = defineProps({
   problem: {
@@ -42,7 +43,9 @@ const likeCount = ref(0);
 
 const getCurrentUserId = async () => {
   try {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     return session?.user?.id;
   } catch (error) {
     console.error("사용자 정보 가져오기 실패:", error);
@@ -92,13 +95,13 @@ const fetchUserGrade = async () => {
 const loadLikeStatus = async () => {
   const currentUserId = await getCurrentUserId();
   if (!props.problem?.id || !currentUserId) return;
-  
+
   try {
     const [status, count] = await Promise.all([
       problemLikeAPI.getUserLikeStatus(currentUserId, props.problem.id),
-      problemLikeAPI.getLikeCount(props.problem.id)
+      problemLikeAPI.getLikeCount(props.problem.id),
     ]);
-    
+
     hasLiked.value = status;
     likeCount.value = count;
   } catch (error) {
@@ -121,6 +124,11 @@ const handleToggleLike = async () => {
 };
 
 watchEffect(() => {
+  console.log("Full author object:", JSON.stringify(props.author, null, 2));
+  console.log("Author properties:", Object.keys(props.author || {}));
+});
+
+watchEffect(() => {
   loadLikeStatus();
   fetchUserGrade();
   document.addEventListener("click", closeMenu);
@@ -129,11 +137,23 @@ watchEffect(() => {
 onBeforeUnmount(() => {
   document.removeEventListener("click", closeMenu);
 });
+
+const routeConfig = computed(() => {
+  if (!props.author?.id) return null;
+  return {
+    name: "UserProfile",
+    params: { userId: props.author.id },
+  };
+});
 </script>
 
 <template>
   <div class="flex justify-between flex-col gap-10">
-    <div class="flex gap-2 items-center">
+    <RouterLink
+      v-if="routeConfig"
+      :to="routeConfig"
+      class="flex gap-2 items-center"
+    >
       <Avatar
         :image="author?.avatar_url"
         @error="handleAvatarError"
@@ -148,10 +168,10 @@ onBeforeUnmount(() => {
           </span>
         </p>
         <span class="text-black-3 text-sm" aria-label="최종 수정일">
-          {{ new Date(problem?.updated_at).toLocaleDateString() }}
+          {{ new Date(problem?.updated_at).toLocaleString() }}
         </span>
       </div>
-    </div>
+    </RouterLink>
 
     <div class="flex items-center gap-4 mb-10">
       <div class="flex-1">
