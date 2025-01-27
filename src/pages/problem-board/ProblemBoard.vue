@@ -20,8 +20,8 @@ const search = async (
   keyword,
   startDate,
   endDate,
-  status,
   sort = SORT.latest,
+  status,
 ) => {
   problems.value = await problemAPI.search(
     user.value.id,
@@ -44,7 +44,7 @@ const search = async (
 watch(
   () => queries,
   () => {
-    search(keyword, startDate, endDate, status, sort);
+    search(keyword, startDate, endDate, sort, status);
   },
   { immediate: true },
 );

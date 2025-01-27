@@ -52,7 +52,7 @@ onBeforeUnmount(() => {
   <div class="flex flex-col gap-2">
     <form
       @submit.prevent="
-        emit('search', keyword, startDate, endDate, status, sort)
+        emit('search', keyword, startDate, endDate, sort, status)
       "
       class="flex justify-between items-center bg-beige-2 has-[:focus]:border-orange-1 rounded-2xl h-12 p-4 border border-black-4"
     >
