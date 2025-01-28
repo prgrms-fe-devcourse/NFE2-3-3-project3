@@ -1,25 +1,43 @@
 <script setup>
-import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
+import {
+  ref,
+  computed,
+  watch,
+  onMounted,
+  onBeforeUnmount,
+  onBeforeMount,
+} from "vue";
 import { useRouter } from "vue-router";
 import TestProblem from "./components/TestProblem.vue";
 import TestSidebar from "./components/TestSidebar.vue";
 import { useRoute } from "vue-router";
 import { testCenterAPI } from "@/api/testCenter";
 import { testResultAPI } from "@/api/testResult";
-import { authAPI } from "@/api/auth";
 import { useToast } from "primevue";
 import { problemHistoryAPI } from "@/api/problemHistory";
+import { useExamStore } from "@/store/examStore";
+import { useAuthStore } from "@/store/authStore";
+import { storeToRefs } from "pinia/dist/pinia";
+import { inviteAPI } from "@/api/invite";
 
 let intervalId;
 const toast = useToast();
 const router = useRouter();
 const route = useRoute();
+const authStore = useAuthStore();
+const examStore = useExamStore();
+const { user } = storeToRefs(authStore);
+const {
+  testCenter: prevTestCenter,
+  problems: prevProblems,
+  userAnswers: prevUserAnswers,
+} = storeToRefs(examStore);
 
 const problems = ref([]);
 const testCenter = ref();
 const elapsedTime = ref(0);
 const currentProblemIndex = ref(0);
-const userAnswers = ref();
+const userAnswers = ref([]);
 
 const remainedTime = computed(() => {
   if (!testCenter.value) return { hours: "00", minutes: "00", seconds: "00" };
@@ -57,6 +75,7 @@ const setPrevProblemIndex = () => {
 
 const selectAnswer = (num) => {
   userAnswers.value[currentProblemIndex.value] = num;
+  examStore.saveSelectedAnswers(userAnswers);
 };
 
 const submitAnswers = async () => {
@@ -84,12 +103,12 @@ const submitAnswers = async () => {
     time: elapsedTime.value,
   });
 
+  examStore.initExam();
   await Promise.all(problemHistoryPromise, testResult);
   router.push(`/exam-result/${testResult.id}`);
 };
 
 const updateElapsedTime = () => {
-  if (!testCenter.value) return;
   if (
     remainedTime.value.hours === "00" &&
     remainedTime.value.minutes === "00" &&
@@ -98,9 +117,68 @@ const updateElapsedTime = () => {
     submitAnswers();
     return;
   }
-  const startDate = new Date(testCenter.value.start_date);
+  const startDate = new Date(testCenter.value?.start_date);
   elapsedTime.value = new Date().getTime() - startDate.getTime();
 };
+
+onBeforeMount(async () => {
+  const testCenterId = route.params.examId;
+
+  const isAuthorized = await testCenterAPI.checkIsAuthorized(
+    user.value.id,
+    testCenterId,
+  );
+  if (!isAuthorized) {
+    toast.add({
+      severity: "error",
+      summary: "시험 입장 오류",
+      detail: "해당 시험에 대한 권한이 없습니다.",
+      life: 3000,
+    });
+    return router.replace("/exam-room");
+  }
+
+  const isSubmitted = await testResultAPI.checkIsSubmitted(
+    user.value.id,
+    testCenterId,
+  );
+  if (isSubmitted) {
+    toast.add({
+      severity: "error",
+      summary: "시험 입장 오류",
+      detail: "이미 제출한 시험입니다.",
+      life: 3000,
+    });
+    return router.replace("/exam-room");
+  }
+
+  const testCenterData = await testCenterAPI.getAllByTestCenterId(testCenterId);
+  if (
+    new Date(testCenterData.start_date) > new Date() ||
+    new Date(testCenterData.end_date) < new Date()
+  ) {
+    toast.add({
+      severity: "error",
+      summary: "시험 입장 오류",
+      detail: "시험 시간이 아닙니다.",
+      life: 3000,
+    });
+    return router.replace("/exam-room");
+  }
+
+  if (examStore.checkIsSameExam(testCenterId)) {
+    testCenter.value = prevTestCenter.value;
+    problems.value = prevProblems.value;
+    userAnswers.value = prevUserAnswers.value;
+  } else {
+    testCenter.value = testCenterData;
+    problems.value = testCenterData.problems;
+    userAnswers.value = Array(problems.value.length).fill("");
+    examStore.initExam(testCenter, problems, userAnswers);
+  }
+
+  updateElapsedTime();
+});
 
 onMounted(() => {
   intervalId = setInterval(updateElapsedTime, 1000); // 1초마다 경과시간 업데이트
@@ -109,47 +187,6 @@ onMounted(() => {
 onBeforeUnmount(() => {
   clearInterval(intervalId);
 });
-
-watch(
-  route,
-  async () => {
-    const testCenterId = route.params.examId;
-    const user = await authAPI.getCurrentUser();
-    const isSubmitted = await testResultAPI.checkIsSubmitted(
-      user.id,
-      testCenterId,
-    );
-    if (isSubmitted) {
-      toast.add({
-        severity: "error",
-        summary: "시험 입장 오류",
-        detail: "이미 제출한 시험입니다.",
-        life: 3000,
-      });
-      return router.replace("/exam-room");
-    }
-
-    const testCenterData = await testCenterAPI.getAllByTestCenterId(
-      testCenterId,
-    );
-    if (
-      new Date(testCenterData.start_date) > new Date() ||
-      new Date(testCenterData.end_date) < new Date()
-    ) {
-      toast.add({
-        severity: "error",
-        summary: "시험 입장 오류",
-        detail: "시험 시간이 아닙니다.",
-        life: 3000,
-      });
-      return router.replace("/exam-room");
-    }
-    problems.value = testCenterData.problems;
-    userAnswers.value = Array(problems.value.length).fill("");
-    testCenter.value = testCenterData;
-  },
-  { immediate: true },
-);
 </script>
 <template>
   <main class="flex h-auto relative">
@@ -165,7 +202,7 @@ watch(
         <TestProblem
           v-if="problems.length"
           :problem="currentProblem"
-          :userAnswers="userAnswers"
+          :userAnswer="userAnswers[currentProblemIndex]"
           :currentProblemIndex="currentProblemIndex"
           @selectAnswer="selectAnswer"
         />

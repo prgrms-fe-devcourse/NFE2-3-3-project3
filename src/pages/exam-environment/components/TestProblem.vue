@@ -1,26 +1,22 @@
 <script setup>
 import { againViewProblemAPI } from "@/api/againViewProblem";
-import { authAPI } from "@/api/auth";
 import { Button, useToast } from "primevue";
-import {
-  computed,
-  watch,
-  ref,
-  onBeforeUnmount,
-  onMounted,
-  watchEffect,
-} from "vue";
+import { computed, watch, ref, onBeforeUnmount } from "vue";
 import Viewer from "@toast-ui/editor/dist/toastui-editor-viewer";
+import { useAuthStore } from "@/store/authStore";
+import { storeToRefs } from "pinia/dist/pinia";
 
+const authStore = useAuthStore();
+const { user } = storeToRefs(authStore);
 const el = ref(null);
 const viewer = ref(null);
 const emit = defineEmits(["selectAnswer"]);
 
 const toast = useToast();
-const { problem, currentProblemIndex, userAnswers } = defineProps({
+const { problem, currentProblemIndex, userAnswer } = defineProps({
   problem: Object,
   currentProblemIndex: Number,
-  userAnswers: Array,
+  userAnswer: String,
 });
 
 const isAgainViewProblem = ref(false);
@@ -95,11 +91,12 @@ watch(
     addImageClickListeners();
 
     // 다시 볼 문제 여부 체크
-    const user = await authAPI.getCurrentUser();
-    const data = await againViewProblemAPI.getByProblemId(user.id, problemId);
-    if (data.length) {
-      isAgainViewProblem.value = true;
-    }
+    const data = await againViewProblemAPI.getByProblemId(
+      user.value.id,
+      problemId,
+    );
+
+    isAgainViewProblem.value = data.length ? true : false;
   },
   { immediate: true },
 );
@@ -132,28 +129,49 @@ onBeforeUnmount(() => {
       />
     </div>
     <div ref="el" class="w-full overflow-hidden mt-6 mb-12"></div>
-    <div class="flex flex-col gap-4 mb-20">
-      <div
-        v-for="(option, index) in options"
-        :key="index"
-        class="flex items-center"
-      >
+    <template v-if="problem?.problem_type === 'multiple_choice'">
+      <div class="flex flex-col gap-4 mb-20">
+        <div
+          v-for="(option, index) in options"
+          :key="index"
+          class="flex items-center"
+        >
+          <button
+            @click="emit('selectAnswer', String(index + 1))"
+            :id="index"
+            type="button"
+            :class="[
+              'flex justify-center items-center border-2 border-solid w-6 h-6 rounded-full',
+              userAnswer === String(index + 1)
+                ? 'border-orange-1 bg-orange-1 text-white'
+                : 'text-gray-3',
+            ]"
+          >
+            {{ index + 1 }}
+          </button>
+          <label :for="index" class="pl-3 cursor-pointer"> {{ option }}</label>
+        </div>
+      </div>
+    </template>
+    <template v-if="problem?.problem_type === 'ox'">
+      <div class="flex items-center gap-4 mb-20">
         <button
-          @click="emit('selectAnswer', String(index + 1))"
+          v-for="(option, index) in ['O', 'X']"
+          @click="emit('selectAnswer', option)"
+          :key="index"
           :id="index"
           type="button"
           :class="[
-            'flex justify-center items-center border-2 border-solid w-6 h-6 rounded-full',
-            userAnswers[currentProblemIndex] === String(index + 1)
+            'flex justify-center items-center w-full border-2 border-solid text-2xl font-semibold py-6 rounded transition-colors',
+            userAnswer === option
               ? 'border-orange-1 bg-orange-1 text-white'
-              : 'text-gray-3',
+              : 'text-black-3 hover:bg-orange-1/30 hover:border-orange-1/30',
           ]"
         >
-          {{ index + 1 }}
+          {{ option }}
         </button>
-        <label :for="index" class="pl-3 cursor-pointer"> {{ option }}</label>
       </div>
-    </div>
+    </template>
   </article>
 </template>
 <style scoped>

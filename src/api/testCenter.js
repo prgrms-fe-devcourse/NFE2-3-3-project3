@@ -80,6 +80,33 @@ const getAllByTestCenterId = async (testCenterId) => {
   }
 };
 
+const checkIsAuthorized = async (userId, testCenterId) => {
+  try {
+    const invited = supabase
+      .from("invite")
+      .select("*", { count: "exact", head: true })
+      .eq("test_center_id", testCenterId)
+      .eq("target_uid", userId);
+
+    const made = supabase
+      .from("test_center")
+      .select("*", { count: "exact", head: true })
+      .eq("id", testCenterId)
+      .eq("uid", userId);
+
+    const [
+      { count: invitedCount, error: invitedError },
+      { count: madeCount, madeError },
+    ] = await Promise.all([invited, made]);
+
+    if (invitedError) throw invitedError;
+    if (madeError) throw madeError;
+    return invitedCount + madeCount > 0;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 // UPDATE
 
 const updateStartTime = async (start_time, id) => {
@@ -110,6 +137,7 @@ export const testCenterAPI = {
   getAll,
   getUid,
   getAllByTestCenterId,
+  checkIsAuthorized,
   updateStartTime,
   updateEndTime,
   getAllFields,
