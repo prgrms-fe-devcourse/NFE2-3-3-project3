@@ -7,7 +7,7 @@ const getAll = async () => {
       .select(
         "*, sender: user_info!uid(*), receiver: user_info!target_uid(*), follow(*), invite(*), comment(*)",
       )
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: false });
     if (error) throw error;
     return data;
   } catch (error) {
