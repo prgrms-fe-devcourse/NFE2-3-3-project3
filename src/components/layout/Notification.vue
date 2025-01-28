@@ -40,6 +40,7 @@ supabase
 
 const clickNotification = async (notification) => {
   if (notification.read) return;
+  newNotificationCount.value -= 1;
   await notificationAPI.read(notification.id);
 };
 
@@ -104,7 +105,6 @@ const getNotificationMessage = (notification) => {
 };
 
 const toggle = async (event) => {
-  newNotificationCount.value = 0;
   menu.value.toggle(event);
   await nextTick();
   const menuElement = document.getElementById("notification_menu");
@@ -115,7 +115,10 @@ const toggle = async (event) => {
 
 const fetchNotifications = async () => {
   const notificationsData = await notificationAPI.getAll();
+  const count = await notificationAPI.countNewNotification();
+
   notifications.value = notificationsData;
+  newNotificationCount.value = count;
 };
 
 onBeforeMount(() => {

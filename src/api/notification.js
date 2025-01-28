@@ -1,5 +1,18 @@
 import { supabase } from "./index.js";
 
+const countNewNotification = async () => {
+  try {
+    const { count, error } = await supabase
+      .from("notification")
+      .select("*", { count: "exact" })
+      .eq("read", false);
+    if (error) throw error;
+    return count;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 const getAll = async () => {
   try {
     const { data, error } = await supabase
@@ -75,6 +88,7 @@ const deleteAll = async (userId) => {
 };
 
 export const notificationAPI = {
+  countNewNotification,
   getAll,
   readAll,
   read,
