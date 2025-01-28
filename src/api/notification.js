@@ -43,11 +43,13 @@ const read = async (id) => {
   }
 };
 
-const readAll = async () => {
+const readAll = async (userId) => {
   try {
     const { data, error } = await supabase
       .from("notification")
       .update({ read: true })
+      .eq("target_uid", userId)
+      .eq("read", false)
       .select();
 
     if (error) throw error;

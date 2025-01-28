@@ -27,15 +27,6 @@ supabase
       fetchNotifications();
     },
   )
-  .on(
-    "postgres_changes",
-    { event: "UPDATE", schema: "public", table: "notification" },
-    ({ new: newNotification }) => {
-      if (user.value?.id !== newNotification.target_uid) return;
-
-      fetchNotifications();
-    },
-  )
   .subscribe();
 
 const clickNotification = async (notification) => {
@@ -44,9 +35,19 @@ const clickNotification = async (notification) => {
   await notificationAPI.read(notification.id);
 };
 
+const readAllNotifications = async () => {
+  newNotificationCount.value = 0;
+  notifications.value = notifications.value.map((notification) => ({
+    ...notification,
+    read: true,
+  }));
+  await notificationAPI.readAll(user.value?.id);
+};
+
 const deleteAllNotifications = async (notification) => {
-  await notificationAPI.deleteAll(notification.receiver.id);
+  newNotificationCount.value = 0;
   notifications.value = [];
+  await notificationAPI.deleteAll(notification.receiver.id);
 };
 
 const getNotificationIcon = (notification) => {
@@ -156,8 +157,15 @@ onBeforeMount(() => {
     <template #start>
       <div v-if="notifications.length > 0" class="flex justify-end pt-1 pr-1">
         <Button
+          @click="readAllNotifications()"
+          label="모두 읽기"
+          severity="secondary"
+          size="small"
+          variant="text"
+        />
+        <Button
           @click="deleteAllNotifications(notifications[0])"
-          label="모두 삭제"
+          label="전체 삭제"
           severity="danger"
           size="small"
           variant="text"
