@@ -43,8 +43,10 @@ watch(
 
 <template>
   <div class="mb-8">
+    <h3 class="text-gray-2 mb-4">문제 수정</h3>
     <div ref="questionEditor" class="text-gray-700 min-h-4 mb-10 w-full"></div>
 
+    <h3 class="text-gray-2 mb-4">보기 수정</h3>
     <!-- 객관식 보기 -->
     <div
       v-if="props.problem?.problem_type === 'multiple_choice'"
@@ -121,7 +123,7 @@ watch(
         </li>
       </ol>
     </div>
-    
+
     <!-- OX 보기 -->
     <div v-if="props.problem?.problem_type === 'ox'" class="space-y-4">
       <SelectButton

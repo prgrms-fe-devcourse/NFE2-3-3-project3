@@ -1,17 +1,14 @@
 <script setup>
-import { ref, computed, watchEffect, onBeforeUnmount } from "vue";
-import { Avatar } from "primevue";
+import { ref, reactive, computed, onMounted, watchEffect } from "vue";
+import { Avatar, ToggleSwitch, MultiSelect, Button } from "primevue";
 import { useAuthStore } from "@/store/authStore";
 import { useToast } from "primevue/usetoast";
 import { pointAPI } from "@/api/point";
 import { getCurrentGradeInfo } from "@/utils/getCurrentGradeInfo";
-import { problemAPI } from "@/api/problem";
-import { problemLikeAPI } from "@/api/problemLike";
 import { supabase } from "@/api/index.js";
 import { RouterLink } from "vue-router";
-import shareIcon from "@/assets/icons/problem-board/fi-rr-share.svg";
-import thumbsUpIcon from "@/assets/icons/problem-board/fi-rr-thumbs-up.svg";
 import defaultProfileIMG from "@/assets/default-profile-image.svg";
+import { categoryAPI } from "@/api/category";
 
 const props = defineProps({
   problem: {
@@ -38,12 +35,35 @@ const props = defineProps({
 const emit = defineEmits(["toggle-like", "menu-action"]);
 const toast = useToast();
 const userGrade = ref(null);
-const showMenu = ref(false);
 const authStore = useAuthStore();
 
-const hasLiked = ref(false);
-const likeCount = ref(0);
-const isBookmarked = ref(false);
+const category = reactive([]);
+const filteredCategory = ref("");
+const doesCategoryExist = computed(() => {
+  return JSON.stringify(category).indexOf(`${filteredCategory.value}`) === -1
+    ? false
+    : true;
+});
+
+const onFilterCategory = (event) => {
+  filteredCategory.value = event.value;
+};
+
+const createCategory = async () => {
+  if (!filteredCategory.value.trim()) {
+    console.error("카테고리 이름은 비워둘 수 없습니다.");
+    return;
+  }
+
+  const newCategoryData = await categoryAPI.createCategory({
+    name: filteredCategory.value.trim(),
+  });
+
+  category.push(...newCategoryData);
+  props.problem.category = [...newCategoryData];
+
+  filteredCategory.value = "";
+};
 
 const getCurrentUserId = async () => {
   try {
@@ -94,6 +114,14 @@ const routeConfig = computed(() => {
     params: { userId: props.author.id },
   };
 });
+
+onMounted(async () => {
+  const categoryData = await categoryAPI.getAll();
+  category.push(...categoryData);
+  if (categoryData.length > 0) {
+    props.problem.category = categoryData[0].name; // 기본 카테고리 이름 설정
+  }
+});
 </script>
 
 <template>
@@ -124,24 +152,64 @@ const routeConfig = computed(() => {
     </RouterLink>
 
     <!-- 수정 완료, 취소 버튼 -->
-     <nav class="item-middle gap-2">
+    <nav class="item-middle gap-2">
       <button class="bg-black-5 px-4 py-1 rounded-full">수정</button>
-      <button class="bg-orange-1 text-white px-4 py-1 rounded-full">삭제</button>
-     </nav>
+      <button class="bg-orange-1 text-white px-4 py-1 rounded-full">
+        삭제
+      </button>
+    </nav>
   </div>
 
   <div class="flex items-center gap-4 mb-10">
     <div class="flex-1">
-      <h1 class="text-4xl font-bold mb-4">{{ problem?.title }}</h1>
-      <div class="flex items-center gap-2 text-sm text-gray-500">
-        <span class="bg-gray-100 px-2 py-1 rounded">{{
-          problem?.category?.name
-        }}</span>
-        <div class="flex items-center gap-1">
-          <img :src="shareIcon" alt="공유 아이콘" class="w-4 h-4" />
-          <span>{{ problem?.shared ? "공개됨" : "미공개" }}</span>
-        </div>
+      <input
+        type="text"
+        class="text-4xl font-bold mb-4 border border-gray-300 rounded p-2 w-full"
+        v-model="problem.title"
+      />
+      <div class="flex items-center gap-2 text-sm">
+        <fieldset class="flex items-center gap-2 w-full mb-4">
+          <label for="category" class="mr-1">카테고리</label>
+          <MultiSelect
+            v-model="problem.category"
+            display="chip"
+            :options="category"
+            optionLabel="name"
+            filter
+            :selection-limit="1"
+            class="md:h-9 items-center md:w-60 font-regular text-sm py-2 mr-2"
+            @filter="onFilterCategory"
+          >
+            <template #footer>
+              <div class="p-3 flex justify-between">
+                <Button
+                  label="카테고리 추가"
+                  severity="secondary"
+                  text
+                  size="small"
+                  icon="pi pi-plus"
+                  :disabled="doesCategoryExist"
+                  @click="createCategory"
+                />
+              </div>
+            </template>
+          </MultiSelect>
+
+          <label for="shared"> 공개 여부 </label>
+          <ToggleSwitch v-model="problem.shared" name="shared" />
+        </fieldset>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+.addDivider::after {
+  width: 100%;
+  height: 1px;
+  background-color: #d4d4d4;
+  margin-top: 12px;
+  content: "";
+  display: block;
+}
+</style>
