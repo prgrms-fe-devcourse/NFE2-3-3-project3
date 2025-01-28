@@ -116,7 +116,7 @@ const handleToggleLike = async () => {
 const handleMenuAction = (action) => {
   switch (action) {
     case "edit":
-      router.push(`/problem-board-update/${route.params.problemId}`);
+      router.push(`/problem-update/${route.params.problemId}`);
       break;
     case "delete":
       showConfirmDialog.value = true;

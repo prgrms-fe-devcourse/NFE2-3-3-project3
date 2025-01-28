@@ -289,6 +289,13 @@ const getById = async (id) => {
         category (
           id,
           name
+        ),
+        author:user_info (
+          id,
+          name,
+          total_points,
+          email,
+          avatar_url
         )
       `,
       )

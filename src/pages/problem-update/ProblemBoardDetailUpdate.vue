@@ -42,6 +42,7 @@ const loadProblem = async () => {
     }
 
     const data = await problemAPI.getById(route.params.problemId);
+    console.log("문제 수정",data)
     if (data) {
       problem.value = data;
       // 수정할 데이터 초기화
