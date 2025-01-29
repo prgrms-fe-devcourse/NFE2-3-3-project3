@@ -81,11 +81,9 @@ const fetchUserGrade = async () => {
   try {
     if (props.author?.id) {
       const pointData = await pointAPI.getAll(props.author.id);
-      if (pointData && pointData.length > 0) {
-        const totalPoints = pointData.reduce(
-          (sum, point) => sum + point.point,
-          0,
-        );
+      
+      if (pointData && pointData.length > 0 && pointData[0].total) {
+        const totalPoints = pointData[0].total;
         const gradeInfo = getCurrentGradeInfo(totalPoints);
         userGrade.value = gradeInfo.current;
       }
