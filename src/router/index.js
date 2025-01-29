@@ -14,11 +14,11 @@ import CreateExamRoom from "@/pages/create-exam-room/CreateExamRoom.vue";
 import ProblemBoardDetail from "@/pages/problem-detail/ProblemBoardDetail.vue";
 import MyProblemSetsUpdate from "@/pages/MyProblemSetsUpdate.vue";
 import Mypage from "@/pages/Mypage/Mypage.vue";
-import ProblemBoardDetailUpdate from "@/pages/ProblemBoardDetailUpdate.vue";
 import UserProfile from "@/pages/user-profile/UserProfile.vue";
 import Home from "@/pages/Home.vue";
 import NotFound from "@/pages/NotFound.vue";
 import { authAPI } from "@/api/auth";
+import ProblemBoardDetailUpdate from "@/pages/problem-board-update/ProblemBoardDetailUpdate.vue";
 
 const routes = [
   // 레이아웃이 필요없는 페이지들
