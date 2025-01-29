@@ -3,9 +3,9 @@ import { ref, onMounted, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useProblemStore } from "@/store/problemStore";
 import { useAuthStore } from "@/store/authStore";
-import ProblemUpdateHeader from "./components/ProblemUpdateHeader.vue";
-import ProblemUpdateContent from "./components/ProblemUpdateContent.vue";
-import ProblemUpdateSolution from "./components/ProblemUpdateSolution.vue";
+import ProblemBoardUpdateSolution from "./components/ProblemBoardUpdateSolution.vue";
+import ProblemBoardBoardUpdateContent from "./components/ProblemBoardBoardUpdateContent.vue";
+import ProblemBoardUpdateHeader from "./components/ProblemBoardUpdateHeader.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -45,7 +45,7 @@ onMounted(async () => {
 
 <template>
   <div class="max-w-4xl mx-auto p-6">
-    <ProblemUpdateHeader
+    <ProblemBoardUpdateHeader
       :problem="problemStore.problem"
       :author="problemStore.author"
       :hasLiked="problemStore.hasLiked"
@@ -54,9 +54,9 @@ onMounted(async () => {
       @menu-action="handleMenuAction"
     />
 
-    <ProblemUpdateContent :problem="problemStore.problem" />
+    <ProblemBoardBoardUpdateContent :problem="problemStore.problem" />
 
-    <ProblemUpdateSolution
+    <ProblemBoardUpdateSolution
       :answer="problemStore.problem?.answer"
       :explanation="problemStore.problem?.explanation"
       :source="problemStore.problem?.origin_source"

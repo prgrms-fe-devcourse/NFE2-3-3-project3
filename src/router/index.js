@@ -18,7 +18,7 @@ import UserProfile from "@/pages/user-profile/UserProfile.vue";
 import Home from "@/pages/Home.vue";
 import NotFound from "@/pages/NotFound.vue";
 import { authAPI } from "@/api/auth";
-import ProblemDetailUpdate from "@/pages/problem-update/ProblemDetailUpdate.vue";
+import ProblemBoardDetailUpdate from "@/pages/problem-board-update/ProblemBoardDetailUpdate.vue";
 
 const routes = [
   // 레이아웃이 필요없는 페이지들
@@ -127,9 +127,9 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
-        path: "problem-update/:problemId",
-        name: "ProblemDetailUpdate",
-        component: ProblemDetailUpdate,
+        path: "problem-board-update/:problemId",
+        name: "ProblemBoardDetailUpdate",
+        component: ProblemBoardDetailUpdate,
         meta: { requiresAuth: true },
       },
       {
