@@ -1,34 +1,38 @@
 <script setup>
 import { Button } from "primevue";
 import { storeToRefs } from "pinia";
-import { watch, computed, onMounted } from "vue";
+import { watch, computed } from "vue";
 import { useRoute } from "vue-router";
 import { useExamResultStore } from "@/store/ExamResultStore";
-import { useAuthStore } from "@/store/authStore";
 
 const route = useRoute();
 const examResultStore = useExamResultStore();
-const authStore = useAuthStore();
 const testResultId = computed(() => route.params.examResultId);
-const currentUserId = computed(() => authStore.user?.id);
 
 const selectedMyOption = computed(() =>
   myOption.value.find((item) => item.problem_id === currentProblem.value?.id),
 );
-
 const selectedStatus = computed(() =>
   status.value.find((item) => item.problem_id === currentProblem.value?.id),
 );
 
-const { fetchProblems, fetchMyOption } = examResultStore;
+const { fetchProblems } = examResultStore;
 const { currentProblem, isFetchingProblems, problems, myOption, status } =
   storeToRefs(examResultStore);
 
 const fetchData = async (id) => {
+  //중복호출되는 부분 발견..
+  if (isFetchingProblems.value) {
+    isFetchingProblems.value = false;
+  }
   try {
-    if (!id || isFetchingProblems.value) return;
-    examResultStore.isFetchingProblems = true;
+    if (!id) {
+      console.warn("fetchData: 유효하지 않은 ID");
+      return;
+    }
+    isFetchingProblems.value = true;
     examResultStore.error = null;
+
     await fetchProblems(id);
 
     if (problems.value.length > 0 && !currentProblem.value) {
@@ -38,58 +42,21 @@ const fetchData = async (id) => {
     console.error("문제 불러오기 실패:", error);
     examResultStore.error = error.message || "문제를 불러오는 데 실패했습니다.";
   } finally {
-    examResultStore.isFetchingProblems = false;
+    isFetchingProblems.value = false;
   }
 };
 
-const fetchOptionData = async () => {
-  if (!problems.value || !problems.value.length === 0) {
-    console.warn("문제id 값을 못찾음");
-    return;
-  }
-  const selectedProblem = problems.value.find(
-    (problem) => problem.id === currentProblem.value?.id,
-  );
-  if (!selectedProblem) {
-    console.warn("현재 선택된 문제가 없습니다.");
-    return;
-  }
-  try {
-    await fetchMyOption(currentUserId.value, testResultId.value);
-  } catch (error) {
-    console.error("사용자 선택 데이터 가져오기 실패:", error);
-  }
-};
-
-// 문제 변경 시 사용자 선택 데이터 로드
-watch(currentProblem, (newProblem) => {
-  if (newProblem && currentUserId.value) {
-    fetchOptionData();
-  }
-});
-
-// 시험 결과 ID 변경 시 문제 데이터 로드
 watch(
   testResultId,
   async (newId) => {
-    if (newId) {
-      await fetchData(newId);
-      if (currentProblem.value) {
-        fetchOptionData();
-      }
+    if (!newId) {
+      console.warn("watch: 유효하지 않은 testResultId");
+      return;
     }
+    await fetchData(newId); // 이전 작업 중단 후 새로운 작업 시작
   },
   { immediate: true },
 );
-
-// 초기 데이터 로드
-onMounted(() => {
-  if (currentUserId.value && currentProblem.value) {
-    fetchOptionData();
-  } else {
-    console.warn("초기 데이터가 로드되지 않았습니다. Watch로 처리 중...");
-  }
-});
 </script>
 
 <template>

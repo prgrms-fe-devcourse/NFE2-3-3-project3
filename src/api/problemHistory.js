@@ -37,6 +37,7 @@ const getMyOption = async (userId, testCenterId) => {
       `,
       )
       .eq("uid", userId)
+
       .order("created_at", { ascending: false }); // 최신 데이터 우선
 
     if (error) {

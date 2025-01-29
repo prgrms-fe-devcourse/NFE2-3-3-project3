@@ -13,10 +13,13 @@ export const useExamResultStore = defineStore("examResult", {
     problems: [], //문제 데이터
     currentProblem: null, //선택된 문제
     columns: 10, // 테이블 열 크기
+
     isLoading: false, // 로딩 상태
     error: null, // 에러 메시지
-    isFetchingProblems: false, //상태관리를 위한 변수들
     isInitializing: false,
+    isFetchingProblems: false, //상태관리를 위한 변수들
+    isGetScores: false,
+    isMyOption: false,
     myOption: null,
     status: null,
   }),
@@ -53,11 +56,11 @@ export const useExamResultStore = defineStore("examResult", {
         const { total, correct } = await testResultAPI.getScore(testResultId);
 
         // 상태 업데이트
-        this.totalCount = total || 0;
-        this.correctCount = correct || 0;
+        this.totalCount = total;
+        this.correctCount = correct;
 
         const average = await testResultAPI.getAverage(testResultId);
-        this.averageCount = average || 0;
+        this.averageCount = average;
       } catch (error) {
         console.error("데이터 초기화 중 오류 발생:", error);
       } finally {
@@ -65,60 +68,17 @@ export const useExamResultStore = defineStore("examResult", {
       }
     },
 
-    // 문제 정보 가져오기
-    async fetchProblems(testResultId) {
-      if (this.isFetchingProblems) return;
-      this.isFetchingProblems = true;
-
-      if (!testResultId) {
-        console.error("fetchProblems: Invalid testResultId");
-        this.error = "Invalid testResultId";
-        return;
-      }
-      this.isLoading = true;
-      try {
-        const fetchedProblems = await fetchProblemsForTestResult(testResultId);
-
-        if (!fetchedProblems || fetchedProblems.length === 0) {
-          this.error = "No problems found for the given testResultId.";
-          return;
-        }
-
-        // 문제 데이터 정렬 및 추가 필드 생성
-        this.problems = fetchedProblems
-          .sort((a, b) => a.id - b.id) // problem_id 순서대로 정렬
-          .map((problem, index) => ({
-            ...problem,
-            number: index + 1, // 문제 번호 추가
-            flagged: false, // 플래그 상태 초기화
-          }));
-
-        // 첫 번째 문제 설정
-        this.currentProblem =
-          this.problems.length > 0 ? this.problems[0] : null;
-      } catch (err) {
-        console.error("fetchProblems: 로딩에 실패함", err);
-        this.error = `문제를 불러오는 데 실패했습니다: ${err.message}`;
-      } finally {
-        this.isLoading = false;
-        this.isFetchingProblems = false;
-      }
-    },
-
     // 시험장 사용자 점수 가져오기
     async getScoresByTestCenter(testCenterId) {
-      if (this.isInitializing) return;
-      this.isInitializing = true;
+      if (this.isGetScores) return;
+      this.isGetScores = true;
+
       try {
         if (!testCenterId) {
           this.error = "유효하지 않은 시험장 ID입니다.";
           console.error("유효하지 않은 testCenterId:", testCenterId);
           return;
         }
-
-        this.isLoading = true;
-        this.error = null;
-
         // Supabase API 호출
         const data = await testResultAPI.getUsersScores(testCenterId);
 
@@ -140,32 +100,72 @@ export const useExamResultStore = defineStore("examResult", {
         this.error =
           error.message || "데이터를 가져오는 중 오류가 발생했습니다.";
       } finally {
-        this.isLoading = false;
-        this.isInitializing = false;
+        this.isGetScores = false;
+      }
+    },
+
+    async fetchProblems(testResultId) {
+      // 호출 확인
+      if (this.isFetchingProblems) {
+        this.isFetchingProblems = false;
+      }
+      if (!testResultId) {
+        console.error("fetchProblems: 유효하지 않은 testResultId", {
+          testResultId,
+        });
+        this.error = "Invalid testResultId";
+        return;
+      }
+      this.isFetchingProblems = true;
+      try {
+        const fetchedProblems = await fetchProblemsForTestResult(testResultId);
+        if (!fetchedProblems || fetchedProblems.length === 0) {
+          console.warn("fetchProblems: 문제가 없음");
+          this.error = "No problems found for the given testResultId.";
+          return;
+        }
+        this.problems = fetchedProblems
+          .sort((a, b) => a.id - b.id)
+          .map((problem, index) => ({
+            ...problem,
+            number: index + 1,
+            flagged: false,
+          }));
+        this.currentProblem =
+          this.problems.length > 0
+            ? this.problems[0]
+            : {
+                id: null,
+                question: "문제가 없습니다.",
+                options: [],
+                answer: null,
+              };
+      } catch (err) {
+        console.error("fetchProblems: 오류 발생", err);
+        this.error = `문제를 불러오는 데 실패했습니다: ${err.message}`;
+      } finally {
+        this.isFetchingProblems = false;
       }
     },
 
     async fetchMyOption(userId, testCenterId) {
-      // 매개변수 유효성 검증
+      // 호출 확인
       if (!userId) {
-        console.error("유효하지 않은 사용자 ID:", userId);
+        console.error("fetchMyOption: 유효하지 않은 사용자 ID", { userId });
         return;
       }
-
-      this.isLoading = true;
-      this.error = null;
-
+      if (this.isMyOption) {
+        this.isMyOption = false;
+      }
+      this.isMyOption = true;
       try {
         const data = await problemHistoryAPI.getMyOption(userId, testCenterId);
-
         if (!data || data.length === 0) {
-          console.warn("fetchMyOption: 데이터가 없습니다.");
+          console.warn("fetchMyOption: 데이터 없음");
           this.myOption = [];
           this.status = [];
           return;
         }
-
-        // 최신 데이터만 필터링 (각 problem_id 기준 최신 created_at)
         const latestData = data.reduce((acc, curr) => {
           if (!acc[curr.problem_id]) {
             acc[curr.problem_id] = curr;
@@ -174,7 +174,6 @@ export const useExamResultStore = defineStore("examResult", {
         }, {});
 
         const latestRecords = Object.values(latestData);
-        // 상태 업데이트
         this.myOption = latestRecords.map((record) => ({
           problem_id: record.problem_id,
           my_option: record.my_option,
@@ -184,12 +183,13 @@ export const useExamResultStore = defineStore("examResult", {
           status: record.status,
         }));
       } catch (error) {
-        console.error("fetchMyOption 오류:", error);
+        console.error("fetchMyOption: 오류 발생", error);
         this.error = "사용자 선택 데이터를 가져오는 중 오류가 발생했습니다.";
       } finally {
-        this.isLoading = false;
+        this.isMyOption = false;
       }
     },
+
     // 문제 선택
     selectProblem(problem) {
       this.currentProblem = problem;

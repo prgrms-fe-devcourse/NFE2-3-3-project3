@@ -8,37 +8,26 @@ const examResultStore = useExamResultStore();
 const route = useRoute();
 const testResultId = computed(() => route.params.examResultId);
 
-const { tableData, isFetchingProblems, problems } =
-  storeToRefs(examResultStore);
+const { tableData } = storeToRefs(examResultStore);
 const { selectProblem, toggleFlag, fetchProblems } = examResultStore;
-
-let abortController = new AbortController();
-onUnmounted(() => abortController.abort());
 
 const loadProblems = async (id) => {
   try {
-    if (!id || isFetchingProblems.value) return;
-    abortController.abort();
-    abortController = new AbortController();
-    await fetchProblems(id, { signal: abortController.signal });
+    if (!id) return;
+
+    await fetchProblems(id);
   } catch (error) {
-    if (error.name !== "AbortError") {
-      examResultStore.error = error.message;
-      console.error("Load error:", error);
-    }
+    console.error("Load error:", error);
   }
 };
 
 watch(
   testResultId,
   (newId, oldId) => {
-    if (newId !== oldId) loadProblems(newId);
+    if (newId && newId !== oldId) loadProblems(newId);
   },
   { immediate: true },
 );
-onUnmounted(() => {
-  examResultStore.$reset(); // Store 상태 초기화
-});
 </script>
 
 <template>
