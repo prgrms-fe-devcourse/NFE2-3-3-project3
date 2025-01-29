@@ -27,25 +27,27 @@ supabase
       fetchNotifications();
     },
   )
-  .on(
-    "postgres_changes",
-    { event: "UPDATE", schema: "public", table: "notification" },
-    ({ new: newNotification }) => {
-      if (user.value?.id !== newNotification.target_uid) return;
-
-      fetchNotifications();
-    },
-  )
   .subscribe();
 
 const clickNotification = async (notification) => {
   if (notification.read) return;
+  newNotificationCount.value -= 1;
   await notificationAPI.read(notification.id);
 };
 
+const readAllNotifications = async () => {
+  newNotificationCount.value = 0;
+  notifications.value = notifications.value.map((notification) => ({
+    ...notification,
+    read: true,
+  }));
+  await notificationAPI.readAll(user.value?.id);
+};
+
 const deleteAllNotifications = async (notification) => {
-  await notificationAPI.deleteAll(notification.receiver.id);
+  newNotificationCount.value = 0;
   notifications.value = [];
+  await notificationAPI.deleteAll(notification.receiver.id);
 };
 
 const getNotificationIcon = (notification) => {
@@ -104,7 +106,6 @@ const getNotificationMessage = (notification) => {
 };
 
 const toggle = async (event) => {
-  newNotificationCount.value = 0;
   menu.value.toggle(event);
   await nextTick();
   const menuElement = document.getElementById("notification_menu");
@@ -115,7 +116,10 @@ const toggle = async (event) => {
 
 const fetchNotifications = async () => {
   const notificationsData = await notificationAPI.getAll();
+  const count = await notificationAPI.countNewNotification();
+
   notifications.value = notificationsData;
+  newNotificationCount.value = count;
 };
 
 onBeforeMount(() => {
@@ -153,8 +157,15 @@ onBeforeMount(() => {
     <template #start>
       <div v-if="notifications.length > 0" class="flex justify-end pt-1 pr-1">
         <Button
+          @click="readAllNotifications()"
+          label="모두 읽기"
+          severity="secondary"
+          size="small"
+          variant="text"
+        />
+        <Button
           @click="deleteAllNotifications(notifications[0])"
-          label="모두 삭제"
+          label="전체 삭제"
           severity="danger"
           size="small"
           variant="text"
