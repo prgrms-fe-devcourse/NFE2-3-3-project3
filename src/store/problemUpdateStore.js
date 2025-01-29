@@ -78,7 +78,6 @@ export const useProblemUpdateStore = defineStore("problemUpdate", () => {
   async function saveProblem() {
     try {
       isLoading.value = true;
-      // author 필드 제거 및 필요한 필드만 추출
       const {
         id,
         title,
@@ -108,6 +107,7 @@ export const useProblemUpdateStore = defineStore("problemUpdate", () => {
         option_three,
         option_four,
         shared,
+        updated_at: new Date().toISOString(),
       };
 
       const data = await problemAPI.update(id, updateData);
