@@ -191,7 +191,6 @@ const handleToggleBookmark = async () => {
   }
 };
 
-
 watchEffect(() => {
   loadLikeStatus();
   loadBookmarkStatus();
