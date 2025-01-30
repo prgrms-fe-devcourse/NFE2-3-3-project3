@@ -151,12 +151,15 @@ const add = async (workbook_id, body) => {
     }
 
     const { user } = useAuthStore();
-    const newBody = { ...body, uid: user.id }; // user_id 추가
+    const newBody = { ...body };
+    const created_at = Date.now();
+    console.log(newBody);
     const { data, error } = await supabase
       .from("problem")
       .insert([newBody])
       .select();
 
+    console.log(data, error);
     await supabase
       .from("workbook_problem")
       .insert([{ workbook_id, problem_id: data[0].id }]);
@@ -289,6 +292,13 @@ const getById = async (id) => {
         category (
           id,
           name
+        ),
+        author:user_info (
+          id,
+          name,
+          total_points,
+          email,
+          avatar_url
         )
       `,
       )
@@ -366,6 +376,42 @@ const removeShare = async (problem_id) => {
   }
 };
 
+const getRandom = async () => {
+  try {
+    // 총 개수를 가져오기
+    const { count, error: countError } = await supabase
+      .from("problem")
+      .select("*", { count: "exact", head: true }) 
+      .eq("shared", true);
+
+    if (countError) throw new Error(countError);
+
+    if (!count || count === 0) {
+      console.warn("No shared problems found.");
+      return null;
+    }
+
+    // 랜덤한 인덱스 선택
+    const randomIndex = Math.floor(Math.random() * count);
+
+    // 해당 인덱스의 row 조회
+    const { data, error } = await supabase
+      .from("problem")
+      .select("id")
+      .eq("shared", true)
+      .range(randomIndex, randomIndex) 
+      .single();
+
+    if (error) throw new Error(error);
+
+    console.log("Fetched Random Problem:", data);
+    return data.id;
+  } catch (error) {
+    console.error("Error fetching random problem:", error);
+    return null;
+  }
+};
+
 export const problemAPI = {
   getAllShared,
   getAllByUserId,
@@ -379,4 +425,5 @@ export const problemAPI = {
   checkIsShared,
   addShare,
   removeShare,
+  getRandom,
 };

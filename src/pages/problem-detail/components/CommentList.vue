@@ -191,7 +191,7 @@ watchEffect(async () => {
       <h3 class="text-gray-700 text-2xl mb-6">댓글</h3>
       <div
         v-if="comments?.length === 0"
-        class="text-center text-gray-500 py-4 mb-"
+        class="text-center text-gray-500 py-4 mb-8"
       >
         첫 번째 댓글을 작성해보세요.
       </div>

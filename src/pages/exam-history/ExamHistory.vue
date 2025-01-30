@@ -1,40 +1,40 @@
 <script setup>
 import Search from "@/components/layout/Search.vue";
-import { ref, watch } from "vue";
+import { ref, onBeforeMount } from "vue";
 import ExamHistoryTable from "./components/examHistoryTable.vue";
 import { testResultAPI } from "@/api/testResult";
 import { useAuthStore } from "@/store/authStore";
 import { storeToRefs } from "pinia";
+import { useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import { formatDate } from "@/utils/formatDate";
 
+const route = useRoute();
+const router = useRouter();
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
 const exams = ref([]);
+const { keyword, startDate, endDate } = route.query;
 
 const search = async (keyword, startDate, endDate) => {
   exams.value = await testResultAPI.search(
     user.value.id,
     keyword,
-    formatDate(startDate),
-    formatDate(endDate),
+    startDate ? new Date(startDate).toISOString() : null,
+    endDate ? new Date(endDate).toISOString() : null,
   );
+  router.push({
+    query: {
+      keyword,
+      startDate: formatDate(startDate),
+      endDate: formatDate(endDate),
+    },
+  });
 };
 
-const fetchInitialData = async () => {
-  if (!user.value) return;
-  const result = await testResultAPI.getAllByUserId(user.value.id);
-  exams.value = result;
-};
-
-watch(
-  () => user.value,
-  (newUser) => {
-    if (newUser) {
-      fetchInitialData();
-    }
-  },
-  { immediate: true },
-);
+onBeforeMount(() => {
+  search(keyword, startDate, endDate);
+});
 </script>
 <template>
   <div class="flex flex-col gap-14 relative">

@@ -75,7 +75,7 @@ const handleSubmitComment = async () => {
 
 // 페이지 변경 핸들러
 const handlePageChange = (page) => {
-  loadComments(page + 1); // PrimeVue의 Paginator는 0-based index 사용
+  loadComments(page + 1);
 };
 
 // 좋아요 상태 확인

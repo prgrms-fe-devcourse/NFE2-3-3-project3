@@ -20,22 +20,21 @@ const onClickProblem = (idx) => {
 </script>
 
 <template>
-  <aside
-    class="border-black-5 border w-2/12 bg-beige-2 flex flex-col p-4 gap-2"
-  >
+  <aside class="border-black-5 border bg-beige-2 flex flex-col p-4 gap-2">
     <p
-      class="header font-semibold text-sm text-black-2 flex justify-between items-center mb-2"
+      class="header font-semibold text-md text-black-2 flex justify-between items-center mb-2"
     >
       <!-- 문제 (props.problemLists.length) -->
       <span>문제 ({{ props.problemList.length }})</span>
       <span
         role="button"
-        class="bg-white border border-black-4 p-1 rounded-full w-5 h-5 grid place-items-center cursor-pointer hover:scale-110"
+        class="bg-white border border-black-3 p-1 rounded-full w-8 h-8 grid place-items-center cursor-pointer hover:scale-110"
         @click="emits('addProblem')"
       >
-        <img :src="plusPath" alt="아이템 추가하기" />
+        <img :src="plusPath" alt="아이템 추가하기" class="h-4 align-center" />
       </span>
     </p>
+
     <section
       v-for="(problem, idx) in props.problemList"
       :key="idx"

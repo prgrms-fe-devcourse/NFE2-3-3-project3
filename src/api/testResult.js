@@ -89,24 +89,33 @@ const checkIsSubmitted = async (userId, testCenterId) => {
  */
 const search = async (userId, keyword, startDate, endDate) => {
   try {
-    let query = supabase
+    const query = supabase
       .from("test_result")
       .select("*, test_center(*, workbook(id, title, description))")
-      .eq("uid", userId);
+      .eq("uid", userId)
+      .not("test_center", "is", null);
 
     if (keyword) {
-      query
-        .filter("test_center.workbook.title", "ilike", `%${keyword}%`)
-        .filter("test_center.workbook.description", "ilike", `%${keyword}%`);
+      const { data: workbooks, error: workbookError } = await supabase
+        .from("workbook")
+        .select("id")
+        .or(`title.ilike.%${keyword}%,description.ilike.%${keyword}%`);
+
+      if (workbookError) throw workbookError;
+
+      const workbookIds = workbooks.map((workbook) => workbook.id);
+      query.in("test_center.workbook_id", workbookIds);
     }
     if (startDate) {
-      query.gte("created_at", startDate); // 시작 날짜 조건
+      query.gte("created_at", startDate);
     }
     if (endDate) {
       query.lte("created_at", endDate);
     }
 
     const { data, error } = await query;
+
+    if (error) throw error;
 
     const results = await Promise.all(
       data.map(async (test_result) => {
@@ -123,12 +132,11 @@ const search = async (userId, keyword, startDate, endDate) => {
         };
       }),
     );
-    if (!results || !results[0].workbook) return [];
 
-    if (error) throw error;
     return results;
   } catch (error) {
     console.error(error);
+    return [];
   }
 };
 

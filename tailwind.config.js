@@ -43,6 +43,11 @@ module.exports = {
         sans: ["Pretendard", ...defaultTheme.fontFamily.sans],
         laundry: ["LaundryGothic", "sans-serif"],
       },
+      backgroundImage: {
+        "bg-404": "url('/src/assets/notFound-images/bg-404.svg')",
+        "btn-orange1": "url('/src/assets/notFound-images/Button_orange1.svg')",
+        "btn-orange2": "url('/src/assets/notFound-images/Button_orange2.svg')",
+      },
     },
   },
   mode: "jit",
