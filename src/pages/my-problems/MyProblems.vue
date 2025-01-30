@@ -19,6 +19,23 @@ const initialProblems = ref([]);
 const loading = ref(false);
 const error = ref(null);
 const toast = useToast();
+const filterType = ref('all'); // 'all', 'againView', 'myProblems', 'sharedProblems'
+
+const handleFilterChange = (type) => {
+  filterType.value = type;
+};
+
+const filterProblems = () => {
+  if (filterType.value === 'all') {
+    problems.value = initialProblems.value;
+  } else if (filterType.value === 'againView') {
+    problems.value = initialProblems.value.filter(problem => problem.againView);
+  } else if (filterType.value === 'myProblems') {
+    problems.value = initialProblems.value.filter(problem => problem.isOwner);
+  } else if (filterType.value === 'sharedProblems') {
+    problems.value = initialProblems.value.filter(problem => problem.isShared);
+  }
+};
 
 const loadProblems = async (userId) => {
   if (!userId) return;
@@ -35,11 +52,10 @@ const loadProblems = async (userId) => {
       ],
     );
 
-    // 빈 배열이 아닌 결과만 병합
     const mergedProblems = [
-      ...(againViewProblems?.length ? againViewProblems : []),
-      ...(userProblems?.length ? userProblems : []),
-      ...(sharedProblems?.length ? sharedProblems : []),
+      ...(againViewProblems?.length ? againViewProblems.map(p => ({ ...p, againView: true })) : []),
+      ...(userProblems?.length ? userProblems.map(p => ({ ...p, isOwner: true })) : []),
+      ...(sharedProblems?.length ? sharedProblems.map(p => ({ ...p, isShared: true })) : []),
     ];
 
     const uniqueProblems = Array.from(
@@ -160,6 +176,9 @@ watch(
   },
   { immediate: true },
 );
+
+// 필터 변경 감시
+watch(filterType, filterProblems);
 </script>
 
 <template>
@@ -174,6 +193,7 @@ watch(
       :show-my-problem="true"
       :show-shared-problem="true"
       :show-problem="true"
+      @filter-change="handleFilterChange"
     />
   </section>
 </template>

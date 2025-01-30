@@ -111,11 +111,24 @@ const showProblemSet = ref(false);
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
 const toast = useToast();
+const activeFilter = ref(null);
 
 const handleAddClick = () => {
   emit("open-dialog");
 };
-const emit = defineEmits(["open-dialog"]);
+const emit = defineEmits(["open-dialog", "filter-change"]);
+
+const handleFilterButtonClick = (filterType) => {
+  if (activeFilter.value === filterType) {
+    // 같은 버튼을 두 번 클릭하면 필터 해제
+    activeFilter.value = null;
+    emit("filter-change", "all");
+  } else {
+    // 새로운 필터 적용
+    activeFilter.value = filterType;
+    emit("filter-change", filterType);
+  }
+};
 
 const problemAdd = inject("problems");
 const addedProblemDelete = inject("problems");
@@ -259,17 +272,28 @@ onBeforeUnmount(() => {
           v-if="showProblem"
           label="다시 볼 문제"
           icon="pi pi-flag"
-          icon-class="color: white;"
           size="small"
           severity="secondary"
-          class="text-sm text-white bg-navy-4"
+          :class="[
+            'text-sm',
+            activeFilter === 'againView'
+              ? 'bg-orange-2 text-orange-1'
+              : 'text-white bg-navy-4',
+          ]"
+          @click="handleFilterButtonClick('againView')"
         />
         <Button
           v-if="showMyProblem"
           label="내 문제만 보기"
           size="small"
           severity="secondary"
-          class="text-sm text-white bg-navy-4"
+          :class="[
+            'text-sm',
+            activeFilter === 'myProblems'
+              ? 'bg-orange-2 text-orange-1'
+              : 'text-white bg-navy-4',
+          ]"
+          @click="handleFilterButtonClick('myProblems')"
         >
           <template #icon>
             <img :src="seeMyProblems" alt="seeMyProblemsIcon" class="w-5 h-5" />
@@ -277,10 +301,16 @@ onBeforeUnmount(() => {
         </Button>
         <Button
           v-if="showSharedProblem"
-          label="공유한 문제"
+          label="공유받은 문제"
           size="small"
           severity="secondary"
-          class="text-sm text-white bg-navy-4"
+          :class="[
+            'text-sm',
+            activeFilter === 'sharedProblems'
+              ? 'bg-orange-2 text-orange-1'
+              : 'text-white bg-navy-4',
+          ]"
+          @click="handleFilterButtonClick('sharedProblems')"
         >
           <template #icon>
             <img :src="sharedIcon" alt="sharedIcon" class="w-5 h-5" />
