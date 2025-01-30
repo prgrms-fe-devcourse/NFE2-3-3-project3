@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { testResultAPI } from "@/api/testResult";
 import { fetchProblemsForTestResult } from "@/api/workbookProblem";
 import { problemHistoryAPI } from "@/api/problemHistory";
+import { againViewProblemAPI } from "@/api/againViewProblem";
 
 export const useExamResultStore = defineStore("examResult", {
   state: () => ({
@@ -14,14 +15,16 @@ export const useExamResultStore = defineStore("examResult", {
     currentProblem: null, //선택된 문제
     columns: 10, // 테이블 열 크기
 
+    // isFlagged: {},
+    againViewProblems: [],
     isLoading: false, // 로딩 상태
     error: null, // 에러 메시지
     isInitializing: false,
     isFetchingProblems: false, //상태관리를 위한 변수들
     isGetScores: false,
     isMyOption: false,
-    myOption: null,
-    status: null,
+    myOption: [],
+    status: [],
   }),
   getters: {
     rows: (state) => Math.ceil(state.problems.length / state.columns),
@@ -104,102 +107,248 @@ export const useExamResultStore = defineStore("examResult", {
       }
     },
 
+    // 문제 정보 가져오기
     async fetchProblems(testResultId) {
-      // 호출 확인
       if (this.isFetchingProblems) {
         this.isFetchingProblems = false;
       }
+
       if (!testResultId) {
-        console.error("fetchProblems: 유효하지 않은 testResultId", {
-          testResultId,
-        });
+        console.error("fetchProblems: Invalid testResultId");
         this.error = "Invalid testResultId";
         return;
       }
       this.isFetchingProblems = true;
       try {
         const fetchedProblems = await fetchProblemsForTestResult(testResultId);
+
         if (!fetchedProblems || fetchedProblems.length === 0) {
-          console.warn("fetchProblems: 문제가 없음");
           this.error = "No problems found for the given testResultId.";
           return;
         }
+
+        // 문제 데이터 정렬 및 추가 필드 생성
         this.problems = fetchedProblems
-          .sort((a, b) => a.id - b.id)
+          .sort((a, b) => a.id - b.id) // problem_id 순서대로 정렬
           .map((problem, index) => ({
             ...problem,
-            number: index + 1,
-            flagged: false,
+            number: index + 1, // 문제 번호 추가
+            flagged: false, // 플래그 상태 초기화
           }));
+
+        // 첫 번째 문제 설정
         this.currentProblem =
-          this.problems.length > 0
-            ? this.problems[0]
-            : {
-                id: null,
-                question: "문제가 없습니다.",
-                options: [],
-                answer: null,
-              };
+          this.problems.length > 0 ? this.problems[0] : null;
       } catch (err) {
-        console.error("fetchProblems: 오류 발생", err);
+        console.error("fetchProblems: 로딩에 실패함", err);
         this.error = `문제를 불러오는 데 실패했습니다: ${err.message}`;
       } finally {
         this.isFetchingProblems = false;
+        this.error = null;
       }
     },
 
-    async fetchMyOption(userId, testCenterId) {
-      // 호출 확인
-      if (!userId) {
-        console.error("fetchMyOption: 유효하지 않은 사용자 ID", { userId });
+    //내가고른 선택지
+    async fetchMyOption(testResultId) {
+      console.log("fetchProblems 호출됨, testResultId:", testResultId);
+
+      // testResultId 유효성 확인
+      if (!testResultId) {
+        console.error("fetchProblems: testResultId가 정의되지 않았습니다.");
         return;
       }
-      if (this.isMyOption) {
-        this.isMyOption = false;
-      }
-      this.isMyOption = true;
+
       try {
-        const data = await problemHistoryAPI.getMyOption(userId, testCenterId);
-        if (!data || data.length === 0) {
-          console.warn("fetchMyOption: 데이터 없음");
-          this.myOption = [];
-          this.status = [];
+        // 1. test_center_id 가져오기
+        const testCenterData = await problemHistoryAPI.getTestCenterId(
+          testResultId,
+        );
+        if (!testCenterData) {
+          console.error("fetchProblems: test_center_id를 가져오지 못했습니다.");
           return;
         }
-        const latestData = data.reduce((acc, curr) => {
-          if (!acc[curr.problem_id]) {
-            acc[curr.problem_id] = curr;
-          }
-          return acc;
-        }, {});
 
-        const latestRecords = Object.values(latestData);
-        this.myOption = latestRecords.map((record) => ({
-          problem_id: record.problem_id,
-          my_option: record.my_option,
+        const { test_center_id } = testCenterData;
+
+        // 2. problem_history 데이터 가져오기
+        const problemHistory = await problemHistoryAPI.getProblemHistory(
+          test_center_id,
+        );
+        if (!problemHistory) {
+          console.error(
+            "fetchProblems: problem_history 데이터를 가져오지 못했습니다.",
+          );
+          return;
+        }
+
+        // 3. Pinia 상태 업데이트
+        this.myOption = problemHistory.map((item) => ({
+          problem_id: item.problem_id,
+          my_option: item.my_option,
         }));
-        this.status = latestRecords.map((record) => ({
-          problem_id: record.problem_id,
-          status: record.status,
+
+        this.status = problemHistory.map((item) => ({
+          problem_id: item.problem_id,
+          status: item.status,
         }));
+
+        console.log(
+          "fetchProblems 완료. myOption:",
+          this.myOption,
+          "status:",
+          this.status,
+        );
       } catch (error) {
-        console.error("fetchMyOption: 오류 발생", error);
-        this.error = "사용자 선택 데이터를 가져오는 중 오류가 발생했습니다.";
-      } finally {
-        this.isMyOption = false;
+        console.error("fetchProblems 에러:", error);
       }
     },
 
-    // 문제 선택
-    selectProblem(problem) {
-      this.currentProblem = problem;
+    //다시볼문제 함수들
+
+    async checkAgainViewStatus(userId, problemId) {
+      if (!userId || !problemId) return;
+      try {
+        const result = await againViewProblemAPI.getByProblemId(
+          userId,
+          problemId,
+        );
+        if (result.length > 0) {
+          // "다시 볼 문제"로 설정
+          if (!this.againViewProblems.includes(problemId)) {
+            this.againViewProblems.push(problemId); // 배열에 추가
+          }
+        } else {
+          // "다시 볼 문제"에서 제거
+          const index = this.againViewProblems.indexOf(problemId);
+          if (index !== -1) {
+            this.againViewProblems.splice(index, 1); // 배열에서 제거
+          }
+        }
+      } catch (error) {
+        console.error("다시 볼 문제 상태 확인 실패:", error);
+      }
     },
 
-    // 플래그 토글
-    toggleFlag(problem) {
-      const target = this.problems.find((p) => p.id === problem.id);
-      if (target) {
-        target.flagged = !target.flagged;
+    async toggleFlag(problemId, userId, toast) {
+      if (!userId || !problemId) {
+        console.warn("toggleFlag: 유효하지 않은 userId 또는 problemId");
+        return;
+      }
+
+      try {
+        // ✅ 현재 "다시 볼 문제" 상태 확인
+        const isCurrentlyFlagged = this.againViewProblems.includes(problemId);
+
+        if (!isCurrentlyFlagged) {
+          // ✅ "다시 볼 문제"로 추가
+          this.againViewProblems.push(problemId); // 로컬 상태 추가
+          await againViewProblemAPI.addAgainViewProblem({
+            uid: userId,
+            problem_id: problemId,
+          });
+          toast?.add({
+            severity: "success",
+            summary: "다시 볼 문제 추가",
+            detail: "다시 볼 문제로 추가되었습니다.",
+            life: 3000,
+          });
+        } else {
+          // ✅ "다시 볼 문제"에서 제거
+          this.againViewProblems = this.againViewProblems.filter(
+            (id) => id !== problemId,
+          ); // 로컬 상태 제거
+          await againViewProblemAPI.delete(problemId);
+          toast?.add({
+            severity: "info",
+            summary: "다시 볼 문제 해제",
+            detail: "다시 볼 문제가 해제되었습니다.",
+            life: 3000,
+          });
+        }
+      } catch (error) {
+        console.error("플래그 상태 토글 중 오류 발생:", error);
+        toast?.add({
+          severity: "error",
+          summary: "오류 발생",
+          detail: "플래그 상태를 업데이트할 수 없습니다.",
+          life: 3000,
+        });
+      }
+    },
+
+    async toggleAgainViewProblem(userId, problemId, toast) {
+      if (!problemId) {
+        console.warn("문제 ID가 유효하지 않습니다.");
+        return;
+      }
+
+      const problem = this.problems.find((p) => p.id === problemId);
+      if (!problem) {
+        console.warn(
+          "toggleAgainViewProblem: 해당 problemId를 찾을 수 없습니다.",
+        );
+        return;
+      }
+
+      try {
+        // ✅ 현재 상태 확인
+        const isCurrentlyFlagged = this.againViewProblems.includes(problemId);
+
+        if (isCurrentlyFlagged) {
+          // ✅ "다시 볼 문제" 삭제
+          await againViewProblemAPI.delete(problemId);
+          this.againViewProblems = this.againViewProblems.filter(
+            (id) => id !== problemId,
+          ); // 로컬 상태에서 제거
+          problem.flagged = false; // 로컬 상태 업데이트
+          toast?.add({
+            severity: "info",
+            summary: "다시 볼 문제 해제",
+            detail: "다시 볼 문제가 해제되었습니다.",
+            life: 3000,
+          });
+        } else {
+          // ✅ "다시 볼 문제" 추가
+          await againViewProblemAPI.addAgainViewProblem({
+            uid: userId,
+            problem_id: problemId,
+          });
+          this.againViewProblems.push(problemId); // 로컬 상태에 추가
+          problem.flagged = true; // 로컬 상태 업데이트
+          toast?.add({
+            severity: "success",
+            summary: "다시 볼 문제 추가",
+            detail: "다시 볼 문제로 추가되었습니다.",
+            life: 3000,
+          });
+        }
+      } catch (error) {
+        console.error("다시 볼 문제 토글 실패:", error);
+        toast?.add({
+          severity: "error",
+          summary: "오류 발생",
+          detail: "다시 볼 문제를 업데이트할 수 없습니다.",
+          life: 3000,
+        });
+      }
+    },
+
+    async selectProblem(problemId, userId) {
+      const problem = this.problems.find((p) => p.id === problemId);
+      if (!problem) {
+        console.warn("selectProblem: 해당 problemId를 찾을 수 없습니다.");
+        return;
+      }
+
+      this.currentProblem = problem;
+
+      // 현재 문제가 "다시 볼 문제"인지 상태를 업데이트
+      if (problemId && userId) {
+        try {
+          await this.checkAgainViewStatus(userId, problemId);
+        } catch (error) {
+          console.error("checkAgainViewStatus 호출 중 오류 발생:", error);
+        }
       }
     },
   },
@@ -219,6 +368,7 @@ export const useExamResultStore = defineStore("examResult", {
           "currentProblem",
           "myOption",
           "status",
+          "againViewProblems",
         ],
       },
     ],
