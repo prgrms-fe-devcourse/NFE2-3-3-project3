@@ -9,14 +9,16 @@ import { storeToRefs } from "pinia";
 import { againViewProblemAPI } from "@/api/againViewProblem";
 import { problemAPI } from "@/api/problem";
 import { categoryAPI } from "@/api/category";
+import { useToast } from "primevue/usetoast";
 
 const router = useRouter();
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
 const problems = ref([]);
-const initialProblems = ref([]); // 초기 문제 목록 저장
+const initialProblems = ref([]);
 const loading = ref(false);
 const error = ref(null);
+const toast = useToast();
 
 const loadProblems = async (userId) => {
   if (!userId) return;
@@ -70,6 +72,12 @@ const loadProblems = async (userId) => {
   } catch (err) {
     error.value = err;
     console.error("문제 로드 실패:", err);
+    toast.add({
+      severity: "error",
+      summary: "오류",
+      detail: "문제 로드 중 오류가 발생했습니다",
+      life: 3000,
+    });
   } finally {
     loading.value = false;
   }
@@ -86,21 +94,46 @@ const search = async (
 
   loading.value = true;
   try {
-    // 검색 조건이 없을 때
+    // 검색 조건이 없을 때는 초기 목록 반환
     if (!keyword && !startDate && !endDate && !status) {
       problems.value = initialProblems.value;
     } else {
-      // API를 통한 검색 수행
-      const searchResults = await problemAPI.search(
-        user.value.id,
-        keyword,
-        startDate,
-        endDate,
-        status,
-      );
-      problems.value = searchResults;
+      let filteredProblems = [...initialProblems.value];
+
+      // 키워드 검색
+      if (keyword) {
+        const searchTerm = keyword.toLowerCase();
+        filteredProblems = filteredProblems.filter(
+          (problem) =>
+            problem.title?.toLowerCase().includes(searchTerm) ||
+            problem.content?.toLowerCase().includes(searchTerm),
+        );
+      }
+
+      // 날짜 필터링
+      if (startDate || endDate) {
+        filteredProblems = filteredProblems.filter((problem) => {
+          const problemDate = new Date(problem.created_at);
+          const start = startDate ? new Date(startDate) : null;
+          const end = endDate ? new Date(endDate) : null;
+
+          return (
+            (!start || problemDate >= start) && (!end || problemDate <= end)
+          );
+        });
+      }
+
+      // 상태 필터링
+      if (status) {
+        filteredProblems = filteredProblems.filter(
+          (problem) => problem.status === status,
+        );
+      }
+
+      problems.value = filteredProblems;
     }
 
+    // URL 쿼리 파라미터 업데이트
     router.push({
       query: {
         ...(keyword && { keyword }),
@@ -131,12 +164,10 @@ watch(
 
 <template>
   <section class="flex flex-col gap-16 w-[1000px] mx-auto mt-[72px] relative">
+    <Toast />
     <h1 class="text-[42px] font-laundry">보관한 문제</h1>
     <Search :show-status="true" @search="search" />
     <div v-if="loading" class="text-center">로딩 중...</div>
-    <div v-else-if="error" class="text-red-500 text-center">
-      문제 로드 중 오류가 발생했습니다
-    </div>
     <ProblemTable
       v-else
       :problems="problems"
