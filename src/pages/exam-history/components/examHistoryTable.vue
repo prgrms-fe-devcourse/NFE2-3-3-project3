@@ -40,7 +40,9 @@ const { exams } = defineProps({
         </Column>
         <Column field="workbook.title" sortable header="사용한 문제집">
           <template #body="slotProps">
-            <RouterLink :to="`/my-problem-sets/${slotProps.data.workbook?.id}`">
+            <RouterLink
+              :to="`/problem-set-board/${slotProps.data.workbook?.id}`"
+            >
               {{ slotProps.data.workbook?.title }}
             </RouterLink>
           </template>

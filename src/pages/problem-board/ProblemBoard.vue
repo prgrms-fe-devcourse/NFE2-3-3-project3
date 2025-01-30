@@ -2,7 +2,7 @@
 import { problemAPI } from "@/api/problem";
 import ProblemTable from "@/components/layout/ProblemTable.vue";
 import Search from "@/components/layout/Search.vue";
-import { ref, watch } from "vue";
+import { ref, watch, onBeforeMount } from "vue";
 import { formatDate } from "@/utils/formatDate";
 import { useAuthStore } from "@/store/authStore";
 import { storeToRefs } from "pinia";
@@ -26,8 +26,8 @@ const search = async (
   problems.value = await problemAPI.search(
     user.value.id,
     keyword,
-    formatDate(startDate),
-    formatDate(endDate),
+    startDate ? new Date(startDate).toISOString() : null,
+    endDate ? new Date(endDate).toISOString() : null,
     status,
   );
   router.push({
@@ -41,13 +41,9 @@ const search = async (
   });
 };
 
-watch(
-  () => queries,
-  () => {
-    search(keyword, startDate, endDate, sort, status);
-  },
-  { immediate: true },
-);
+onBeforeMount(() => {
+  search(keyword, startDate, endDate, sort, status);
+});
 </script>
 <template>
   <div class="relative flex flex-col gap-14">

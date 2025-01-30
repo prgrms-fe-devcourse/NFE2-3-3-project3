@@ -1,6 +1,6 @@
 <script setup>
 import Search from "@/components/layout/Search.vue";
-import { ref, watchEffect, computed, watch } from "vue";
+import { ref, watchEffect, computed, watch, onBeforeMount } from "vue";
 import { Paginator, Select } from "primevue";
 import ProblemSet from "@/components/layout/ProblemSet.vue";
 import { SORT, SORTS } from "@/const/sorts";
@@ -40,8 +40,8 @@ const search = async (keyword, startDate, endDate, sort) => {
   first.value = 0;
   problemSets.value = await workbookAPI.search(
     keyword,
-    formatDate(startDate),
-    formatDate(endDate),
+    startDate ? new Date(startDate).toISOString() : null,
+    endDate ? new Date(endDate).toISOString() : null,
   );
 
   router.push({
@@ -54,6 +54,10 @@ const search = async (keyword, startDate, endDate, sort) => {
   });
 };
 
+onBeforeMount(async () => {
+  problemSets.value = await workbookAPI.search(keyword, startDate, endDate);
+});
+
 watch(
   () => sort.value,
   () => {
@@ -61,10 +65,6 @@ watch(
     search(keyword, startDate, endDate, sort.value);
   },
 );
-
-watchEffect(async () => {
-  problemSets.value = await workbookAPI.search(keyword, startDate, endDate);
-});
 </script>
 <template>
   <div class="relative flex flex-col gap-14">
