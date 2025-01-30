@@ -277,7 +277,7 @@ onBeforeUnmount(() => {
           :class="[
             'text-sm',
             activeFilter === 'againView'
-              ? 'bg-orange-2 text-orange-1'
+              ? '!bg-orange-3 !text-orange-500'
               : 'text-white bg-navy-4',
           ]"
           @click="handleFilterButtonClick('againView')"
@@ -290,8 +290,8 @@ onBeforeUnmount(() => {
           :class="[
             'text-sm',
             activeFilter === 'myProblems'
-              ? 'bg-orange-2 text-orange-1'
-              : 'text-white bg-navy-4',
+            ? '!bg-orange-3 !text-orange-500'
+            : 'text-white bg-navy-4',
           ]"
           @click="handleFilterButtonClick('myProblems')"
         >
@@ -307,8 +307,8 @@ onBeforeUnmount(() => {
           :class="[
             'text-sm',
             activeFilter === 'sharedProblems'
-              ? 'bg-orange-2 text-orange-1'
-              : 'text-white bg-navy-4',
+            ? '!bg-orange-3 !text-orange-500'
+            : 'text-white bg-navy-4',
           ]"
           @click="handleFilterButtonClick('sharedProblems')"
         >
