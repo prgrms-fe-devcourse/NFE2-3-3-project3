@@ -2,6 +2,26 @@ import { supabase } from "./index.js";
 
 export const againViewProblemAPI = {
   /**
+   * @description 특정 유저의 다시 볼 문제 상태 조회
+   * @param {number} userId - 유저 ID
+   * @returns {object | null} 다시 볼 문제 상태 데이터 또는 null
+   */
+  async getAllByUserId(userId) {
+    try {
+      const { data, error } = await supabase
+        .from("again_view_problem")
+        .select("problem_id")
+        .eq("uid", userId);
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  },
+
+  /**
    * @description 특정 문제의 다시 볼 문제 상태 조회
    * @param {number} userId - 유저 ID
    * @param {number} problemId - 조회할 문제 ID

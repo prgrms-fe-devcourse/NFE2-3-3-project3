@@ -1,63 +1,148 @@
 <script setup>
 import ProblemTable from "@/components/layout/ProblemTable.vue";
 import Search from "@/components/layout/Search.vue";
-import { ref } from "vue";
-import { provide } from "vue";
+import { ref, watch } from "vue";
+import { SORT } from "@/const/sorts";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "@/store/authStore";
+import { storeToRefs } from "pinia";
+import { againViewProblemAPI } from "@/api/againViewProblem";
+import { problemAPI } from "@/api/problem";
+import { categoryAPI } from "@/api/category";
 
-const problems = ref([
-  {
-    id: 1,
-    status: "corrected",
-    title: "정수 삼각형",
-    category: "알고리즘",
-    origin_source: "프로그래머스",
-    problem_type: "ox",
-    ismade: true, // 내가 만든 문제
+const router = useRouter();
+const authStore = useAuthStore();
+const { user } = storeToRefs(authStore);
+const problems = ref([]);
+const initialProblems = ref([]); // 초기 문제 목록 저장
+const loading = ref(false);
+const error = ref(null);
+
+const loadProblems = async (userId) => {
+  if (!userId) return;
+
+  loading.value = true;
+  error.value = null;
+
+  try {
+    const [againViewProblems, userProblems, sharedProblems] = await Promise.all(
+      [
+        againViewProblemAPI.getAllByUserId(userId),
+        problemAPI.getAllByUserId(userId),
+        problemAPI.getUserSharedProblems(userId),
+      ],
+    );
+
+    // 빈 배열이 아닌 결과만 병합
+    const mergedProblems = [
+      ...(againViewProblems?.length ? againViewProblems : []),
+      ...(userProblems?.length ? userProblems : []),
+      ...(sharedProblems?.length ? sharedProblems : []),
+    ];
+
+    const uniqueProblems = Array.from(
+      new Map(mergedProblems.map((item) => [item.id, item])).values(),
+    );
+
+    // 각 문제의 카테고리 조회 시 예외 처리
+    const problemsWithCategory = await Promise.all(
+      uniqueProblems.map(async (problem) => {
+        try {
+          const categoryData = await categoryAPI.getCategoryNameById(
+            problem.category_id,
+          );
+          return {
+            ...problem,
+            category_name: categoryData?.name || "미분류",
+          };
+        } catch (err) {
+          console.warn(`카테고리 조회 실패 (문제 ID: ${problem.id}):`, err);
+          return {
+            ...problem,
+            category_name: "카테고리 없음",
+          };
+        }
+      }),
+    );
+
+    problems.value = problemsWithCategory;
+    initialProblems.value = problemsWithCategory;
+  } catch (err) {
+    error.value = err;
+    console.error("문제 로드 실패:", err);
+  } finally {
+    loading.value = false;
+  }
+};
+
+const search = async (
+  keyword,
+  startDate,
+  endDate,
+  sort = SORT.latest,
+  status,
+) => {
+  if (!user.value?.id) return;
+
+  loading.value = true;
+  try {
+    // 검색 조건이 없을 때
+    if (!keyword && !startDate && !endDate && !status) {
+      problems.value = initialProblems.value;
+    } else {
+      // API를 통한 검색 수행
+      const searchResults = await problemAPI.search(
+        user.value.id,
+        keyword,
+        startDate,
+        endDate,
+        status,
+      );
+      problems.value = searchResults;
+    }
+
+    router.push({
+      query: {
+        ...(keyword && { keyword }),
+        ...(startDate && { startDate }),
+        ...(endDate && { endDate }),
+        ...(status && { status }),
+        sort,
+      },
+    });
+  } catch (err) {
+    console.error("검색 실패:", err);
+    error.value = "검색 중 오류가 발생했습니다";
+  } finally {
+    loading.value = false;
+  }
+};
+
+watch(
+  () => user.value?.id,
+  (newUserId) => {
+    if (newUserId) {
+      loadProblems(newUserId);
+    }
   },
-  {
-    id: 2,
-    status: "wrong",
-    title: "숫자 게임",
-    category: "알고리즘",
-    origin_source: "프로그래머스",
-    problem_type: "multiple_choice",
-    ismade: false,
-  },
-  {
-    id: 3,
-    status: "",
-    title: "소방경력공무원 관계법규 개념 예제 문제 ",
-    category: "소방경력공무원 기출",
-    origin_source: "소방경력공무원 CBT",
-    problem_type: "ox",
-    ismade: true,
-  },
-  {
-    id: 4,
-    status: "wrong",
-    title: "소방경력공무원 관계법규 개념 예제 문제 ",
-    category: "소방경력공무원 기출",
-    origin_source: "소방경력공무원 CBT",
-    problem_type: "multiple_choice",
-    ismade: true,
-  },
-  {
-    id: 5,
-    status: "wrong",
-    title: "Group Anagrams ",
-    category: "알고리즘",
-    origin_source: "LeetCode",
-    problem_type: "multiple_choice",
-    ismade: true,
-  },
-]);
-provide("problems", problems);
+  { immediate: true },
+);
 </script>
+
 <template>
   <section class="flex flex-col gap-16 w-[1000px] mx-auto mt-[72px] relative">
     <h1 class="text-[42px] font-laundry">보관한 문제</h1>
-    <Search :show-status="true" />
-    <ProblemTable :problems="problems" />
+    <Search :show-status="true" @search="search" />
+    <div v-if="loading" class="text-center">로딩 중...</div>
+    <div v-else-if="error" class="text-red-500 text-center">
+      문제 로드 중 오류가 발생했습니다
+    </div>
+    <ProblemTable
+      v-else
+      :problems="problems"
+      :show-my-problem="true"
+      :show-shared-problem="true"
+      :show-problem="true"
+    />
   </section>
 </template>
-<style scoped></style>

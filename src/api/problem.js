@@ -337,6 +337,44 @@ const checkIsShared = async (uid, problem_id) => {
 };
 
 /**
+ * @description 사용자가 공유받은 문제들을 가져오는 API
+ * @param {*} uid - 사용자 ID
+ * @returns {Array} 사용자가 공유받은 문제들의 배열
+ */
+const getUserSharedProblems = async (uid) => {
+  try {
+    const { data, error } = await supabase
+      .from("shared_problem")
+      .select(`
+        problem:problem_id (
+          id,
+          question,
+          answer,
+          explanation,
+          created_at,
+          updated_at,
+          origin_source,
+          problem_type,
+          title,
+          category_id,
+          uid,
+          image_src,
+          shared
+        )
+      `)
+      .eq("uid", uid);
+
+    if (error) throw error;
+
+    // data 형식을 변환하여 problem 객체들의 배열로 반환
+    return data.map(item => item.problem);
+  } catch (error) {
+    console.error("사용자의 공유된 문제를 가져오는 중 오류 발생:", error);
+    return [];
+  }
+};
+
+/**
  * @description 문제를 사용자의 북마크에 추가
  * @param {number} problem_id - 북마크할 문제 ID
  * @returns {object} 생성된 북마크 데이터
@@ -423,6 +461,7 @@ export const problemAPI = {
   update,
   deleteOne,
   checkIsShared,
+  getUserSharedProblems,
   addShare,
   removeShare,
   getRandom,
