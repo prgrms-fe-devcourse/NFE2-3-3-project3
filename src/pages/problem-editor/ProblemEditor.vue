@@ -3,6 +3,7 @@ import { onBeforeRouteLeave, useRouter } from "vue-router";
 import ProblemEditorHeader from "./components/ProblemEditorHeader.vue";
 import ProblemEditorLists from "./components/ProblemEditorLists.vue";
 import ProblemEditorMain from "./components/ProblemEditorMain.vue";
+import ProblemEditorGuide from "./components/ProblemEditorGuide.vue";
 import { reactive, onBeforeMount, ref, toRaw } from "vue";
 import { problemAPI } from "@/api/problem";
 
@@ -10,7 +11,6 @@ const router = useRouter();
 
 const problemEditorMain = ref(null);
 const isSubmitClicked = ref(false);
-
 const createdProblems = reactive({
   folder: { id: "", title: "" },
   problemLists: [],
@@ -36,7 +36,7 @@ const setProblemFolder = (folderObject) => {
 const addProblem = () => {
   const newItem = {
     title: "",
-    type: "",
+    type: "4지선다",
   };
   createdProblems.problemLists.push(newItem);
 };
@@ -86,21 +86,30 @@ const submitProblems = async () => {
   const uploadPromises = createdProblems.problemLists.map(async (problem) => {
     try {
       const categoryRaw = toRaw(problem.category);
+      console.log(categoryRaw);
+      // time
+      const now = new Date();
+      const utc = now.getTime() + now.getTimezoneOffset() * 60 * 1000;
+      const koreaTimeDiff = 9 * 60 * 60 * 1000;
+      const korNow = new Date(utc + koreaTimeDiff);
+
       const problemForSubmission = {
         title: problem?.title || "", // 제목
         question: problem?.question || "", // 질문
         answer: problem?.answer || "", // 정답
         explanation: problem?.explanation || "", // 풀이
         origin_source: problem?.origin_source || "", // 출처
-        problem_type:
-          problem?.type === "4지선다" ? "multiple_choice" : "ox" || "", // 문제 유형 변환
-        category_id: categoryRaw[0]?.id || "", // 카테고리 ID 추출
-        option_one: problem?.option_one || "", // 보기 1
-        option_two: problem?.option_two || "", // 보기 2
-        option_three: problem?.option_three || "", // 보기 3
-        option_four: problem?.option_four || "", // 보기 4
+        problem_type: problem?.type === "4지선다" ? "multiple_choice" : "ox", // 문제 유형 변환
+        category_id: categoryRaw[0]?.id || 0, // 카테고리 ID 추출
+        option_one: problem?.option_one || null, // 보기 1
+        option_two: problem?.option_two || null, // 보기 2
+        option_three: problem?.option_three || null, // 보기 3
+        option_four: problem?.option_four || null, // 보기 4
         shared: problem?.shared || false, // 공개 여부
+        created_at: korNow,
+        updated_at: korNow,
       };
+      console.log("problemForSubmission:", problemForSubmission);
       const data = await problemAPI.add(workbookId, problemForSubmission);
       console.log(data);
     } catch (error) {
@@ -162,21 +171,24 @@ onBeforeMount(() => {
 });
 </script>
 <template>
-  <div class="flex flex-col h-screen w-screen">
+  <div class="flex flex-col h-screen w-full">
     <ProblemEditorHeader
       :stored-Folder="createdProblems.folder"
       @submit-problems="submitProblems"
       @on-going-back="onGoingBack"
       @set-problem-folder="setProblemFolder"
     />
-    <div class="flex flex-row h-min-screen w-min-full flex-grow">
+    <div class="flex flex-row h-min-screen w-screen flex-grow">
       <ProblemEditorLists
         :problem-list="createdProblems.problemLists"
         @add-problem="addProblem"
         @on-click-problem-list="setTargetProblem"
+        class="w-2/12"
       />
       <ProblemEditorMain
-        v-if="targetProblem.idx !== -1"
+        v-if="
+          targetProblem.idx !== -1 && createdProblems.problemLists.length > 0
+        "
         ref="problemEditorMain"
         :key="targetProblem.idx"
         :problem-idx="targetProblem.idx"
@@ -185,6 +197,7 @@ onBeforeMount(() => {
         @delete-problem="deleteProblem"
         @submit-problem="submitProblem"
       />
+      <ProblemEditorGuide v-else />
     </div>
   </div>
 </template>

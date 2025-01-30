@@ -254,13 +254,14 @@ defineExpose({
 onBeforeMount(async () => {
   const categoryData = await categoryAPI.getAll();
   category.push(...categoryData);
+  localProblem.type = localProblem.type === "" ? "4지선다" : localProblem.type;
 });
 </script>
 
 <template>
-  <main class="flex flex-col gap-4 w-full">
+  <main class="flex flex-col gap-4 flex-grow">
     <article
-      class="flex items-top w-full px-4 py-4 gap-3"
+      class="flex items-top flex-grow pl-4 pr-10 py-4 gap-3"
       v-if="props.problemIdx !== -1"
     >
       <img
@@ -291,7 +292,7 @@ onBeforeMount(async () => {
             </li>
           </ul>
         </fieldset>
-        <fieldset class="flex items-center gap-2 w-full mb-4">
+        <fieldset class="flex items-center gap-2 mb-4">
           <label for="category" class="mr-1">카테고리</label>
           <MultiSelect
             v-model="localProblem.category"
