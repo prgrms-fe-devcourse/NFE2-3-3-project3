@@ -1,33 +1,28 @@
 <script setup>
 import { RouterLink } from "vue-router";
 import { Paginator, Select } from "primevue";
-import { ref, watchEffect } from "vue";
+import { ref, computed, onMounted } from "vue";
 import ProblemSet from "@/components/layout/ProblemSet.vue";
 import { useRoute } from "vue-router";
 import ProblemTable from "@/components/layout/ProblemTable.vue";
 import { problemAPI } from "@/api/problem";
 import { followAPI } from "@/api/follow";
 import { workbookAPI } from "@/api/workbook";
-import { useAuthStore } from "@/store/authStore";
-import { storeToRefs } from "pinia";
-import { useRouter } from "vue-router";
+import { SORT, SORTS } from "@/const/sorts";
 
 const route = useRoute();
-const router = useRouter();
-const authStore = useAuthStore();
-const { user } = storeToRefs(authStore);
+const { userId } = defineProps({
+  userId: String,
+});
 
 const followings = ref([]);
 const problems = ref([]);
 const problemSets = ref([]);
+const first = ref(0);
+const rows = ref(8);
 
-const SORTS = ref([
-  { name: "최신순", value: "최신순" },
-  { name: "좋아요 많은 순", value: "좋아요 많은 순" },
-  { name: "정답률 높은 순", value: "정답률 높은 순" },
-  { name: "정답률 낮은 순", value: "정답률 낮은 순" },
-]);
-const sort = ref({ name: "최신순", value: "최신순" });
+const sorts = ref(SORTS);
+const sort = ref(SORTS[0]);
 
 const TABS = ["팔로잉 목록", "공유한 문제", "공유한 문제집"];
 
@@ -36,14 +31,23 @@ const changeTab = (event) => {
   currentTab.value = event.target.innerText;
 };
 
-watchEffect(async () => {
-  const userId = route.params.userId;
-  if (!userId || !user.value) return;
-  if (userId === user.value.id) {
-    router.replace("/mypage");
-    return;
+const sortedProblemSets = computed(() => {
+  const newProblemSets = [...problemSets.value];
+  switch (sort.value?.value) {
+    case SORT.latest:
+      return newProblemSets
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(first.value, first.value + rows.value);
+    case SORT.likes:
+      return newProblemSets
+        .sort((a, b) => (b.likes.length || 0) - (a.likes.length || 0))
+        .slice(first.value, first.value + rows.value);
+    default:
+      return newProblemSets.slice(first.value, first.value + rows.value);
   }
+});
 
+onMounted(async () => {
   const followingPromise = followAPI.getFollowing(userId);
   const problemsPromise = problemAPI.getAllSharedByUserId(userId);
   const problemSetsPromise = workbookAPI.getAllSharedByUserId(userId);
@@ -118,7 +122,7 @@ watchEffect(async () => {
         <p class="font-semibold text-xl">{{ problemSets.length }} 문제집</p>
         <Select
           v-model="sort"
-          :options="SORTS"
+          :options="sorts"
           optionLabel="name"
           class="w-40"
         />
@@ -126,19 +130,18 @@ watchEffect(async () => {
 
       <div class="grid grid-cols-4 gap-4">
         <ProblemSet
-          v-for="problemSet in problemSets"
+          v-for="problemSet in sortedProblemSets"
           :key="problemSet.id"
           :to="`/problem-set-board/${problemSet.id}`"
           :problemSet="problemSet"
         />
       </div>
-      <Paginator :rows="10" :totalRecords="120"></Paginator>
+      <Paginator
+        v-model:first="first"
+        :rows="rows"
+        :totalRecords="problemSets.length"
+      ></Paginator>
     </section>
   </section>
 </template>
-<style scoped>
-/* 테이블 헤더 텍스트를 중앙 정렬 */
-::v-deep(.p-datatable-column-header-content) {
-  justify-content: center;
-}
-</style>
+<style scoped></style>

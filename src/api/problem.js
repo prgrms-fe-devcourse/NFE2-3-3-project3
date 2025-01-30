@@ -46,7 +46,7 @@ const getAllSharedByUserId = async (userId) => {
   try {
     const { data, error } = await supabase
       .from("problem")
-      .select("*")
+      .select("*, likes: problem_like(*)")
       .eq("uid", userId)
       .eq("shared", true);
 
@@ -381,7 +381,7 @@ const getRandom = async () => {
     // 총 개수를 가져오기
     const { count, error: countError } = await supabase
       .from("problem")
-      .select("*", { count: "exact", head: true }) 
+      .select("*", { count: "exact", head: true })
       .eq("shared", true);
 
     if (countError) throw new Error(countError);
@@ -399,7 +399,7 @@ const getRandom = async () => {
       .from("problem")
       .select("id")
       .eq("shared", true)
-      .range(randomIndex, randomIndex) 
+      .range(randomIndex, randomIndex)
       .single();
 
     if (error) throw new Error(error);
