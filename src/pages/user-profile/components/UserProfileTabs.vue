@@ -1,7 +1,7 @@
 <script setup>
 import { RouterLink } from "vue-router";
 import { Paginator, Select } from "primevue";
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, watch } from "vue";
 import ProblemSet from "@/components/layout/ProblemSet.vue";
 import { useRoute } from "vue-router";
 import ProblemTable from "@/components/layout/ProblemTable.vue";
@@ -9,6 +9,7 @@ import { problemAPI } from "@/api/problem";
 import { followAPI } from "@/api/follow";
 import { workbookAPI } from "@/api/workbook";
 import { SORT, SORTS } from "@/const/sorts";
+import EmptyText from "@/components/layout/EmptyText.vue";
 
 const route = useRoute();
 const { userId } = defineProps({
@@ -47,21 +48,27 @@ const sortedProblemSets = computed(() => {
   }
 });
 
-onMounted(async () => {
-  const followingPromise = followAPI.getFollowing(userId);
-  const problemsPromise = problemAPI.getAllSharedByUserId(userId);
-  const problemSetsPromise = workbookAPI.getAllSharedByUserId(userId);
+watch(
+  () => userId,
+  async () => {
+    const followingPromise = followAPI.getFollowing(userId);
+    const problemsPromise = problemAPI.getAllSharedByUserId(userId);
+    const problemSetsPromise = workbookAPI.getAllSharedByUserId(userId);
 
-  const [followingData, problemsData, problemSetsData] = await Promise.all([
-    followingPromise,
-    problemsPromise,
-    problemSetsPromise,
-  ]);
+    const [followingData, problemsData, problemSetsData] = await Promise.all([
+      followingPromise,
+      problemsPromise,
+      problemSetsPromise,
+    ]);
 
-  followings.value = followingData;
-  problems.value = problemsData;
-  problemSets.value = problemSetsData;
-});
+    followings.value = followingData;
+    problems.value = problemsData;
+    problemSets.value = problemSetsData;
+  },
+  {
+    immediate: true,
+  },
+);
 </script>
 <template>
   <section class="flex flex-col gap-6">
@@ -83,24 +90,32 @@ onMounted(async () => {
     </div>
 
     <!-- 팔로잉 목록 탭 -->
-    <div v-if="currentTab === TABS[0]" class="grid grid-cols-6 gap-4">
-      <RouterLink
-        v-for="{ following } in followings"
-        :to="`/users/${following.id}`"
-        class="flex flex-col justify-center items-center gap-4 w-36 h-40 px-2 py-5 bg-black-6/20 rounded-lg"
+    <div v-if="currentTab === TABS[0]">
+      <div
+        v-if="!followings.length"
+        class="flex items-center justify-center h-40"
       >
-        <img
-          class="w-16 h-16 rounded-full border border-black-4"
-          :src="following.avatar_url"
-          alt="프로필 이미지"
-        />
-        <div class="flex flex-col items-center gap-1">
-          <p class="text-sm font-semibold">{{ following.name }}</p>
-          <p class="text-xs font-medium text-black-3">
-            {{ following.email }}
-          </p>
-        </div>
-      </RouterLink>
+        <EmptyText>팔로잉한 유저가 없습니다...</EmptyText>
+      </div>
+      <template v-else class="grid grid-cols-6 gap-4">
+        <RouterLink
+          v-for="{ following } in followings"
+          :to="`/users/${following.id}`"
+          class="flex flex-col justify-center items-center gap-4 w-36 h-40 px-2 py-5 bg-black-6/20 rounded-lg"
+        >
+          <img
+            class="w-16 h-16 rounded-full border border-black-4"
+            :src="following.avatar_url"
+            alt="프로필 이미지"
+          />
+          <div class="flex flex-col items-center gap-1">
+            <p class="text-sm font-semibold">{{ following.name }}</p>
+            <p class="text-xs font-medium text-black-3">
+              {{ following.email }}
+            </p>
+          </div>
+        </RouterLink>
+      </template>
     </div>
 
     <!-- 공유한 문제 탭 -->
@@ -128,7 +143,13 @@ onMounted(async () => {
         />
       </div>
 
-      <div class="grid grid-cols-4 gap-4">
+      <div
+        v-if="!problemSets.length"
+        class="flex items-center justify-center h-40"
+      >
+        <EmptyText>검색된 문제집이 없습니다...</EmptyText>
+      </div>
+      <div v-else class="grid grid-cols-4 gap-4">
         <ProblemSet
           v-for="problemSet in sortedProblemSets"
           :key="problemSet.id"
