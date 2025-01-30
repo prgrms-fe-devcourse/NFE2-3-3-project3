@@ -232,7 +232,7 @@ const sortedProblems = computed(() => {
 
 watch(sort, (newSort) => {
   const newQuery = { ...route.query, sort: newSort.value };
-  router.push({ query: newQuery });
+  router.replace({ query: newQuery });
 });
 
 watchEffect(async () => {
