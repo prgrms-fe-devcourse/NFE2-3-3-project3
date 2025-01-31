@@ -63,11 +63,9 @@ const getAllByUserId = async (userId) => {
  */
 const getAllSharedByUserId = async (userId) => {
   try {
-    const { data, error } = await supabase
-      .from("problem")
-      .select("*")
-      .eq("uid", userId)
-      .eq("shared", true);
+    const { data, error } = await supabase.rpc("get_all_shared_problems", {
+      user_id: userId,
+    });
 
     if (error) throw error;
     return data;
