@@ -54,7 +54,7 @@ onBeforeUnmount(() => {
       @submit.prevent="
         emit('search', keyword, startDate, endDate, sort, status)
       "
-      class="flex justify-between items-center bg-beige-2 has-[:focus]:border-orange-1 rounded-2xl h-12 p-4 border border-black-4"
+      class="flex justify-between items-center bg-beige-2 has-[:focus]:border-orange-1 rounded-lg h-12 p-4 border border-black-4"
     >
       <input
         v-model="keyword"
@@ -62,7 +62,7 @@ onBeforeUnmount(() => {
         class="w-full bg-transparent"
         placeholder="제목, 문제로 검색"
       />
-      <button class="bg-transparent">
+      <button class="bg-transparent item-middle">
         <img :src="search" alt="검색 아이콘" />
       </button>
     </form>
@@ -102,7 +102,7 @@ onBeforeUnmount(() => {
           </ul>
         </div>
       </div>
-      <div class="w-full px-4 bg-beige-2 border border-black-4 rounded-lg">
+      <div class="w-full h-10 px-4 bg-beige-2 border border-black-4 rounded-lg">
         <div class="flex card items-center h-10 gap-4">
           <span>기간 선택</span>
           <span>|</span>
