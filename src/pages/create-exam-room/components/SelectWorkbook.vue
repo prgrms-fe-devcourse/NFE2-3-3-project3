@@ -1,71 +1,71 @@
 <script setup>
 import { ref, computed, watchEffect } from "vue";
 import { useAuthStore } from "@/store/authStore";
-import { workbookAPI } from "@/api/workbook";
 import SearchBar from "@/components/layout/SearchBar.vue";
 import MyWorkBook from "./MyWorkBook.vue";
-import { Paginator } from "primevue";
+import { workbookAPI } from "@/api/workbook";
+import Paginator from "primevue/paginator";
 
-const props = defineProps({
-  selectedWorkbook: {
-    type: Object,
-    default: null,
-  },
-});
-
-const emit = defineEmits(["update:selectedWorkbook"]);
-
+// Store
 const authStore = useAuthStore();
+
+// Constants
+const itemsPerPage = 6;
+
+// Data
 const workbooks = ref([]);
-const keyword = ref("");
-const currentPage = ref(1);
-const itemsPerPage = 8;
+const currentPage = ref(0);
+const searchKeyword = ref("");
 
-// 검색어로 필터링된 문제집 목록
+// Computed
 const filteredWorkbooks = computed(() => {
-  if (!keyword.value) return workbooks.value;
-
-  return workbooks.value.filter(
-    (book) =>
-      book.title?.toLowerCase().includes(keyword.value.toLowerCase()) ||
-      book.description?.toLowerCase().includes(keyword.value.toLowerCase()),
+  console.log('Current workbooks:', workbooks.value); // 현재 workbooks 상태
+  if (!searchKeyword.value) return workbooks.value;
+  return workbooks.value.filter((book) =>
+    book.title.toLowerCase().includes(searchKeyword.value.toLowerCase())
   );
 });
 
-// 현재 페이지에 표시될 문제집 목록
 const paginatedWorkbooks = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage;
-  const end = start + itemsPerPage;
-  return filteredWorkbooks.value.slice(start, end);
+  console.log('Filtered workbooks:', filteredWorkbooks.value); // 필터링된 결과
+  const start = currentPage.value * itemsPerPage;
+  const result = filteredWorkbooks.value.slice(start, start + itemsPerPage);
+  console.log('Paginated workbooks:', result); // 페이지네이션 결과
+  return result;
 });
 
-const handleSearch = (searchKeyword) => {
-  keyword.value = searchKeyword;
-  currentPage.value = 1; // 검색 시 첫 페이지로 이동
+// Methods
+const fetchWorkbooks = async () => {
+  try {
+    const response = await workbookAPI.getAllByUserId(authStore.user.id);
+    console.log('Fetched workbooks:', response); // 데이터 확인
+    workbooks.value = response;
+  } catch (error) {
+    console.error("문제집 로드 실패:", error);
+  }
 };
 
-const onPageChange = (event) => {
-  currentPage.value = event.page + 1;
+const handleSearch = (keyword) => {
+  searchKeyword.value = keyword;
+  currentPage.value = 0;
 };
 
 const handleWorkbookSelect = (workbook) => {
-  emit("update:selectedWorkbook", workbook);
+  emit("select-workbook", workbook);
 };
 
-// 문제집 데이터 불러오기
-const fetchWorkbooks = async () => {
-  try {
-    const data = await workbookAPI.getUid(authStore.user?.id);
-    workbooks.value = data || [];
-  } catch (error) {
-    console.error("문제집 데이터 불러오기 실패:", error);
-  }
+const onPageChange = (event) => {
+  currentPage.value = event.page;
 };
+
+// Watchers
 watchEffect(() => {
   if (authStore.isAuthenticated && authStore.user?.id) {
     fetchWorkbooks();
   }
 });
+
+const emit = defineEmits(["select-workbook"]);
 </script>
 
 <template>
@@ -99,6 +99,7 @@ watchEffect(() => {
 
       <!-- 페이지네이션 -->
       <Paginator
+        v-if="filteredWorkbooks.length > itemsPerPage"
         :rows="itemsPerPage"
         :totalRecords="filteredWorkbooks.length"
         @page="onPageChange"

@@ -296,6 +296,22 @@ const getWorkbookProblemCount = async (workbookId) => {
   }
 };
 
+// READ - 유저의 모든 문제집 조회
+const getAllByUserId = async (userId) => {
+  const { data, error } = await supabase
+    .from("workbook")
+    .select(
+      `
+        *,
+        workbook_problem (count)
+      `,
+    )
+    .eq("uid", userId);
+
+  if (error) throw error;
+  return data;
+};
+
 export const workbookAPI = {
   add,
   getAll,
@@ -318,4 +334,5 @@ export const workbookAPI = {
   getSharedWorkbook,
   sharedWorkbookAdd,
   removeWorkbook,
+  getAllByUserId
 };
