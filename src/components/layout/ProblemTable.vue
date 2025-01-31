@@ -112,6 +112,8 @@ const shared = ref(false);
 const description = ref("");
 const problemSets = ref([]);
 const sort = ref(currentSort);
+const first = ref(0);
+const rows = ref(10);
 const selectedProblems = ref([]);
 const showProblemSet = ref(false);
 const activeFilter = ref(null);
@@ -267,12 +269,22 @@ watch(sort, (newSort) => {
   router.replace({ query: newQuery });
 });
 
-watchEffect(async () => {
-  if (!user.value) return;
-  problemSets.value = await workbookAPI.getAll(user.value.id);
+watchEffect(() => {
+  const page = first.value / rows.value + 1;
+  const newQuery = { ...route.query, page };
+  router.replace({ query: newQuery });
 });
 
+watch(
+  () => user.value.id,
+  async (userId) => {
+    problemSets.value = await workbookAPI.getAll(userId);
+  },
+);
+
 onMounted(() => {
+  const page = parseInt(route.query.page, 10) || 1;
+  first.value = (page - 1) * rows.value;
   window.addEventListener("click", handleClickOutside);
 });
 
@@ -315,13 +327,24 @@ onBeforeUnmount(() => {
           @click="handleFilterButtonClick('myProblems')"
         >
           <template #icon>
-            <img
-              :src="
-                activeFilter === 'myProblems' ? checkedMyProblem : seeMyProblems
-              "
-              alt="myProblemsIcon"
-              class="w-5 h-5"
-            />
+            <img :src="seeMyProblems" alt="seeMyProblemsIcon" class="w-5 h-5" />
+          </template>
+        </Button>
+        <Button
+          v-if="showSharedProblem"
+          label="공유받은 문제"
+          size="small"
+          severity="secondary"
+          :class="[
+            'text-sm',
+            activeFilter === 'sharedProblems'
+              ? '!bg-orange-3 !text-orange-500'
+              : 'text-white bg-navy-4',
+          ]"
+          @click="handleFilterButtonClick('sharedProblems')"
+        >
+          <template #icon>
+            <img :src="sharedIcon" alt="sharedIcon" class="w-5 h-5" />
           </template>
         </Button>
         <button
@@ -345,6 +368,7 @@ onBeforeUnmount(() => {
     <div class="overflow-hidden border border-black-5 rounded-2xl">
       <DataTable
         v-model:selection="selectedProblems"
+        v-model:first="first"
         :value="sortedProblems"
         dataKey="id"
         paginator
@@ -359,7 +383,7 @@ onBeforeUnmount(() => {
         <Column
           v-if="showCheckbox"
           selectionMode="multiple"
-          headerStyle="width: 3rem"
+          headerStyle="min-width: 3rem"
         ></Column>
         <Column v-if="showDelete" header="제거" field="delete">
           <template #body="slotProps">
@@ -382,7 +406,12 @@ onBeforeUnmount(() => {
             </button>
           </template>
         </Column>
-        <Column field="latest_status" header="상태" v-if="showStatus">
+        <Column
+          field="latest_status"
+          header="상태"
+          headerStyle="min-width: 5rem"
+          v-if="showStatus"
+        >
           <template #body="slotProps">
             <div
               v-if="slotProps.data.latest_status"
@@ -397,9 +426,9 @@ onBeforeUnmount(() => {
             </div>
           </template>
         </Column>
-        <Column field="title" class="w-[45%]" header="제목">
+        <Column field="title" class="w-full" header="제목">
           <template #body="slotProps">
-            <div class="flex justify-between w-full">
+            <div class="flex justify-between gap-6 w-full">
               <RouterLink
                 :to="`${
                   slotProps.data.id === user?.id
@@ -407,7 +436,7 @@ onBeforeUnmount(() => {
                     : '/problem-board'
                 }/${slotProps.data.id}`"
               >
-                <span class="w-full cursor-pointer">{{
+                <span class="w-full cursor-pointer line-clamp-1">{{
                   slotProps.data.title
                 }}</span>
               </RouterLink>
@@ -421,7 +450,12 @@ onBeforeUnmount(() => {
             </div>
           </template>
         </Column>
-        <Column field="problem_type" header="문제 유형" v-if="showCategory">
+        <Column
+          field="problem_type"
+          header="문제 유형"
+          headerStyle="min-width: 7rem"
+          v-if="showCategory"
+        >
           <template #body="slotProps">
             <Tag
               v-if="getProblemType(slotProps.data.problem_type) === '4지선다'"
@@ -432,12 +466,27 @@ onBeforeUnmount(() => {
           </template>
         </Column>
 
-        <Column field="category_name" header="카테고리">
+        <Column
+          field="category_name"
+          header="카테고리"
+          headerStyle="min-width: 9rem"
+        >
           <template #body="slotProps">
-            {{ slotProps.data.category_name }}
+            <span class="line-clamp-1">
+              {{ slotProps.data.category_name }}
+            </span>
           </template>
         </Column>
-        <Column field="origin_source" header="출처"></Column>
+        <Column
+          field="origin_source"
+          header="출처"
+          headerStyle="min-width: 9rem"
+          ><template #body="slotProps">
+            <span class="line-clamp-1">
+              {{ slotProps.data.origin_source }}
+            </span>
+          </template></Column
+        >
       </DataTable>
     </div>
 

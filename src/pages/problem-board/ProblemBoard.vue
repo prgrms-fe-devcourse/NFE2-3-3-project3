@@ -23,6 +23,7 @@ const search = async (
   sort = SORT.latest,
   status,
 ) => {
+  console.log(status);
   problems.value = await problemAPI.search(
     user.value.id,
     keyword,
@@ -30,7 +31,7 @@ const search = async (
     endDate ? new Date(endDate).toISOString() : null,
     status,
   );
-  router.push({
+  router.replace({
     query: {
       keyword,
       startDate: formatDate(startDate),
