@@ -1,5 +1,5 @@
 <script setup>
-import { computed, watch, watchEffect } from "vue";
+import { computed, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useExamResultStore } from "@/store/ExamResultStore";
 import { useAuthStore } from "@/store/authStore";
@@ -8,14 +8,11 @@ import { useToast } from "primevue";
 
 const examResultStore = useExamResultStore();
 const authStore = useAuthStore();
-const route = useRoute();
 const toast = useToast();
-const testResultId = computed(() => route.params.examResultId);
-const userId = computed(() => authStore.user?.id);
 
+const userId = computed(() => authStore.user?.id);
 const { tableData, currentProblem, againViewProblems } =
   storeToRefs(examResultStore);
-
 const { selectProblem, toggleFlag, checkAgainViewStatus } = examResultStore;
 
 // 플래그 상태 토글 핸들러
@@ -49,22 +46,12 @@ watch(
     }
 
     try {
-      console.log("currentProblem 변경 감지:", newProblem);
-      // 문제 선택 및 "다시 볼 문제" 상태 확인
       await checkAgainViewStatus(userId.value, newProblem.id);
     } catch (error) {
       console.error("currentProblem 상태 업데이트 중 오류:", error);
     }
   },
   { immediate: true },
-);
-
-watch(
-  againViewProblems,
-  (newVal) => {
-    console.log("againViewProblems 변경 감지:", newVal);
-  },
-  { deep: true },
 );
 </script>
 

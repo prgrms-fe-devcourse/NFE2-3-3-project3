@@ -3,9 +3,7 @@ import shareIcon from "@/assets/icons/my-problem-sets/share.svg";
 import createWorkbook from "@/assets/icons/my-problem-sets/createWorkbook.svg";
 import Dialog from "primevue/dialog";
 import Button from "primevue/button";
-import { Avatar } from "primevue";
-import ProblemSet from "@/components/layout/ProblemSet.vue";
-import { ToggleSwitch } from "primevue";
+import { Avatar, useToast, ToggleSwitch } from "primevue";
 import { ref, computed, watch } from "vue";
 import { useAuthStore } from "@/store/authStore";
 import { useWorkbookStore } from "@/store/workbookStore";
@@ -15,83 +13,26 @@ import { useRouter } from "vue-router";
 
 const authStore = useAuthStore();
 const workbookStore = useWorkbookStore();
-
-const props = defineProps({
-  title: {
-    type: String,
-    required: true,
-    default: "",
-  },
-  description: {
-    type: String,
-    required: true,
-    default: "",
-  },
-  shared: {
-    type: Boolean,
-    required: false,
-    default: false,
-  },
-  tags: {
-    type: Array, // 태그 필드 추가
-    required: false,
-    default: () => [],
-  },
-});
 const router = useRouter();
+const {
+  workbooks,
+  sharedWorkbooks,
+  problemCounts,
+  title,
+  description,
+  shared,
+} = storeToRefs(workbookStore);
 
-const sharedBooks = ref([
-  {
-    title: "기본 문제집",
-    description: "문제집에 대한 설명입니다.",
-    count: 40,
-    sharedBy: "닉네임",
-  },
-  {
-    title: "기본 문제집",
-    description: "문제집에 대한 설명입니다.",
-    count: 40,
-    sharedBy: "닉네임",
-  },
-  {
-    title: "기본 문제집",
-    description: "문제집에 대한 설명입니다.",
-    count: 40,
-    sharedBy: "닉네임",
-  },
-  {
-    title: "기본 문제집",
-    description: "문제집에 대한 설명입니다.",
-    count: 40,
-    sharedBy: "닉네임",
-  },
-  {
-    title: "추가 공유 문제집",
-    description: "추가 공유된 문제집 설명입니다.",
-    count: 50,
-    sharedBy: "다른 닉네임",
-  },
-]);
-
+//모달
+const toast = useToast();
 const showDialog = ref(false);
-const title = ref("");
-const description = ref("");
-const shared = ref(false);
-
-// Store의 상태를 반응형으로 가져오기
-const { workbooks, problemCounts } = storeToRefs(workbookStore);
 
 //전체보기
 const isMyBooksViewAll = ref(false);
-
+const isSharedBooksViewAll = ref(false);
 const toggleMyBooksViewAll = () => {
   isMyBooksViewAll.value = !isMyBooksViewAll.value;
 };
-
-// 🔥 공유받은 문제집 목록 가져오기
-const sharedWorkbooks = computed(() => workbookStore.sharedWorkbooks);
-
-const isSharedBooksViewAll = ref(false);
 
 const visibleMyBooks = computed(() => {
   const newBooks = isMyBooksViewAll.value
@@ -109,17 +50,9 @@ const fetchCountsForAllWorkbooks = async () => {
   const allBooks = [...workbooks.value, ...sharedWorkbooks.value];
 
   for (const book of allBooks) {
-    console.log("데이터 확인", book.id);
     await workbookStore.fetchProblemCount(book.id);
-    console.log("데이터 확인222", book.id, "=>", problemCounts.value[book.id]);
   }
 };
-
-const visibleSharedBooks = computed(() => {
-  return isSharedBooksViewAll.value
-    ? sharedBooks.value
-    : sharedBooks.value.slice(0, 4);
-});
 
 const toggleSharedBooksViewAll = () => {
   isSharedBooksViewAll.value = !isSharedBooksViewAll.value;
@@ -130,30 +63,55 @@ const goToProblemSet = (bookId) => {
   router.push(`/problem-set-board/${bookId}`);
 };
 
-//문제집 추가
-
-const onCreateNewFolder = async ({ title, description, shared }) => {
-  try {
-    const data = await workbookAPI.add(title, description, shared);
-    console.log("생성된 문제집 데이터:", data); // 성공적으로 추가된 데이터 출력
-    alert("문제집이 성공적으로 추가되었습니다!");
-    showDialog.value = false; // 모달 닫기
-  } catch (error) {
-    console.error("문제집 생성에 실패했습니다:", error);
-  }
+//리셋
+const resetFormFields = () => {
+  title.value = "";
+  description.value = "";
+  shared.value = false;
 };
 
-// 버튼 클릭 시 호출될 함수
+//문제집 추가
 const addWorkbook = async () => {
   if (!title.value.trim() || !description.value.trim()) {
-    alert("제목과 설명을 입력해주세요.");
+    toast.add({
+      severity: "warn",
+      summary: "경고",
+      detail: "제목과 설명을 입력해주세요.",
+      life: 3000,
+    });
     return;
   }
-  await onCreateNewFolder({
-    title: title.value,
-    description: description.value,
-    shared: shared.value, // 공개 여부 포함
-  });
+
+  try {
+    await workbookAPI.add(title.value, description.value, shared.value);
+
+    workbookStore.updateWorkbook({
+      title: title.value,
+      description: description.value,
+      shared: shared.value,
+    });
+
+    toast.add({
+      severity: "success",
+      summary: "성공",
+      detail: "문제집이 성공적으로 추가되었습니다!",
+      life: 3000,
+    });
+
+    await workbookStore.loadWorkbooks(authStore.user.id);
+    await fetchCountsForAllWorkbooks();
+
+    showDialog.value = false;
+    resetFormFields();
+  } catch (error) {
+    console.error("문제집 생성에 실패했습니다:", error);
+    toast.add({
+      severity: "error",
+      summary: "오류",
+      detail: "문제집 생성에 실패했습니다.",
+      life: 3000,
+    });
+  }
 };
 
 watch(
@@ -162,8 +120,8 @@ watch(
     if (newUserId) {
       try {
         await workbookStore.loadWorkbooks(newUserId); // 문제집 로드
-        await fetchCountsForAllWorkbooks(); // 문제 수 로드
         await workbookStore.loadSharedWorkbooks(newUserId); //공유받은 문제집
+        await fetchCountsForAllWorkbooks(newUserId); // 문제 수 로드
       } catch (error) {
         console.error("데이터 로드 중 오류:", error);
       }
@@ -175,7 +133,7 @@ watch(
 
 <template>
   <section class="flex flex-col gap-16 w-[1000px] mx-auto mt-[72px]">
-    <h1 class="text-[42px] font-laundry">보관한 문제집 테스트중gg</h1>
+    <h1 class="text-[42px] font-laundry">보관한 문제집</h1>
 
     <!-- 내가 만든 문제집 섹션 -->
     <section class="flex flex-col gap-[18px]">
@@ -188,17 +146,6 @@ watch(
           {{ isMyBooksViewAll ? "접기" : "전체보기 +" }}
         </button>
       </div>
-
-      <!-- <div class="grid grid-cols-4 gap-4">
-        <ProblemSet
-          v-for="book in visibleMyBooks"
-          :key="book.id"
-          :problemSet="book"
-          :to="`/problem-set-board/${book.id}`"
-          @click="console.log(book)"
-        />
-      </div> -->
-
       <div class="grid grid-cols-4 gap-4">
         <div
           v-for="(book, index) in visibleMyBooks"
@@ -218,6 +165,7 @@ watch(
               class="w-5 h-5"
               :class="{ 'opacity-0': !book.shared }"
             />
+            <span v-else class="w-5 h-5"></span>
             <p class="text-sm font-medium">
               {{ problemCounts[book.id] || 0 }}문제
             </p>
@@ -280,7 +228,6 @@ watch(
         class="w-[500px]"
       >
         <div class="flex flex-col gap-4">
-          <!-- 문제집 제목 -->
           <div>
             <label for="title" class="block text-sm font-medium"
               >문제집 제목</label
@@ -292,8 +239,6 @@ watch(
               v-model="title"
             />
           </div>
-
-          <!-- 문제집 설명 -->
           <div>
             <label for="description" class="block text-sm font-medium"
               >문제집 설명</label
@@ -306,14 +251,11 @@ watch(
             ></textarea>
           </div>
 
-          <!-- 공개 여부 -->
           <div class="flex items-center gap-2">
             <label for="shared" class="text-sm font-medium">공개 여부</label>
             <ToggleSwitch v-model="shared" name="shared" />
           </div>
         </div>
-
-        <!-- 버튼 -->
         <template #footer>
           <div class="flex justify-end gap-2">
             <Button

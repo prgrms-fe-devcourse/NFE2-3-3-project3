@@ -120,9 +120,7 @@ watch(
     <div class="border border-[#D4D4D4] rounded-2xl mt-8 p-4">
       <ExamResultChart />
     </div>
-    <!-- 문제 테이블 -->
     <ExamResultTable />
-    <!-- 문제풀이 보기 -->
     <div
       class="rounded-[16px] border border-gray-300 bg-white overflow-hidden mt-8"
     >
@@ -147,8 +145,6 @@ watch(
           />
         </svg>
       </div>
-
-      <!-- 컨텐츠 영역 -->
       <div
         :class="[
           'overflow-hidden transition-all duration-300 ease-in-out',
@@ -160,8 +156,6 @@ watch(
         </div>
       </div>
     </div>
-
-    <!-- 다른 사용자 점수 보기 -->
     <div
       class="rounded-[16px] border border-gray-300 bg-white overflow-hidden mt-8"
     >
@@ -188,19 +182,21 @@ watch(
       </div>
       <!--점수 테이블 -->
       <div v-if="isShowed">
-        <table class="table-auto border-collapse border border-gray-300 w-full">
+        <table class="w-full table-auto border-collapse">
           <thead>
             <tr>
-              <th class="border border-gray-400 px-2 py-2">Name</th>
-              <th class="border border-gray-400 px-2 py-2">Score</th>
+              <th class="border-t border-b border-r border-gray-300 px-1 py-1">
+                Name
+              </th>
+              <th class="border-t border-b border-gray-300 px-1 py-1">Score</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="item in isTableData" :key="item.uid">
-              <td class="border border-gray-400 px-2 py-1 text-center">
+              <td class="border-t border-r border-gray-300 text-center">
                 {{ item.userName }}
               </td>
-              <td class="border border-gray-400 px-2 py-1 text-center">
+              <td class="border-t border-gray-300 px-1 py-1 text-center">
                 {{ item.correct_count }}
               </td>
             </tr>

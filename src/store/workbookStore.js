@@ -6,6 +6,9 @@ export const useWorkbookStore = defineStore("workbook", {
     workbooks: [], // 문제집 목록
     problemCounts: {}, // 문제 수 저장 { [workbookId]: count }
     sharedWorkbooks: [],
+    title: "",
+    description: "",
+    shared: false,
   }),
   actions: {
     async loadWorkbooks(userId) {
@@ -36,6 +39,12 @@ export const useWorkbookStore = defineStore("workbook", {
       } catch (error) {
         console.error("공유받은 문제집 불러오기 오류", error);
       }
+    },
+
+    updateWorkbook({ title, description, shared }) {
+      this.title = title;
+      this.description = description;
+      this.shared = shared;
     },
   },
 });

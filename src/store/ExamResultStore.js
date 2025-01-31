@@ -150,9 +150,6 @@ export const useExamResultStore = defineStore("examResult", {
 
     //내가고른 선택지
     async fetchMyOption(testResultId) {
-      console.log("fetchProblems 호출됨, testResultId:", testResultId);
-
-      // testResultId 유효성 확인
       if (!testResultId) {
         console.error("fetchProblems: testResultId가 정의되지 않았습니다.");
         return;
@@ -191,13 +188,6 @@ export const useExamResultStore = defineStore("examResult", {
           problem_id: item.problem_id,
           status: item.status,
         }));
-
-        console.log(
-          "fetchProblems 완료. myOption:",
-          this.myOption,
-          "status:",
-          this.status,
-        );
       } catch (error) {
         console.error("fetchProblems 에러:", error);
       }
@@ -236,12 +226,10 @@ export const useExamResultStore = defineStore("examResult", {
       }
 
       try {
-        // ✅ 현재 "다시 볼 문제" 상태 확인
         const isCurrentlyFlagged = this.againViewProblems.includes(problemId);
 
         if (!isCurrentlyFlagged) {
-          // ✅ "다시 볼 문제"로 추가
-          this.againViewProblems.push(problemId); // 로컬 상태 추가
+          this.againViewProblems.push(problemId);
           await againViewProblemAPI.addAgainViewProblem({
             uid: userId,
             problem_id: problemId,
@@ -253,10 +241,9 @@ export const useExamResultStore = defineStore("examResult", {
             life: 3000,
           });
         } else {
-          // ✅ "다시 볼 문제"에서 제거
           this.againViewProblems = this.againViewProblems.filter(
             (id) => id !== problemId,
-          ); // 로컬 상태 제거
+          );
           await againViewProblemAPI.delete(problemId);
           toast?.add({
             severity: "info",
@@ -291,16 +278,14 @@ export const useExamResultStore = defineStore("examResult", {
       }
 
       try {
-        // ✅ 현재 상태 확인
         const isCurrentlyFlagged = this.againViewProblems.includes(problemId);
 
         if (isCurrentlyFlagged) {
-          // ✅ "다시 볼 문제" 삭제
           await againViewProblemAPI.delete(problemId);
           this.againViewProblems = this.againViewProblems.filter(
             (id) => id !== problemId,
-          ); // 로컬 상태에서 제거
-          problem.flagged = false; // 로컬 상태 업데이트
+          );
+          problem.flagged = false;
           toast?.add({
             severity: "info",
             summary: "다시 볼 문제 해제",
@@ -308,13 +293,12 @@ export const useExamResultStore = defineStore("examResult", {
             life: 3000,
           });
         } else {
-          // ✅ "다시 볼 문제" 추가
           await againViewProblemAPI.addAgainViewProblem({
             uid: userId,
             problem_id: problemId,
           });
-          this.againViewProblems.push(problemId); // 로컬 상태에 추가
-          problem.flagged = true; // 로컬 상태 업데이트
+          this.againViewProblems.push(problemId);
+          problem.flagged = true;
           toast?.add({
             severity: "success",
             summary: "다시 볼 문제 추가",
