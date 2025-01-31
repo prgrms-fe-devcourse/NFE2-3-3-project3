@@ -130,26 +130,15 @@ const handlePageChange = async (newPage) => {
 
 const handleLike = async () => {
   if (problemSetLike.value) {
-    toast.add({
-      severity: "error",
-      summary: "좋아요 해제 실패",
-      detail: "한번 설정하신 좋아요는 해제하실 수 없습니다.",
-      life: 3000,
-    });
+    problemSetLike.value = false;
+    await workbookLikeAPI.remove(uid.value, route.params.problemSetId);
+    await workbookLikeFunction();
     return;
   }
-  confirm.require({
-    group: "like",
-    header:
-      "한번 설정한 문제집 좋아요는 변경이 불가능합니다. 계속 진행하시겠습니까?",
-    message: "계속 진행하시려면 '좋아요' 버튼을 클릭하세요",
-    accept: async () => {
-      problemSetLike.value = true;
-      await workbookLikeAPI.add(uid.value, route.params.problemSetId);
-      await workbookLikeFunction();
-    },
-    reject: () => {},
-  });
+
+  problemSetLike.value = true;
+  await workbookLikeAPI.add(uid.value, route.params.problemSetId);
+  await workbookLikeFunction();
 };
 
 const workbookLikeFunction = async () => {
