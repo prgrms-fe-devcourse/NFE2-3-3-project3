@@ -19,6 +19,7 @@ import {
   Textarea,
   useToast,
   ToggleSwitch,
+  useConfirm,
 } from "primevue";
 import { storeToRefs } from "pinia";
 import { RouterLink } from "vue-router";
@@ -30,15 +31,14 @@ import { useAuthStore } from "@/store/authStore";
 import plus from "@/assets/icons/problem-board/plus.svg";
 import minus from "@/assets/icons/problem-board/minus.svg";
 import sharedIcon from "@/assets/icons/my-problem-sets/share.svg";
-import wrong from "@/assets/icons/problem-set-board-detail/wrong.svg";
 import statusWrong from "@/assets/icons/problem-board/status-wrong.svg";
 import statusSolved from "@/assets/icons/problem-board/status-solved.svg";
 import seeMyProblems from "@/assets/icons/my-problems/see-my-problems.svg";
-import corrected from "@/assets/icons/problem-set-board-detail/corrected.svg";
 import checkedMyProblem from "@/assets/icons/my-problems/color-my-problems.svg";
 import { useRoute } from "vue-router";
 import { useRouter } from "vue-router";
 import { watch } from "vue";
+import ConfirmModal from "./ConfirmModal.vue";
 
 const props = defineProps({
   problems: {
@@ -96,32 +96,47 @@ const props = defineProps({
   workbookId: String,
 });
 
+const toast = useToast();
 const route = useRoute();
 const router = useRouter();
-const popup = ref(null);
-const sorts = ref(SORTS);
-const currentSort = route.query.sort === SORT.likes ? SORTS[1] : SORTS[0];
-const sort = ref(currentSort);
-const problemSets = ref([]);
-const title = ref("");
-const description = ref("");
-const shared = ref(false);
-const selectedProblems = ref([]);
-const showProblemSet = ref(false);
+const confirm = useConfirm();
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
-const toast = useToast();
+
+const currentSort = route.query.sort === SORT.likes ? SORTS[1] : SORTS[0];
+
+const popup = ref(null);
+const sorts = ref(SORTS);
+const title = ref("");
+const shared = ref(false);
+const description = ref("");
+const problemSets = ref([]);
+const sort = ref(currentSort);
+const selectedProblems = ref([]);
+const showProblemSet = ref(false);
+const activeFilter = ref(null);
 
 const handleAddClick = () => {
   emit("open-dialog");
 };
-const emit = defineEmits(["open-dialog"]);
+const emit = defineEmits(["open-dialog", "filter-change"]);
 
-// const problemAdd = inject("problems");
-// const addedProblemDelete = inject("problems");
+const handleFilterButtonClick = (filterType) => {
+  if (activeFilter.value === filterType) {
+    // 같은 버튼을 두 번 클릭하면 필터 해제
+    activeFilter.value = null;
+    emit("filter-change", "all");
+  } else {
+    // 새로운 필터 적용
+    activeFilter.value = filterType;
+    emit("filter-change", filterType);
+  }
+};
 
-const problemAdd = props.problems;
-const addedProblemDelete = props.problems;
+const problemAdd = inject("problemAdd");
+const addedProblemDelete = inject("addedProblemDelete");
+const problemDelete = inject("problemDelete");
+const myProblemsDataUpdate = inject("myProblemsDataUpdate");
 
 const ShowProblemSetPopup = () => {
   showProblemSet.value = true;
@@ -169,13 +184,18 @@ const addProblemSet = async () => {
   showAddProblemSet.value = false;
 };
 
-const deleteProblem = async (problem_id) => {
-  const realDelete = confirm("문제집에서 해당 문제를 빼시겠습니까?");
-  if (realDelete) {
-    await workbookAPI.removeProblem(props.workbookId, problem_id);
-    router.go(0);
-  }
-  return;
+const deleteProblem = (problem_id) => {
+  confirm.require({
+    group: "delete",
+    header: "해당 문제를 문제집에서 제거 하시겠습니까?",
+    message: "문제를 빼시려면 '제거' 버튼을 클릭하세요",
+    accept: async () => {
+      await workbookAPI.removeProblem(props.workbookId, problem_id);
+      problemDelete();
+      myProblemsDataUpdate();
+    },
+    reject: () => {},
+  });
 };
 const getStatus = (status) => {
   switch (status) {
@@ -225,9 +245,18 @@ const sortedProblems = computed(() => {
         (a, b) => new Date(b.created_at) - new Date(a.created_at),
       );
     case SORT.likes:
-      return problems.sort(
-        (a, b) => (b.likes.length || 0) - (a.likes.length || 0),
-      );
+      return problems.sort((a, b) => {
+        // problem.likes[0]?.count가 있는 경우
+        const aLikes = a.likes?.[0]?.count ?? 0;
+        const bLikes = b.likes?.[0]?.count ?? 0;
+
+        // problem.problem.likes[0]?.count가 있는 경우 (공유받은 문제)
+        const aSharedLikes = a.problem?.likes?.[0]?.count ?? 0;
+        const bSharedLikes = b.problem?.likes?.[0]?.count ?? 0;
+
+        // 둘 중 존재하는 값 사용
+        return (bLikes || bSharedLikes) - (aLikes || aSharedLikes);
+      });
     default:
       return problems;
   }
@@ -235,7 +264,7 @@ const sortedProblems = computed(() => {
 
 watch(sort, (newSort) => {
   const newQuery = { ...route.query, sort: newSort.value };
-  router.push({ query: newQuery });
+  router.replace({ query: newQuery });
 });
 
 watchEffect(async () => {
@@ -256,23 +285,34 @@ onBeforeUnmount(() => {
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-2">
         <p class="text-xl font-semibold" v-if="showCount">
-          {{ problems.length }} 문제
+          {{ problems?.length }} 문제
         </p>
         <Button
           v-if="showProblem"
           label="다시 볼 문제"
           icon="pi pi-flag"
-          icon-class="color: white;"
           size="small"
           severity="secondary"
-          class="text-sm text-white bg-navy-4"
+          :class="[
+            'text-sm',
+            activeFilter === 'againView'
+              ? '!bg-orange-3 !text-orange-500'
+              : 'text-white bg-navy-4',
+          ]"
+          @click="handleFilterButtonClick('againView')"
         />
         <Button
           v-if="showMyProblem"
           label="내 문제만 보기"
           size="small"
           severity="secondary"
-          class="text-sm text-white bg-navy-4"
+          :class="[
+            'text-sm',
+            activeFilter === 'myProblems'
+              ? '!bg-orange-3 !text-orange-500'
+              : 'text-white bg-navy-4',
+          ]"
+          @click="handleFilterButtonClick('myProblems')"
         >
           <template #icon>
             <img :src="seeMyProblems" alt="seeMyProblemsIcon" class="w-5 h-5" />
@@ -280,10 +320,16 @@ onBeforeUnmount(() => {
         </Button>
         <Button
           v-if="showSharedProblem"
-          label="공유한 문제"
+          label="공유받은 문제"
           size="small"
           severity="secondary"
-          class="text-sm text-white bg-navy-4"
+          :class="[
+            'text-sm',
+            activeFilter === 'sharedProblems'
+              ? '!bg-orange-3 !text-orange-500'
+              : 'text-white bg-navy-4',
+          ]"
+          @click="handleFilterButtonClick('sharedProblems')"
         >
           <template #icon>
             <img :src="sharedIcon" alt="sharedIcon" class="w-5 h-5" />
@@ -312,7 +358,6 @@ onBeforeUnmount(() => {
         v-model:selection="selectedProblems"
         :value="sortedProblems"
         dataKey="id"
-        tableStyle="min-width: 50rem"
         paginator
         :rows="10"
       >
@@ -348,37 +393,22 @@ onBeforeUnmount(() => {
             </button>
           </template>
         </Column>
-        <Column field="history[0].status" header="상태" v-if="showStatus">
+        <Column field="latest_status" header="상태" v-if="showStatus">
           <template #body="slotProps">
             <div
-              v-if="slotProps.data.history?.length"
-              v-tooltip.top="messageStatus(slotProps.data.history[0].status)"
+              v-if="slotProps.data.latest_status"
+              class="w-fit"
+              v-tooltip.top="messageStatus(slotProps.data.latest_status)"
             >
               <img
-                v-if="getStatus(slotProps.data.history[0].status) !== ''"
-                :src="getStatus(slotProps.data.history[0].status)"
+                v-if="getStatus(slotProps.data.latest_status) !== ''"
+                :src="getStatus(slotProps.data.latest_status)"
                 alt="상태 아이콘"
               />
             </div>
           </template>
         </Column>
-        <Column field="history[0].status" header="상태" v-if="!showStatus">
-          <template #body="slotProps">
-            <div>
-              <img
-                v-if="slotProps.data.latest_status === 'corrected'"
-                :src="corrected"
-                alt="맞힌 문제"
-              />
-              <img
-                v-else-if="slotProps.data.latest_status === 'wrong'"
-                :src="wrong"
-                alt="틀린 문제"
-              />
-            </div>
-          </template>
-        </Column>
-        <Column field="title" header="제목">
+        <Column field="title" class="w-[45%]" header="제목">
           <template #body="slotProps">
             <div class="flex justify-between w-full">
               <RouterLink
@@ -413,7 +443,7 @@ onBeforeUnmount(() => {
           </template>
         </Column>
 
-        <Column field="category.name" header="카테고리">
+        <Column field="category_name" header="카테고리">
           <template #body="slotProps">
             {{ slotProps.data.category_name }}
           </template>
@@ -499,6 +529,7 @@ onBeforeUnmount(() => {
       </div>
     </div>
   </section>
+  <ConfirmModal group="delete" acceptButtonName="제거" />
 </template>
 <style scoped>
 ::v-deep(.p-tag-secondary) {
