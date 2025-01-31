@@ -319,24 +319,13 @@ onBeforeUnmount(() => {
           @click="handleFilterButtonClick('myProblems')"
         >
           <template #icon>
-            <img :src="seeMyProblems" alt="seeMyProblemsIcon" class="w-5 h-5" />
-          </template>
-        </Button>
-        <Button
-          v-if="showSharedProblem"
-          label="공유받은 문제"
-          size="small"
-          severity="secondary"
-          :class="[
-            'text-sm',
-            activeFilter === 'sharedProblems'
-              ? '!bg-orange-3 !text-orange-500'
-              : 'text-white bg-navy-4',
-          ]"
-          @click="handleFilterButtonClick('sharedProblems')"
-        >
-          <template #icon>
-            <img :src="sharedIcon" alt="sharedIcon" class="w-5 h-5" />
+            <img
+              :src="
+                activeFilter === 'myProblems' ? checkedMyProblem : seeMyProblems
+              "
+              alt="myProblemsIcon"
+              class="w-5 h-5"
+            />
           </template>
         </Button>
         <button

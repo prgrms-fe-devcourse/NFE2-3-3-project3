@@ -1,7 +1,7 @@
 <script setup>
-import { onMounted, watch } from 'vue';
-import Viewer from '@toast-ui/editor/dist/toastui-editor-viewer';
-import '@toast-ui/editor/dist/toastui-editor-viewer.css';
+import { onMounted, watch } from "vue";
+import Viewer from "@toast-ui/editor/dist/toastui-editor-viewer";
+import "@toast-ui/editor/dist/toastui-editor-viewer.css";
 
 const props = defineProps({
   problem: {
@@ -14,16 +14,19 @@ let viewer;
 
 onMounted(() => {
   viewer = new Viewer({
-    el: document.querySelector('#viewer'),
+    el: document.querySelector("#viewer"),
     initialValue: props.problem?.question,
   });
 });
 
-watch(() => props.problem, (newProblem) => {
-  if (viewer) {
-    viewer.setMarkdown(newProblem.question || '');
-  }
-});
+watch(
+  () => props.problem,
+  (newProblem) => {
+    if (viewer) {
+      viewer.setMarkdown(newProblem.question || "");
+    }
+  },
+);
 </script>
 
 <template>
@@ -37,34 +40,45 @@ watch(() => props.problem, (newProblem) => {
     >
       <ol class="list-decimal space-y-2 text-gray-700">
         <li v-if="props.problem.option_one" class="flex items-center gap-2">
-          <strong class="text-xs rounded-full bg-black-6 w-7 h-7 item-middle">1</strong>
+          <strong class="text-xs rounded-full bg-black-6 w-7 h-7 item-middle"
+            >1</strong
+          >
           <span>{{ props.problem.option_one }}</span>
         </li>
         <li v-if="props.problem.option_two" class="flex items-center gap-2">
-          <strong class="text-xs rounded-full bg-black-6 w-7 h-7 item-middle">2</strong>
+          <strong class="text-xs rounded-full bg-black-6 w-7 h-7 item-middle"
+            >2</strong
+          >
           <span>{{ props.problem.option_two }}</span>
         </li>
         <li v-if="props.problem.option_three" class="flex items-center gap-2">
-          <strong class="text-xs rounded-full bg-black-6 w-7 h-7 item-middle">3</strong>
+          <strong class="text-xs rounded-full bg-black-6 w-7 h-7 item-middle"
+            >3</strong
+          >
           <span>{{ props.problem.option_three }}</span>
         </li>
         <li v-if="props.problem.option_four" class="flex items-center gap-2">
-          <strong class="text-xs rounded-full bg-black-6 w-7 h-7 item-middle">4</strong>
+          <strong class="text-xs rounded-full bg-black-6 w-7 h-7 item-middle"
+            >4</strong
+          >
           <span>{{ props.problem.option_four }}</span>
         </li>
       </ol>
     </div>
 
     <!-- OX 보기 -->
-    <div v-if="props.problem?.problem_type === 'ox'" class="space-y-4">
-      <ul class="flex gap-4">
+    <div
+      v-if="props.problem?.problem_type === 'ox'"
+      class="space-y-4 w-fit items-center mx-auto"
+    >
+      <ul class="flex gap-4 w-full">
         <li
-          class="flex items-center gap-2 rounded-xl  w-1/2 h-24 text-4xl font-extrabold item-middle border-r px-4 py-2 bg-orange-1 hover:bg-orange-2 text-white shadow-sm transition"
+          class="flex items-center gap-2 rounded-md w-40 h-18 text-2xl font-extrabold item-middle px-4 py-2 bg-black-6 text-gray-1 shadow-sm transition"
         >
           O
         </li>
         <li
-          class="flex items-center gap-2 rounded-xl w-1/2 h-24 text-4xl item-middle px-4 py-2 bg-black-6 hover:bg-orange-2 text-gray-1 shadow-sm transition"
+          class="flex items-center gap-2 rounded-md w-40 h-18 text-2xl font-extrabold item-middle px-4 py-2 bg-black-6 text-gray-1 shadow-sm transition"
         >
           X
         </li>

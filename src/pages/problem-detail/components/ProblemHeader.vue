@@ -43,7 +43,6 @@ const authStore = useAuthStore();
 
 const hasLiked = ref(false);
 const likeCount = ref(0);
-const isBookmarked = ref(false);
 
 const getCurrentUserId = async () => {
   try {
@@ -111,22 +110,6 @@ const loadLikeStatus = async () => {
   }
 };
 
-// 북마크 상태 로드
-const loadBookmarkStatus = async () => {
-  const currentUserId = await getCurrentUserId();
-  if (!props.problem?.id || !currentUserId) return;
-
-  try {
-    const status = await problemAPI.checkIsShared(
-      currentUserId,
-      props.problem.id,
-    );
-    isBookmarked.value = status;
-  } catch (error) {
-    console.error("북마크 상태 로딩 실패:", error);
-  }
-};
-
 // 좋아요 토글 핸들러
 const handleToggleLike = async () => {
   const currentUserId = await getCurrentUserId();
@@ -149,49 +132,8 @@ const handleToggleLike = async () => {
   }
 };
 
-// 북마크 토글 핸들러
-const handleToggleBookmark = async () => {
-  const currentUserId = await getCurrentUserId();
-  if (!currentUserId) {
-    toast.add({
-      severity: "warn",
-      summary: "로그인 필요",
-      detail: "로그인 후 이용해주세요.",
-      life: 3000,
-    });
-    return;
-  }
-
-  try {
-    if (isBookmarked.value) {
-      await problemAPI.removeShare(props.problem.id);
-    } else {
-      await problemAPI.addShare(props.problem.id, currentUserId);
-    }
-    isBookmarked.value = !isBookmarked.value;
-
-    toast.add({
-      severity: isBookmarked.value ? "success" : "info",
-      summary: isBookmarked.value ? "북마크 추가" : "북마크 해제",
-      detail: isBookmarked.value
-        ? "북마크에 추가되었습니다."
-        : "북마크가 해제되었습니다.",
-      life: 3000,
-    });
-  } catch (error) {
-    console.error("북마크 처리 실패:", error);
-    toast.add({
-      severity: "error",
-      summary: "처리 실패",
-      detail: "북마크 처리 중 오류가 발생했습니다.",
-      life: 3000,
-    });
-  }
-};
-
 watchEffect(() => {
   loadLikeStatus();
-  loadBookmarkStatus();
   fetchUserGrade();
   document.addEventListener("click", closeMenu);
 });
@@ -260,18 +202,6 @@ const routeConfig = computed(() => {
               :class="{ 'opacity-50': !hasLiked }"
             />
             <span>{{ likeCount }}</span>
-          </button>
-          <button
-            aria-label="북마크 버튼"
-            v-if="!isAuthor"
-            @click="handleToggleBookmark"
-            class="flex items-center gap-1 px-2.5 py-1.5 rounded-full hover:bg-gray-100 transition"
-            :class="{ 'text-orange-1 bg-orange-100': isBookmarked }"
-          >
-            <i
-              class="pi"
-              :class="isBookmarked ? 'pi-bookmark-fill' : 'pi-bookmark'"
-            ></i>
           </button>
         </div>
       </div>

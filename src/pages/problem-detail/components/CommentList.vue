@@ -79,7 +79,9 @@ const handleDeleteComment = async (id) => {
         summary: "삭제 완료",
         detail: "댓글이 삭제되었습니다.",
       });
-      formattedComments.value = formattedComments.value.filter(comment => comment.id !== id);
+      formattedComments.value = formattedComments.value.filter(
+        (comment) => comment.id !== id,
+      );
       emit("submit-comment");
     }
   } catch (error) {
@@ -99,25 +101,25 @@ const handleEditComment = (comment) => {
 const handleEditSubmit = async (event) => {
   if (event.key === "Enter" && !event.shiftKey) {
     event.preventDefault();
-    
+
     try {
       const response = await commentAPI.updateComment(editingCommentId.value, {
-        comment: editingContent.value
+        comment: editingContent.value,
       });
-      
+
       if (response) {
         // 수정된 댓글을 찾아서 업데이트
         const index = formattedComments.value.findIndex(
-          comment => comment.id === editingCommentId.value
+          (comment) => comment.id === editingCommentId.value,
         );
         if (index !== -1) {
           formattedComments.value[index].comment = editingContent.value;
         }
-        
+
         // 수정 모드 종료
         editingCommentId.value = null;
         editingContent.value = "";
-        
+
         toast.add({
           severity: "success",
           summary: "수정 완료",
@@ -178,12 +180,12 @@ watchEffect(async () => {
 </script>
 
 <template>
-  <div class="w-full">
+  <div class="w-full max-w-full">
     <div v-if="isLoading" class="flex justify-center py-4">
       <i class="pi pi-spinner pi-spin"></i>
     </div>
 
-    <div v-else class="w-full">
+    <div v-else class="w-full max-w-full">
       <h3 class="text-gray-700 text-2xl mb-6">댓글</h3>
       <div
         v-if="comments?.length === 0"
@@ -195,12 +197,12 @@ watchEffect(async () => {
         v-else
         v-for="comment in formattedComments"
         :key="comment.id"
-        class="mb-10"
+        class="mb-10 max-w-full break-words"
       >
         <div class="flex justify-between items-center mb-2">
           <!-- 유저 프로필 -> 클릭시 해당 유저 상세 페이지 -->
           <RouterLink
-            :to="{ name: 'UserProfile', params: { userId: comment.uid }}"
+            :to="{ name: 'UserProfile', params: { userId: comment.uid } }"
             aria-label="유저 프로필"
             class="flex items-center gap-2 flex-grow"
           >
@@ -238,7 +240,7 @@ watchEffect(async () => {
           class="w-full min-h-[80px] resize-none pt-3 px-4 rounded-lg text-sm bg-gray-100 border border-gray-300"
         ></textarea>
         <!-- 일반 모드일 때는 텍스트로 표시 -->
-        <p v-else class="text-gray-500">{{ comment.comment }}</p>
+        <p v-else class="text-gray-500 break-words">{{ comment.comment }}</p>
       </div>
     </div>
 
@@ -246,7 +248,7 @@ watchEffect(async () => {
       :value="value"
       @input="emit('update:value', $event.target.value)"
       @keypress="handleKeyPress"
-      class="w-full h-32 resize-none pt-3 px-6 rounded-lg text-sm bg-gray-100 border border-gray-300"
+      class="w-full max-w-full h-32 resize-none pt-3 px-6 rounded-lg text-sm bg-gray-100 border border-gray-300"
       placeholder="문제집에 대해 어떻게 생각하시나요?"
     ></textarea>
 
