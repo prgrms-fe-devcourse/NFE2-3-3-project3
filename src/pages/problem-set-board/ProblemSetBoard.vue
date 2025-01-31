@@ -1,6 +1,6 @@
 <script setup>
 import Search from "@/components/layout/Search.vue";
-import { ref, watchEffect, computed, watch, onBeforeMount } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 import { Paginator, Select } from "primevue";
 import ProblemSet from "@/components/layout/ProblemSet.vue";
 import { SORT, SORTS } from "@/const/sorts";
@@ -36,7 +36,7 @@ const sortedProblemSets = computed(() => {
   }
 });
 
-const search = async (keyword, startDate, endDate, sort) => {
+const search = async (keyword, startDate, endDate, sort = SORT.latest) => {
   first.value = 0;
   problemSets.value = await workbookAPI.search(
     keyword,
@@ -49,20 +49,21 @@ const search = async (keyword, startDate, endDate, sort) => {
       keyword,
       startDate: formatDate(startDate),
       endDate: formatDate(endDate),
-      sort: sort.value,
+      sort,
     },
   });
 };
 
-onBeforeMount(async () => {
+onMounted(async () => {
   problemSets.value = await workbookAPI.search(keyword, startDate, endDate);
 });
 
 watch(
-  () => sort.value,
+  () => sort.value.value,
   () => {
     first.value = 0;
-    search(keyword, startDate, endDate, sort.value);
+    const { keyword, startDate, endDate } = route.query;
+    search(keyword, startDate, endDate, sort.value.value);
   },
 );
 </script>
