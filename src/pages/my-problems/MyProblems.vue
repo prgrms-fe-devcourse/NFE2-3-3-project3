@@ -48,20 +48,23 @@ const loadProblems = async (userId) => {
   error.value = null;
 
   try {
-    const [againViewProblems, userProblems, sharedProblems] = await Promise.all(
-      [
+    const [againViewProblems, userProblems, sharedProblems, categories] =
+      await Promise.all([
         againViewProblemAPI.getAllByUserId(userId),
         problemAPI.getAllByUserId(userId),
         problemAPI.getUserSharedProblems(userId),
-      ],
-    );
+        categoryAPI.getAll(),
+      ]);
 
     const mergedProblems = [
       ...(againViewProblems?.length
         ? againViewProblems.map((p) => ({
-            ...(p.problem || p), // againViewProblems는 problem 객체 안에 데이터가 있음
+            ...(p.problem || p),
             againView: true,
             latest_status: p.status || p.history?.[0]?.status || "none",
+            category_name: categories.find(
+              (c) => c.id === (p.problem?.category_id || p.category_id),
+            )?.name,
           }))
         : []),
       ...(userProblems?.length
@@ -69,13 +72,17 @@ const loadProblems = async (userId) => {
             ...p,
             isOwner: true,
             latest_status: p.history?.[0]?.status || "none",
+            category_name: categories.find((c) => c.id === p.category_id)?.name,
           }))
         : []),
       ...(sharedProblems?.length
         ? sharedProblems.map((p) => ({
-            ...(p.problem || p), // sharedProblems도 problem 객체 안에 데이터가 있음
+            ...(p.problem || p),
             isShared: true,
             latest_status: p.history?.[0]?.status || "none",
+            category_name: categories.find(
+              (c) => c.id === (p.problem?.category_id || p.category_id),
+            )?.name,
           }))
         : []),
     ];
