@@ -23,7 +23,6 @@ const search = async (
   sort = SORT.latest,
   status,
 ) => {
-  console.log(status);
   problems.value = await problemAPI.search(
     user.value.id,
     keyword,

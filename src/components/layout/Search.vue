@@ -145,7 +145,7 @@ onBeforeUnmount(() => {
             v-model="startDate"
             class="w-[116px] h-6"
             id="startTime"
-            :max-date="new Date(endDate)"
+            :max-date="endDate ? new Date(endDate) : new Date()"
             dateFormat="yy-mm-dd"
             showButtonBar
           />
