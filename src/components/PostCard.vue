@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed } from 'vue';
 import PositionSmallBadge from '@/components/PositionSmallBadge.vue';
 import like from '@/assets/icons/like.svg';
 import likeFill from '@/assets/icons/like_fill.svg';
