@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import dropdownDown from "@/assets/icons/problem-set-board/dropdown-down.svg";
 import search from "@/assets/icons/problem-set-board/search.svg";
 import { Chip, DatePicker, RadioButton } from "primevue";
@@ -41,6 +41,18 @@ const handleClickOutside = (event) => {
     isOpen.value = false;
   }
 };
+
+watch(status, (newStatus) => {
+  emit(
+    "search",
+    keyword.value,
+    startDate.value,
+    endDate.value,
+    sort,
+    newStatus,
+  );
+});
+
 onMounted(() => {
   window.addEventListener("click", handleClickOutside);
 });
