@@ -37,7 +37,7 @@ import seeMyProblems from "@/assets/icons/my-problems/see-my-problems.svg";
 import checkedMyProblem from "@/assets/icons/my-problems/color-my-problems.svg";
 import { useRoute } from "vue-router";
 import { useRouter } from "vue-router";
-import { watch } from "vue";
+import { watch, onBeforeMount } from "vue";
 import ConfirmModal from "./ConfirmModal.vue";
 
 const props = defineProps({
@@ -269,6 +269,10 @@ watch(sort, (newSort) => {
 
 watchEffect(async () => {
   if (!user.value) return;
+  problemSets.value = await workbookAPI.getAll(user.value.id);
+});
+
+onBeforeMount(async () => {
   problemSets.value = await workbookAPI.getAll(user.value.id);
 });
 
