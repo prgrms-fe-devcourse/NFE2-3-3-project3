@@ -37,7 +37,7 @@ import seeMyProblems from "@/assets/icons/my-problems/see-my-problems.svg";
 import checkedMyProblem from "@/assets/icons/my-problems/color-my-problems.svg";
 import { useRoute } from "vue-router";
 import { useRouter } from "vue-router";
-import { watch } from "vue";
+import { watch, onBeforeMount } from "vue";
 import ConfirmModal from "./ConfirmModal.vue";
 
 const props = defineProps({
@@ -275,12 +275,9 @@ watchEffect(() => {
   router.replace({ query: newQuery });
 });
 
-watch(
-  () => user.value.id,
-  async (userId) => {
-    problemSets.value = await workbookAPI.getAll(userId);
-  },
-);
+onBeforeMount(async () => {
+  problemSets.value = await workbookAPI.getAll(user.value.id);
+});
 
 onMounted(() => {
   const page = parseInt(route.query.page, 10) || 1;
