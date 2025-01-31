@@ -312,6 +312,48 @@ const getAllByUserId = async (userId) => {
   return data;
 };
 
+const fetchSharedWorkbooks = async (uid) => {
+  try {
+    const { data: sharedData, error: sharedError } = await supabase
+      .from("shared_workbook")
+      .select("workbook_id")
+      .eq("uid", uid);
+
+    if (sharedError) throw sharedError;
+    if (!sharedData || sharedData.length === 0) return [];
+
+    const workbookIds = sharedData.map((item) => item.workbook_id);
+
+    const { data: workbooks, error: workbooksError } = await supabase
+      .from("workbook")
+      .select("id, title, description, uid")
+      .in("id", workbookIds);
+
+    if (workbooksError) throw workbooksError;
+
+    const author = workbooks.map((book) => book.uid);
+    const { data: users, error: usersError } = await supabase
+      .from("user_info")
+      .select("id, name, avatar_url")
+      .in("id", author);
+
+    if (usersError) throw usersError;
+
+    const userMap = users.reduce((acc, user) => {
+      acc[user.id] = { name: user.name, avatar_url: user.avatar_url };
+      return acc;
+    }, {});
+
+    return workbooks.map((book) => ({
+      ...book,
+      user: userMap[book.uid] || { name: "알 수 없음", avatar_url: "" },
+    }));
+  } catch (error) {
+    console.error("공유받은 문제집을 가져오는 중 오류 발생:", error);
+    return [];
+  }
+};
+
 export const workbookAPI = {
   add,
   getAll,
@@ -334,5 +376,6 @@ export const workbookAPI = {
   getSharedWorkbook,
   sharedWorkbookAdd,
   removeWorkbook,
-  getAllByUserId
+  getAllByUserId,
+  fetchSharedWorkbooks,
 };

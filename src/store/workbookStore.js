@@ -5,11 +5,12 @@ export const useWorkbookStore = defineStore("workbook", {
   state: () => ({
     workbooks: [], // 문제집 목록
     problemCounts: {}, // 문제 수 저장 { [workbookId]: count }
+    sharedWorkbooks: [],
   }),
   actions: {
     async loadWorkbooks(userId) {
       try {
-        this.workbooks = await workbookAPI.getAll(userId); // 순수 데이터 로드
+        this.workbooks = await workbookAPI.getAll(userId);
       } catch (error) {
         console.error("문제집 데이터를 불러오는 중 오류:", error);
       }
@@ -26,6 +27,14 @@ export const useWorkbookStore = defineStore("workbook", {
           error,
         );
         this.problemCounts[workbookId] = 0; // 실패 시 기본값 설정
+      }
+    },
+
+    async loadSharedWorkbooks(uid) {
+      try {
+        this.sharedWorkbooks = await workbookAPI.fetchSharedWorkbooks(uid);
+      } catch (error) {
+        console.error("공유받은 문제집 불러오기 오류", error);
       }
     },
   },

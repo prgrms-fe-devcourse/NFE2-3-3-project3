@@ -203,7 +203,7 @@ const selectedMyOption = computed(() => {
   const problem = myOption.value.find(
     (item) => item.problem_id === currentProblem.value?.id,
   );
-  return problem ? problem.my_option : "선택하지 않음";
+  return problem ? problem.my_option : "";
 });
 
 // const selectedStatus = computed(() => {

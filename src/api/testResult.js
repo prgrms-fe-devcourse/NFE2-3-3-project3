@@ -221,7 +221,7 @@ const getAverage = async (testResultId) => {
 
     const averageScore =
       uniqueUsersCount > 0 ? totalCorrect / uniqueUsersCount : 0;
-    return Math.round(averageScore);
+    return averageScore.toFixed(1);
   } catch (error) {
     console.error("평균 계산 오류", error);
     return 0;

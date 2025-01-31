@@ -3,6 +3,7 @@ import shareIcon from "@/assets/icons/my-problem-sets/share.svg";
 import createWorkbook from "@/assets/icons/my-problem-sets/createWorkbook.svg";
 import Dialog from "primevue/dialog";
 import Button from "primevue/button";
+import { Avatar } from "primevue";
 import ProblemSet from "@/components/layout/ProblemSet.vue";
 import { ToggleSwitch } from "primevue";
 import { ref, computed, watch } from "vue";
@@ -10,6 +11,7 @@ import { useAuthStore } from "@/store/authStore";
 import { useWorkbookStore } from "@/store/workbookStore";
 import { storeToRefs } from "pinia";
 import { workbookAPI } from "@/api/workbook";
+import { useRouter } from "vue-router";
 
 const authStore = useAuthStore();
 const workbookStore = useWorkbookStore();
@@ -36,6 +38,7 @@ const props = defineProps({
     default: () => [],
   },
 });
+const router = useRouter();
 
 const sharedBooks = ref([
   {
@@ -85,6 +88,9 @@ const toggleMyBooksViewAll = () => {
   isMyBooksViewAll.value = !isMyBooksViewAll.value;
 };
 
+// 🔥 공유받은 문제집 목록 가져오기
+const sharedWorkbooks = computed(() => workbookStore.sharedWorkbooks);
+
 const isSharedBooksViewAll = ref(false);
 
 const visibleMyBooks = computed(() => {
@@ -94,13 +100,15 @@ const visibleMyBooks = computed(() => {
   return newBooks.map((book) => ({
     ...book,
     problems: new Array(problemCounts.value[book.id] || 0).fill({}),
-    shared: book.shard || false,
+    shared: book.shared ?? false,
   }));
 });
 
-//문제 수를 개별적으로 가져오는 함수 (비동기 처리)
+//문제 수를 개별적으로 가져오는 함수
 const fetchCountsForAllWorkbooks = async () => {
-  for (const book of workbooks.value) {
+  const allBooks = [...workbooks.value, ...sharedWorkbooks.value];
+
+  for (const book of allBooks) {
     console.log("데이터 확인", book.id);
     await workbookStore.fetchProblemCount(book.id);
     console.log("데이터 확인222", book.id, "=>", problemCounts.value[book.id]);
@@ -115,6 +123,11 @@ const visibleSharedBooks = computed(() => {
 
 const toggleSharedBooksViewAll = () => {
   isSharedBooksViewAll.value = !isSharedBooksViewAll.value;
+};
+
+// 문제집 상세 페이지로 이동하는 함수
+const goToProblemSet = (bookId) => {
+  router.push(`/problem-set-board/${bookId}`);
 };
 
 //문제집 추가
@@ -150,6 +163,7 @@ watch(
       try {
         await workbookStore.loadWorkbooks(newUserId); // 문제집 로드
         await fetchCountsForAllWorkbooks(); // 문제 수 로드
+        await workbookStore.loadSharedWorkbooks(newUserId); //공유받은 문제집
       } catch (error) {
         console.error("데이터 로드 중 오류:", error);
       }
@@ -174,7 +188,8 @@ watch(
           {{ isMyBooksViewAll ? "접기" : "전체보기 +" }}
         </button>
       </div>
-      <div class="grid grid-cols-4 gap-4">
+
+      <!-- <div class="grid grid-cols-4 gap-4">
         <ProblemSet
           v-for="book in visibleMyBooks"
           :key="book.id"
@@ -182,26 +197,33 @@ watch(
           :to="`/problem-set-board/${book.id}`"
           @click="console.log(book)"
         />
-      </div>
+      </div> -->
 
-      <!-- <div class="grid grid-cols-4 gap-4">
+      <div class="grid grid-cols-4 gap-4">
         <div
           v-for="(book, index) in visibleMyBooks"
           :key="index"
-          class="w-[204px] h-[146px] p-4 bg-orange-3 rounded-lg flex flex-col justify-between"
+          class="w-[204px] h-[146px] p-4 bg-orange-3 rounded-lg flex flex-col justify-between cursor-pointer"
+          @click="goToProblemSet(book.id)"
         >
           <div>
             <h3 class="font-semibold">{{ book.title }}</h3>
             <p class="text-sm text-gray-600 truncate">{{ book.description }}</p>
           </div>
           <div class="flex justify-between items-center mt-2">
-            <img :src="shareIcon" alt="share" />
+            <img
+              v-if="book.shared"
+              :src="shareIcon"
+              alt="공유됨"
+              class="w-5 h-5"
+              :class="{ 'opacity-0': !book.shared }"
+            />
             <p class="text-sm font-medium">
               {{ problemCounts[book.id] || 0 }}문제
             </p>
           </div>
         </div>
-      </div> -->
+      </div>
     </section>
 
     <!-- 공유 받은 문제집 섹션 -->
@@ -217,17 +239,28 @@ watch(
       </div>
       <div class="grid grid-cols-4 gap-4">
         <div
-          v-for="(book, index) in visibleSharedBooks"
-          :key="index"
-          class="w-[204px] h-[146px] p-4 bg-orange-3 rounded-lg flex flex-col justify-between"
+          v-for="book in sharedWorkbooks"
+          :key="book.id"
+          class="w-[204px] h-[146px] p-4 bg-orange-3 rounded-lg flex flex-col justify-between cursor-pointer"
+          @click="goToProblemSet(book.id)"
         >
           <div>
             <h3 class="font-semibold">{{ book.title }}</h3>
             <p class="text-sm text-gray-600 truncate">{{ book.description }}</p>
           </div>
           <div class="flex justify-between items-center mt-2">
-            <p class="text-sm text-gray-600">{{ book.sharedBy }}</p>
-            <p class="text-sm font-medium">{{ book.count }}문제</p>
+            <div class="flex items-center">
+              <Avatar
+                :image="book.user.avatar_url"
+                class="mr-2 max-w-7 max-h-7"
+                shape="circle"
+              />
+              <span>{{ book.user.name }}</span>
+            </div>
+
+            <p class="text-sm font-medium">
+              {{ problemCounts[book.id] || 0 }}문제
+            </p>
           </div>
         </div>
       </div>
@@ -284,14 +317,14 @@ watch(
         <template #footer>
           <div class="flex justify-end gap-2">
             <Button
-              label="취소"
-              class="p-button-text"
-              @click="showDialog = false"
-            />
-            <Button
               label="문제집 추가하기"
               class="p-button"
               @click="addWorkbook"
+            />
+            <Button
+              label="취소"
+              class="p-button-text"
+              @click="showDialog = false"
             />
           </div>
         </template>
