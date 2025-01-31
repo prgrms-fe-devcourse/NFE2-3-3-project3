@@ -230,10 +230,21 @@ const sortedProblems = computed(() => {
   switch (sort.value?.value) {
     case SORT.latest:
       return problems.sort(
-        (a, b) => new Date(b.created_at) - new Date(a.created_at),
+        (a, b) => new Date(b.created_at) - new Date(a.created_at)
       );
     case SORT.likes:
-      return problems.sort((a, b) => b.likes_count - a.likes_count);
+      return problems.sort((a, b) => {
+        // problem.likes[0]?.count가 있는 경우
+        const aLikes = a.likes?.[0]?.count ?? 0;
+        const bLikes = b.likes?.[0]?.count ?? 0;
+        
+        // problem.problem.likes[0]?.count가 있는 경우 (공유받은 문제)
+        const aSharedLikes = a.problem?.likes?.[0]?.count ?? 0;
+        const bSharedLikes = b.problem?.likes?.[0]?.count ?? 0;
+        
+        // 둘 중 존재하는 값 사용
+        return (bLikes || bSharedLikes) - (aLikes || aSharedLikes);
+      });
     default:
       return problems;
   }
@@ -385,7 +396,7 @@ onBeforeUnmount(() => {
             </div>
           </template>
         </Column>
-        <Column field="title" class="w-[50%]" header="제목">
+        <Column field="title" class="w-[45%]" header="제목">
           <template #body="slotProps">
             <div class="flex justify-between w-full">
               <RouterLink
