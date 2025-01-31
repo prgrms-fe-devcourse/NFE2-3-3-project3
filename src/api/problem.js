@@ -481,6 +481,7 @@ export const problemAPI = {
   getAllSharedByUserId,
   getById,
   search,
+  searchForUser,
   add,
   addMultiple,
   update,

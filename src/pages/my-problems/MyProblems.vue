@@ -58,50 +58,37 @@ const loadProblems = async (userId) => {
 
     const mergedProblems = [
       ...(againViewProblems?.length
-        ? againViewProblems.map((p) => ({ ...p, againView: true }))
+        ? againViewProblems.map((p) => ({
+            ...(p.problem || p), // againViewProblems는 problem 객체 안에 데이터가 있음
+            againView: true,
+            latest_status: p.status || p.history?.[0]?.status || "none",
+          }))
         : []),
       ...(userProblems?.length
-        ? userProblems.map((p) => ({ ...p, isOwner: true }))
+        ? userProblems.map((p) => ({
+            ...p,
+            isOwner: true,
+            latest_status: p.history?.[0]?.status || "none",
+          }))
         : []),
       ...(sharedProblems?.length
-        ? sharedProblems.map((p) => ({ ...p, isShared: true }))
+        ? sharedProblems.map((p) => ({
+            ...(p.problem || p), // sharedProblems도 problem 객체 안에 데이터가 있음
+            isShared: true,
+            latest_status: p.history?.[0]?.status || "none",
+          }))
         : []),
     ];
 
-    const uniqueProblems = Array.from(
-      new Map(mergedProblems.map((item) => [item.id, item])).values(),
-    );
-
-    // 각 문제의 카테고리 조회 시 예외 처리
-    const problemsWithCategory = await Promise.all(
-      uniqueProblems.map(async (problem) => {
-        try {
-          const categoryData = await categoryAPI.getCategoryNameById(
-            problem.category_id,
-          );
-          return {
-            ...problem,
-            category_name: categoryData?.name || "미분류",
-          };
-        } catch (err) {
-          console.warn(`카테고리 조회 실패 (문제 ID: ${problem.id}):`, err);
-          return {
-            ...problem,
-            category_name: "카테고리 없음",
-          };
-        }
-      }),
-    );
-
-    problems.value = problemsWithCategory;
-    initialProblems.value = problemsWithCategory;
+    problems.value = mergedProblems;
+    initialProblems.value = mergedProblems;
   } catch (err) {
     error.value = err;
     console.error("문제 로드 실패:", err);
     toast.add({
       severity: "error",
-      summary: "오류",
-      detail: "문제 로드 중 오류가 발생했습니다",
+      summary: "Error",
+      detail: "문제를 불러오는데 실패했습니다.",
       life: 3000,
     });
   } finally {
@@ -120,45 +107,49 @@ const search = async (
 
   loading.value = true;
   try {
-    if (!keyword && !startDate && !endDate && !status) {
-      problems.value = initialProblems.value;
-    } else {
-      let filteredProblems = [...initialProblems.value];
+    let filteredProblems = [...initialProblems.value];
 
-      if (keyword) {
-        const searchTerm = keyword.toLowerCase();
-        filteredProblems = filteredProblems.filter(
-          (problem) =>
-            problem.title?.toLowerCase().includes(searchTerm) ||
-            problem.content?.toLowerCase().includes(searchTerm),
-        );
-      }
-
-      if (startDate || endDate) {
-        filteredProblems = filteredProblems.filter((problem) => {
-          const problemDate = new Date(problem.created_at);
-          const start = startDate ? new Date(startDate) : null;
-          let end = endDate ? new Date(endDate) : null;
-
-          // 종료일이 있으면 하루를 더함
-          if (end) {
-            end.setDate(end.getDate() + 1);
-          }
-
-          return (
-            (!start || problemDate >= start) && (!end || problemDate <= end)
-          );
-        });
-      }
-
-      if (status) {
-        filteredProblems = filteredProblems.filter(
-          (problem) => problem.status === status,
-        );
-      }
-
-      problems.value = filteredProblems;
+    // 상태별 필터링
+    if (status) {
+      filteredProblems = filteredProblems.filter((problem) => {
+        switch (status) {
+          case "푼 문제":
+            return ["wrong", "corrected"].includes(problem.latest_status);
+          case "틀린 문제":
+            return problem.latest_status === "wrong";
+          case "안 푼 문제":
+            return problem.latest_status === "none" || !problem.latest_status;
+          default:
+            return true;
+        }
+      });
     }
+
+    // 기존 필터링 로직 유지
+    if (keyword) {
+      const searchTerm = keyword.toLowerCase();
+      filteredProblems = filteredProblems.filter(
+        (problem) =>
+          problem.title?.toLowerCase().includes(searchTerm) ||
+          problem.question?.toLowerCase().includes(searchTerm),
+      );
+    }
+
+    if (startDate || endDate) {
+      filteredProblems = filteredProblems.filter((problem) => {
+        const problemDate = new Date(problem.created_at);
+        const start = startDate ? new Date(startDate) : null;
+        let end = endDate ? new Date(endDate) : null;
+
+        if (end) {
+          end.setDate(end.getDate() + 1);
+        }
+
+        return (!start || problemDate >= start) && (!end || problemDate <= end);
+      });
+    }
+
+    problems.value = filteredProblems;
 
     router.push({
       query: {
