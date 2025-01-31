@@ -12,7 +12,6 @@ import { useRouter } from "vue-router";
 // PrimeVue
 import { useToast } from "primevue/usetoast";
 import Dialog from "primevue/dialog";
-import Button from "primevue/button";
 
 // API
 import { inviteAPI } from "@/api/invite";
@@ -98,29 +97,26 @@ const fetchCurrentUserId = async () => {
   }
 };
 
-// Methods
-const handleExamStart = () => {
-  router.push(`/exam/${props.testCenter.id}`);
-  showExamInfo.value = false;
-};
-
-const isOngoing = computed(() => {
-  const now = new Date();
-  const startDate = new Date(props.testCenter.start_date);
-  const endDate = new Date(props.testCenter.end_date);
-  return now >= startDate && now <= endDate;
-});
-
 const handleAccept = async () => {
   if (isProcessing.value || !userId.value) return;
   isProcessing.value = true;
   try {
     await inviteAPI.accept(userId.value, props.inviteData.id);
-    alert("시험에 참여 승인되었습니다.");
+    toast.add({
+      severity: 'success',
+      summary: '승인 완료',
+      detail: '시험에 참여 승인되었습니다.',
+      life: 3000
+    });
     emit("exam-status-change");
   } catch (error) {
     console.error(error);
-    alert("승인 요청 처리 중 오류가 발생했습니다.");
+    toast.add({
+      severity: 'error',
+      summary: '오류',
+      detail: '승인 요청 처리 중 오류가 발생했습니다.',
+      life: 3000
+    });
   } finally {
     isProcessing.value = false;
   }
