@@ -6,16 +6,19 @@ import { useProblemStore } from "@/store/problemStore";
 import { useAuthStore } from "@/store/authStore";
 import { problemLikeAPI } from "@/api/problemLike";
 import { commentAPI } from "@/api/comment";
+import { useToast } from "primevue/usetoast";
 
 import ProblemHeader from "./components/ProblemHeader.vue";
 import ProblemContent from "./components/ProblemContent.vue";
 import ProblemSolution from "./components/ProblemSolution.vue";
 import CommentList from "./components/CommentList.vue";
+import { problemAPI } from "@/api/problem";
 
 const route = useRoute();
 const router = useRouter();
 const problemStore = useProblemStore();
 const authStore = useAuthStore();
+const toast = useToast();
 
 // 상태 관리
 const showConfirmDialog = ref(false);
@@ -126,6 +129,29 @@ const handleMenuAction = (action) => {
   }
 };
 
+const handleDelete = async () => {
+  try {
+    await problemAPI.deleteOne(route.params.problemId);
+    toast.add({
+      severity: 'success',
+      summary: '삭제 완료',
+      detail: '문제가 삭제되었습니다.',
+      life: 3000
+    });
+    router.push('/problem-board');
+  } catch (error) {
+    console.error('문제 삭제 실패:', error);
+    toast.add({
+      severity: 'error',
+      summary: '오류',
+      detail: '문제 삭제 중 오류가 발생했습니다.',
+      life: 3000
+    });
+  } finally {
+    showConfirmDialog.value = false;
+  }
+};
+
 onMounted(async () => {
   await Promise.all([
     problemStore.loadProblem(route.params.problemId),
@@ -182,7 +208,7 @@ onMounted(async () => {
         <Button
           label="삭제"
           severity="danger"
-          @click="showConfirmDialog = false"
+          @click="handleDelete"
         />
       </template>
     </Dialog>
