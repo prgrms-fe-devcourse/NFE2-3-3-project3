@@ -54,7 +54,6 @@ const deleteAgainViewProblem = async () => {
 
 const handleImageClick = (event) => {
   const img = event.target;
-  console.log(img);
   if (img.requestFullscreen) {
     img.requestFullscreen();
   } else if (img.mozRequestFullScreen) {
@@ -77,12 +76,12 @@ const addImageClickListeners = () => {
 };
 
 watch(
-  () => problem.id,
-  async (problemId) => {
+  () => [problem.id, el.value],
+  async ([problemId, elValue]) => {
     // 마크다운 Viewer 설정
     if (el.value && problem.question) {
       viewer.value = new Viewer({
-        el: el.value,
+        el: elValue,
         initialValue: problem.question,
       });
     }
@@ -109,8 +108,7 @@ onBeforeUnmount(() => {
 </script>
 <template>
   <article class="flex flex-col w-[1000px] mx-auto">
-    <div class="flex items-center gap-4 pb-6 w-full border-b">
-      <h2>문제 {{ currentProblemIndex + 1 }} : {{ problem?.title }}</h2>
+    <div class="flex flex-col gap-8 pb-6 border-b">
       <Button
         v-if="isAgainViewProblem"
         @click="deleteAgainViewProblem"
@@ -118,6 +116,7 @@ onBeforeUnmount(() => {
         icon="pi pi-flag-fill"
         size="small"
         severity="secondary"
+        class="w-24"
       />
       <Button
         v-else
@@ -126,7 +125,9 @@ onBeforeUnmount(() => {
         icon="pi pi-flag"
         size="small"
         severity="secondary"
+        class="w-24"
       />
+      <h2>문제 {{ currentProblemIndex + 1 }} : {{ problem?.title }}</h2>
     </div>
     <div ref="el" class="w-full overflow-hidden mt-6 mb-12"></div>
     <template v-if="problem?.problem_type === 'multiple_choice'">
