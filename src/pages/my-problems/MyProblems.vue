@@ -3,13 +3,13 @@ import ProblemTable from "@/components/layout/ProblemTable.vue";
 import Search from "@/components/layout/Search.vue";
 import { ref, watch } from "vue";
 import { SORT } from "@/const/sorts";
-import { useRouter } from "vue-router";
 import { useAuthStore } from "@/store/authStore";
 import { storeToRefs } from "pinia";
 import { againViewProblemAPI } from "@/api/againViewProblem";
 import { problemAPI } from "@/api/problem";
 import { categoryAPI } from "@/api/category";
 import { useToast } from "primevue/usetoast";
+import { useRouter } from "vue-router";
 
 const router = useRouter();
 const authStore = useAuthStore();

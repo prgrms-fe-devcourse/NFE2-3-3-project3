@@ -47,6 +47,7 @@ const getAllFields = async (uid) => {
       *,
       workbook:workbook_id (
         title,
+        description,
         workbook_problem(count)
       ),
       confirmed_count:invite(count).filter(participate.eq(true))
