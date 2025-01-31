@@ -14,7 +14,7 @@ const emit = defineEmits(["select-workbook"]);
 
 const handleSelect = (book) => {
   // 선택된 문제집 로깅
-  // console.log('Selected workbook:', book);
+  console.log('Selected workbook:', book);
   emit("select-workbook", book);
 };
 
@@ -44,7 +44,7 @@ watchEffect(async () => {
 <template>
   <div class="grid grid-cols-3 gap-2">
     <div
-      v-for="book in books"
+      v-for="book in visibleMyBooks"
       :key="book.id"
       class="w-[calc((100% - 4rem) / 3)] h-[146px] p-4 bg-orange-3 rounded-lg flex flex-col justify-between cursor-pointer hover:bg-orange-200 transition-colors"
       @click="handleSelect(book)"

@@ -6,6 +6,15 @@ import MyWorkBook from "./MyWorkBook.vue";
 import { workbookAPI } from "@/api/workbook";
 import Paginator from "primevue/paginator";
 
+const props = defineProps({
+  selectedWorkbook: {
+    type: Object,
+    default: null,
+  },
+});
+
+const emit = defineEmits(["update:selectedWorkbook"]);
+
 // Store
 const authStore = useAuthStore();
 
@@ -19,18 +28,18 @@ const searchKeyword = ref("");
 
 // Computed
 const filteredWorkbooks = computed(() => {
-  console.log('Current workbooks:', workbooks.value); // 현재 workbooks 상태
+  console.log("Current workbooks:", workbooks.value); // 현재 workbooks 상태
   if (!searchKeyword.value) return workbooks.value;
   return workbooks.value.filter((book) =>
-    book.title.toLowerCase().includes(searchKeyword.value.toLowerCase())
+    book.title.toLowerCase().includes(searchKeyword.value.toLowerCase()),
   );
 });
 
 const paginatedWorkbooks = computed(() => {
-  console.log('Filtered workbooks:', filteredWorkbooks.value); // 필터링된 결과
+  console.log("Filtered workbooks:", filteredWorkbooks.value); // 필터링된 결과
   const start = currentPage.value * itemsPerPage;
   const result = filteredWorkbooks.value.slice(start, start + itemsPerPage);
-  console.log('Paginated workbooks:', result); // 페이지네이션 결과
+  console.log("Paginated workbooks:", result); // 페이지네이션 결과
   return result;
 });
 
@@ -38,7 +47,7 @@ const paginatedWorkbooks = computed(() => {
 const fetchWorkbooks = async () => {
   try {
     const response = await workbookAPI.getAllByUserId(authStore.user.id);
-    console.log('Fetched workbooks:', response); // 데이터 확인
+    console.log("Fetched workbooks:", response); // 데이터 확인
     workbooks.value = response;
   } catch (error) {
     console.error("문제집 로드 실패:", error);
@@ -51,7 +60,7 @@ const handleSearch = (keyword) => {
 };
 
 const handleWorkbookSelect = (workbook) => {
-  emit("select-workbook", workbook);
+  emit("update:selectedWorkbook", workbook);
 };
 
 const onPageChange = (event) => {
@@ -64,8 +73,6 @@ watchEffect(() => {
     fetchWorkbooks();
   }
 });
-
-const emit = defineEmits(["select-workbook"]);
 </script>
 
 <template>
