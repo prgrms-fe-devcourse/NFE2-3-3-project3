@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, watchEffect } from "vue";
+import { ref, watch, watchEffect, computed } from "vue";
 import { useAuthStore } from "@/store/authStore";
 import { commentAPI } from "@/api/comment";
 import { formatDateForComment } from "@/utils/formatDateForComment";
@@ -26,6 +26,8 @@ const formattedComments = ref([]);
 const editingCommentId = ref(null);
 const editingContent = ref("");
 
+const commentCount = computed(() => formattedComments.value.length);
+
 const isCommentAuthor = (commentUid) => {
   return commentUid === authStore.user?.id;
 };
@@ -51,23 +53,47 @@ const handleSubmitComment = async () => {
     alert("로그인이 필요한 기능입니다.");
     return;
   }
-  const newComment = await commentAPI.createComment({
-    problem_id: props.problemId,
-    comment: props.value,
-    uid: userId.value,
-  });
-  const userProfile = await getUserProfile(userId.value);
-  formattedComments.value.push({
-    id: newComment.id,
-    comment: newComment.comment,
-    uid: newComment.uid,
-    created_at: newComment.created_at,
-    avatar_url: userProfile.avatar_url,
-    name: userProfile.name,
-    formattedDate: formatDateForComment(new Date(newComment.created_at)),
-  });
-  emit("update:value", "");
-  emit("submit-comment");
+
+  try {
+    // 1. 새 댓글 생성
+    const newComment = await commentAPI.createComment({
+      problem_id: props.problemId,
+      comment: props.value,
+      uid: userId.value,
+    });
+
+    // 2. 유저 프로필 정보 가져오기
+    const userProfile = await getUserProfile(userId.value);
+
+    // 3. UI 즉시 업데이트
+    const formattedNewComment = {
+      ...newComment,
+      avatar_url: userProfile.avatar_url,
+      name: userProfile.name,
+      formattedDate: formatDateForComment(new Date(newComment.created_at)),
+    };
+
+    // 4. 새 댓글을 맨 위에 추가
+    formattedComments.value.unshift(formattedNewComment);
+
+    // 5. 입력창 초기화 및 부모 컴포넌트에 알림
+    emit("update:value", "");
+    emit("submit-comment");
+
+    toast.add({
+      severity: "success",
+      summary: "댓글 작성 완료",
+      detail: "댓글이 등록되었습니다.",
+      life: 3000,
+    });
+  } catch (error) {
+    console.error("댓글 작성 실패:", error);
+    toast.add({
+      severity: "error",
+      detail: "댓글 작성 중 오류가 발생했습니다.",
+      life: 3000,
+    });
+  }
 };
 
 const handleDeleteComment = async (id) => {
@@ -78,6 +104,7 @@ const handleDeleteComment = async (id) => {
         severity: "success",
         summary: "삭제 완료",
         detail: "댓글이 삭제되었습니다.",
+        life: 3000,
       });
       formattedComments.value = formattedComments.value.filter(
         (comment) => comment.id !== id,
@@ -89,6 +116,7 @@ const handleDeleteComment = async (id) => {
     toast.add({
       severity: "error",
       detail: "댓글 삭제 중 오류가 발생했습니다.",
+      life: 3000,
     });
   }
 };
@@ -124,6 +152,7 @@ const handleEditSubmit = async (event) => {
           severity: "success",
           summary: "수정 완료",
           detail: "댓글이 수정되었습니다.",
+          life: 3000,
         });
       }
     } catch (error) {
@@ -186,7 +215,10 @@ watchEffect(async () => {
     </div>
 
     <div v-else class="w-full max-w-full">
-      <h3 class="text-gray-700 text-2xl mb-6">댓글</h3>
+      <div class="flex items-center gap-2 mb-6">
+        <h3 class="text-gray-700 text-2xl">댓글</h3>
+        <strong class="text-gray-700 text-xl">{{ commentCount }}</strong>
+      </div>
       <div
         v-if="comments?.length === 0"
         class="text-center text-gray-500 py-4 mb-8"
