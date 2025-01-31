@@ -54,7 +54,6 @@ const deleteAgainViewProblem = async () => {
 
 const handleImageClick = (event) => {
   const img = event.target;
-  console.log(img);
   if (img.requestFullscreen) {
     img.requestFullscreen();
   } else if (img.mozRequestFullScreen) {
@@ -77,12 +76,12 @@ const addImageClickListeners = () => {
 };
 
 watch(
-  () => problem.id,
-  async (problemId) => {
+  () => [problem.id, el.value],
+  async ([problemId, elValue]) => {
     // 마크다운 Viewer 설정
     if (el.value && problem.question) {
       viewer.value = new Viewer({
-        el: el.value,
+        el: elValue,
         initialValue: problem.question,
       });
     }
