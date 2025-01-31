@@ -355,7 +355,7 @@ onBeforeUnmount(() => {
             </div>
           </template>
         </Column>
-        <Column field="title" class="max-w-[30rem]" header="제목">
+        <Column field="title" class="w-[50%]" header="제목">
           <template #body="slotProps">
             <div class="flex justify-between w-full">
               <RouterLink
