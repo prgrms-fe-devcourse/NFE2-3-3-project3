@@ -19,7 +19,7 @@ const initialProblems = ref([]);
 const loading = ref(false);
 const error = ref(null);
 const toast = useToast();
-const filterType = ref("all"); // 'all', 'againView', 'myProblems', 'sharedProblems'
+const filterType = ref("all"); // 'all', 'againView', 'myProblems'
 
 const handleFilterChange = (type) => {
   filterType.value = type;
@@ -34,10 +34,6 @@ const filterProblems = () => {
     );
   } else if (filterType.value === "myProblems") {
     problems.value = initialProblems.value.filter((problem) => problem.isOwner);
-  } else if (filterType.value === "sharedProblems") {
-    problems.value = initialProblems.value.filter(
-      (problem) => problem.isShared,
-    );
   }
 };
 
@@ -48,44 +44,23 @@ const loadProblems = async (userId) => {
   error.value = null;
 
   try {
-    const [againViewProblems, userProblems, sharedProblems, categories] =
-      await Promise.all([
-        againViewProblemAPI.getAllByUserId(userId),
-        problemAPI.getAllByUserId(userId),
-        problemAPI.getUserSharedProblems(userId),
-        categoryAPI.getAll(),
-      ]);
+    const [againViewProblems, userProblems, categories] = await Promise.all([
+      againViewProblemAPI.getAllByUserId(userId),
+      problemAPI.getAllByUserId(userId),
+      categoryAPI.getAll(),
+    ]);
 
-    const mergedProblems = [
-      ...(againViewProblems?.length
-        ? againViewProblems.map((p) => ({
-            ...(p.problem || p),
-            againView: true,
-            latest_status: p.status || p.history?.[0]?.status || "none",
-            category_name: categories.find(
-              (c) => c.id === (p.problem?.category_id || p.category_id),
-            )?.name,
-          }))
-        : []),
-      ...(userProblems?.length
-        ? userProblems.map((p) => ({
-            ...p,
-            isOwner: true,
-            latest_status: p.history?.[0]?.status || "none",
-            category_name: categories.find((c) => c.id === p.category_id)?.name,
-          }))
-        : []),
-      ...(sharedProblems?.length
-        ? sharedProblems.map((p) => ({
-            ...(p.problem || p),
-            isShared: true,
-            latest_status: p.history?.[0]?.status || "none",
-            category_name: categories.find(
-              (c) => c.id === (p.problem?.category_id || p.category_id),
-            )?.name,
-          }))
-        : []),
-    ];
+    // againViewProblems의 problem_id 집합 생성
+    const againViewProblemIds = new Set(againViewProblems.map((p) => p.id));
+
+    // userProblems를 기준으로 병합
+    const mergedProblems = userProblems.map((problem) => ({
+      ...problem,
+      isOwner: true,
+      againView: againViewProblemIds.has(problem.id),
+      latest_status: problem.latest_status,
+      category_name: categories.find((c) => c.id === problem.category_id)?.name,
+    }));
 
     problems.value = mergedProblems;
     initialProblems.value = mergedProblems;
@@ -116,7 +91,6 @@ const search = async (
   try {
     let filteredProblems = [...initialProblems.value];
 
-    // 상태별 필터링
     if (status) {
       filteredProblems = filteredProblems.filter((problem) => {
         switch (status) {
@@ -132,7 +106,6 @@ const search = async (
       });
     }
 
-    // 기존 필터링 로직 유지
     if (keyword) {
       const searchTerm = keyword.toLowerCase();
       filteredProblems = filteredProblems.filter(
