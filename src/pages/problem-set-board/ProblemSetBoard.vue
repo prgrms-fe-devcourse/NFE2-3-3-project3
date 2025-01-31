@@ -12,13 +12,13 @@ import { useRoute } from "vue-router";
 
 const route = useRoute();
 const router = useRouter();
-const { keyword, startDate, endDate, sort: sortFromQuery } = route.query;
+const { keyword, startDate, endDate, sort: sortFromQuery, page } = route.query;
 const problemSets = ref([]);
 const sorts = ref(SORTS);
 const currentSort = sortFromQuery === SORT.likes ? SORTS[1] : SORTS[0];
 const sort = ref(currentSort);
-const first = ref(0);
 const rows = ref(8);
+const first = ref((page - 1) * rows.value || 0);
 
 const sortedProblemSets = computed(() => {
   const newProblemSets = [...problemSets.value];
@@ -36,8 +36,13 @@ const sortedProblemSets = computed(() => {
   }
 });
 
-const search = async (keyword, startDate, endDate, sort = SORT.latest) => {
-  first.value = 0;
+const search = async (
+  keyword,
+  startDate,
+  endDate,
+  sort = SORT.latest,
+  page = 1,
+) => {
   problemSets.value = await workbookAPI.search(
     keyword,
     startDate ? new Date(startDate).toISOString() : null,
@@ -50,6 +55,7 @@ const search = async (keyword, startDate, endDate, sort = SORT.latest) => {
       startDate: formatDate(startDate),
       endDate: formatDate(endDate),
       sort,
+      page,
     },
   });
 };
@@ -62,8 +68,17 @@ watch(
   () => sort.value.value,
   () => {
     first.value = 0;
-    const { keyword, startDate, endDate } = route.query;
-    search(keyword, startDate, endDate, sort.value.value);
+    const { keyword, startDate, endDate, page } = route.query;
+    search(keyword, startDate, endDate, sort.value.value, page);
+  },
+);
+
+watch(
+  () => first.value,
+  () => {
+    const { keyword, startDate, endDate, sort } = route.query;
+    const page = first.value / rows.value + 1;
+    search(keyword, startDate, endDate, sort, page);
   },
 );
 </script>
@@ -88,7 +103,7 @@ watch(
       >
         <EmptyText>검색된 문제집이 없습니다...</EmptyText>
       </div>
-      <div v-else class="grid grid-cols-4 gap-4">
+      <div v-else class="grid grid-cols-4 gap-4 h-80">
         <ProblemSet
           v-for="problemSet in sortedProblemSets"
           :problemSet="problemSet"
