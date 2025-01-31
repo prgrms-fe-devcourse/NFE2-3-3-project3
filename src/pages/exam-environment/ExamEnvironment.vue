@@ -1,12 +1,5 @@
 <script setup>
-import {
-  ref,
-  computed,
-  watch,
-  onMounted,
-  onBeforeUnmount,
-  onBeforeMount,
-} from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, onBeforeMount } from "vue";
 import { useRouter } from "vue-router";
 import TestProblem from "./components/TestProblem.vue";
 import TestSidebar from "./components/TestSidebar.vue";
@@ -18,7 +11,6 @@ import { problemHistoryAPI } from "@/api/problemHistory";
 import { useExamStore } from "@/store/examStore";
 import { useAuthStore } from "@/store/authStore";
 import { storeToRefs } from "pinia/dist/pinia";
-import { inviteAPI } from "@/api/invite";
 
 let intervalId;
 const toast = useToast();

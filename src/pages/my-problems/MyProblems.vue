@@ -3,13 +3,13 @@ import ProblemTable from "@/components/layout/ProblemTable.vue";
 import Search from "@/components/layout/Search.vue";
 import { ref, watch } from "vue";
 import { SORT } from "@/const/sorts";
-import { useRouter } from "vue-router";
 import { useAuthStore } from "@/store/authStore";
 import { storeToRefs } from "pinia";
 import { againViewProblemAPI } from "@/api/againViewProblem";
 import { problemAPI } from "@/api/problem";
 import { categoryAPI } from "@/api/category";
 import { useToast } from "primevue/usetoast";
+import { useRouter } from "vue-router";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -19,7 +19,7 @@ const initialProblems = ref([]);
 const loading = ref(false);
 const error = ref(null);
 const toast = useToast();
-const filterType = ref("all"); // 'all', 'againView', 'myProblems', 'sharedProblems'
+const filterType = ref("all"); // 'all', 'againView', 'myProblems'
 
 const handleFilterChange = (type) => {
   filterType.value = type;
@@ -34,10 +34,6 @@ const filterProblems = () => {
     );
   } else if (filterType.value === "myProblems") {
     problems.value = initialProblems.value.filter((problem) => problem.isOwner);
-  } else if (filterType.value === "sharedProblems") {
-    problems.value = initialProblems.value.filter(
-      (problem) => problem.isShared,
-    );
   }
 };
 
@@ -48,37 +44,23 @@ const loadProblems = async (userId) => {
   error.value = null;
 
   try {
-    const [againViewProblems, userProblems, sharedProblems] = await Promise.all(
-      [
-        againViewProblemAPI.getAllByUserId(userId),
-        problemAPI.getAllByUserId(userId),
-        problemAPI.getUserSharedProblems(userId),
-      ],
-    );
+    const [againViewProblems, userProblems, categories] = await Promise.all([
+      againViewProblemAPI.getAllByUserId(userId),
+      problemAPI.getAllByUserId(userId),
+      categoryAPI.getAll(),
+    ]);
 
-    const mergedProblems = [
-      ...(againViewProblems?.length
-        ? againViewProblems.map((p) => ({
-            ...(p.problem || p), // againViewProblems는 problem 객체 안에 데이터가 있음
-            againView: true,
-            latest_status: p.status || p.history?.[0]?.status || "none",
-          }))
-        : []),
-      ...(userProblems?.length
-        ? userProblems.map((p) => ({
-            ...p,
-            isOwner: true,
-            latest_status: p.history?.[0]?.status || "none",
-          }))
-        : []),
-      ...(sharedProblems?.length
-        ? sharedProblems.map((p) => ({
-            ...(p.problem || p), // sharedProblems도 problem 객체 안에 데이터가 있음
-            isShared: true,
-            latest_status: p.history?.[0]?.status || "none",
-          }))
-        : []),
-    ];
+    // againViewProblems의 problem_id 집합 생성
+    const againViewProblemIds = new Set(againViewProblems.map((p) => p.id));
+
+    // userProblems를 기준으로 병합
+    const mergedProblems = userProblems.map((problem) => ({
+      ...problem,
+      isOwner: true,
+      againView: againViewProblemIds.has(problem.id),
+      latest_status: problem.latest_status,
+      category_name: categories.find((c) => c.id === problem.category_id)?.name,
+    }));
 
     problems.value = mergedProblems;
     initialProblems.value = mergedProblems;
@@ -109,7 +91,6 @@ const search = async (
   try {
     let filteredProblems = [...initialProblems.value];
 
-    // 상태별 필터링
     if (status) {
       filteredProblems = filteredProblems.filter((problem) => {
         switch (status) {
@@ -125,7 +106,6 @@ const search = async (
       });
     }
 
-    // 기존 필터링 로직 유지
     if (keyword) {
       const searchTerm = keyword.toLowerCase();
       filteredProblems = filteredProblems.filter(

@@ -37,7 +37,7 @@ import seeMyProblems from "@/assets/icons/my-problems/see-my-problems.svg";
 import checkedMyProblem from "@/assets/icons/my-problems/color-my-problems.svg";
 import { useRoute } from "vue-router";
 import { useRouter } from "vue-router";
-import { watch } from "vue";
+import { watch, onBeforeMount } from "vue";
 import ConfirmModal from "./ConfirmModal.vue";
 
 const props = defineProps({
@@ -272,6 +272,10 @@ watchEffect(async () => {
   problemSets.value = await workbookAPI.getAll(user.value.id);
 });
 
+onBeforeMount(async () => {
+  problemSets.value = await workbookAPI.getAll(user.value.id);
+});
+
 onMounted(() => {
   window.addEventListener("click", handleClickOutside);
 });
@@ -370,7 +374,7 @@ onBeforeUnmount(() => {
         <Column
           v-if="showCheckbox"
           selectionMode="multiple"
-          headerStyle="width: 3rem"
+          headerStyle="min-width: 3rem"
         ></Column>
         <Column v-if="showDelete" header="제거" field="delete">
           <template #body="slotProps">
@@ -393,7 +397,12 @@ onBeforeUnmount(() => {
             </button>
           </template>
         </Column>
-        <Column field="latest_status" header="상태" v-if="showStatus">
+        <Column
+          field="latest_status"
+          header="상태"
+          headerStyle="min-width: 5rem"
+          v-if="showStatus"
+        >
           <template #body="slotProps">
             <div
               v-if="slotProps.data.latest_status"
@@ -408,9 +417,9 @@ onBeforeUnmount(() => {
             </div>
           </template>
         </Column>
-        <Column field="title" class="w-[45%]" header="제목">
+        <Column field="title" class="w-full" header="제목">
           <template #body="slotProps">
-            <div class="flex justify-between w-full">
+            <div class="flex justify-between gap-6 w-full">
               <RouterLink
                 :to="`${
                   slotProps.data.id === user?.id
@@ -418,7 +427,7 @@ onBeforeUnmount(() => {
                     : '/problem-board'
                 }/${slotProps.data.id}`"
               >
-                <span class="w-full cursor-pointer">{{
+                <span class="w-full cursor-pointer line-clamp-1">{{
                   slotProps.data.title
                 }}</span>
               </RouterLink>
@@ -432,7 +441,12 @@ onBeforeUnmount(() => {
             </div>
           </template>
         </Column>
-        <Column field="problem_type" header="문제 유형" v-if="showCategory">
+        <Column
+          field="problem_type"
+          header="문제 유형"
+          headerStyle="min-width: 7rem"
+          v-if="showCategory"
+        >
           <template #body="slotProps">
             <Tag
               v-if="getProblemType(slotProps.data.problem_type) === '4지선다'"
@@ -443,12 +457,27 @@ onBeforeUnmount(() => {
           </template>
         </Column>
 
-        <Column field="category_name" header="카테고리">
+        <Column
+          field="category_name"
+          header="카테고리"
+          headerStyle="min-width: 9rem"
+        >
           <template #body="slotProps">
-            {{ slotProps.data.category_name }}
+            <span class="line-clamp-1">
+              {{ slotProps.data.category_name }}
+            </span>
           </template>
         </Column>
-        <Column field="origin_source" header="출처"></Column>
+        <Column
+          field="origin_source"
+          header="출처"
+          headerStyle="min-width: 9rem"
+          ><template #body="slotProps">
+            <span class="line-clamp-1">
+              {{ slotProps.data.origin_source }}
+            </span>
+          </template></Column
+        >
       </DataTable>
     </div>
 
