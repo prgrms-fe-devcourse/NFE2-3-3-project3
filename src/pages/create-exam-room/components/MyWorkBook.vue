@@ -56,7 +56,8 @@ watchEffect(async () => {
         </p>
       </div>
       <div class="flex justify-between items-center mt-2">
-        <img :src="shareIcon" alt="share" />
+        <img v-if="book.shared" :src="shareIcon" alt="share" />
+        <span v-else class="w-6"></span>
         <p class="text-sm font-medium">{{ book.problem_count || 0 }}문제</p>
       </div>
     </div>
