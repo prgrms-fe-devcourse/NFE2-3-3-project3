@@ -49,6 +49,7 @@ watch(
         :img-src="user?.avatar_url"
         :name="user?.name"
         :email="user?.email"
+        isUserProfile
       />
       <Grade :user-id="route.params.userId" />
     </section>
