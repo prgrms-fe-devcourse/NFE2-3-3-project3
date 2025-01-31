@@ -1,16 +1,28 @@
 <script setup>
+// Icons
 import calendarIcon from "@/assets/icons/exam-room/fi-rr-calendar.svg";
 import userIcon from "@/assets/icons/exam-room/fi-rr-user.svg";
 import folderIcon from "@/assets/icons/exam-room/fi-rr-folder.svg";
 import timeFastIcon from "@/assets/icons/exam-room/fi-rr-time-fast.svg";
+
+// Vue Core
 import { ref, computed, watchEffect } from "vue";
+import { useRouter } from "vue-router";
+
+// PrimeVue
+import { useToast } from "primevue/usetoast";
+import Dialog from "primevue/dialog";
+import Button from "primevue/button";
+
+// API
 import { inviteAPI } from "@/api/invite";
 import { workbookAPI } from "@/api/workbook";
 import { userAPI } from "@/api/user";
 import { authAPI } from "@/api/auth";
+
+// Utils
 import { formatMsToHourMinute } from "@/utils/formatMsToHour";
 import { formatterIntlKR } from "@/utils/formatterIntlKR.js";
-import { useToast } from "primevue/usetoast";
 
 const props = defineProps({
   inviteData: {
@@ -23,6 +35,9 @@ const props = defineProps({
   },
 });
 
+// Refs
+const showExamInfo = ref(false);
+const router = useRouter();
 const isProcessing = ref(false);
 const workbookTitle = ref("");
 const workbookDescription = ref("");
@@ -83,6 +98,19 @@ const fetchCurrentUserId = async () => {
   }
 };
 
+// Methods
+const handleExamStart = () => {
+  router.push(`/exam/${props.testCenter.id}`);
+  showExamInfo.value = false;
+};
+
+const isOngoing = computed(() => {
+  const now = new Date();
+  const startDate = new Date(props.testCenter.start_date);
+  const endDate = new Date(props.testCenter.end_date);
+  return now >= startDate && now <= endDate;
+});
+
 const handleAccept = async () => {
   if (isProcessing.value || !userId.value) return;
   isProcessing.value = true;
@@ -131,7 +159,9 @@ watchEffect(() => {
 </script>
 
 <template>
-  <div class="bg-orange-3 rounded-lg p-4 w-full text-gray-2">
+  <div 
+  @click="showExamInfo = true"
+  class="bg-orange-3 rounded-lg p-4 w-full text-gray-2">
     <!-- 문제집 제목 -->
     <div class="item-between" aria-label="title-wrapper">
       <h3 class="mb-4 font-medium text-lg">{{ workbookTitle }}</h3>
@@ -172,6 +202,52 @@ watchEffect(() => {
       </button>
     </div>
   </div>
+  <Dialog
+    v-model:visible="showExamInfo"
+    modal
+    header="시험장 입실"
+    :style="{ width: '40rem' }"
+  >
+    <div class="flex flex-col gap-4">
+      <!-- 문제집 이름 -->
+      <p>
+        <h4 class="text-xl font-medium flex items-center gap-3 mb-1">
+          <img :src="folderIcon" alt="문제집 이름" class="w-6 h-6" />
+          {{ workbookTitle }}</h4>
+        <p class="text-black-2 ml-9">{{ workbookDescription }}</p>
+      </p>
+      <!-- 초대자 정보 -->
+      <p>
+        <h4 class="text-xl font-medium flex items-center gap-3 mb-1">
+          <img :src="userIcon" alt="초대한 사람" class="w-6 h-6" />
+          초대한 사람</h4>
+        <p class="text-black-2 ml-9">{{ userName }}</p>
+      </p>
+      <!-- 시험 일정 -->
+      <p>
+        <h4 class="text-xl font-medium flex items-center gap-3 mb-1">
+          <img :src="calendarIcon" alt="시험 일정" class="w-6 h-6" />
+          기간</h4>
+        <p class="text-black-2 ml-9">
+          {{ formatterIntlKR.format(new Date(testCenter.start_date)) }} - 
+          {{ formatterIntlKR.format(new Date(testCenter.end_date)) }}
+        </p>
+      </p>
+      <!-- 소요 시간 -->
+      <p>
+        <h4 class="text-xl font-medium flex items-center gap-3 mb-1">
+          <img :src="timeFastIcon" alt="소요 시간" class="w-6 h-6" />
+          소요 시간</h4>
+        <p class="text-black-2 ml-9">
+          {{ formatMsToHourMinute(new Date(testCenter.end_date) - new Date(testCenter.start_date)) }}
+        </p>
+      </p>
+    </div>
+
+    <template #footer>
+      <span class="text-gray-500">아직 입실할 수 없습니다</span>
+    </template>
+  </Dialog>
 </template>
 
 <style scoped>
@@ -181,5 +257,13 @@ watchEffect(() => {
 
 .deny {
   color: white;
+}
+
+:deep(.p-dialog-footer) {
+  width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  text-align: center !important;
+  padding: 1rem 0 !important;
 }
 </style>

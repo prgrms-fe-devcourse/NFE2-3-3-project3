@@ -179,15 +179,20 @@ watchEffect(fetchExams);
           :key="exam.id"
           class="basis-[calc(25%-1.2rem)]"
         >
-          <RouterLink
-            v-if="exam.uid === authStore.user?.id || exam.isInvited"
-            :to="`/exam/${exam.id}`"
-            class="block"
+          <div
+            :class="{
+              'cursor-not-allowed opacity-50': !(
+                exam.uid === authStore.user?.id || exam.isInvited
+              ),
+            }"
           >
-            <ExamCard v-bind="{ ...exam, showEditButtons: false }" />
-          </RouterLink>
-          <div v-else class="cursor-not-allowed opacity-50">
-            <ExamCard v-bind="{ ...exam, showEditButtons: false }" />
+            <ExamCard
+              v-bind="{
+                ...exam,
+                showEditButtons: false,
+                isClickable: exam.uid === authStore.user?.id || exam.isInvited,
+              }"
+            />
           </div>
         </li>
       </ul>
