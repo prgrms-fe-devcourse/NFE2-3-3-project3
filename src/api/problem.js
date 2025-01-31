@@ -27,7 +27,8 @@ const getAllByUserId = async (userId) => {
   try {
     const { data, error } = await supabase
       .from("problem")
-      .select(`
+      .select(
+        `
         *,
         likes: problem_like(count),
         history:problem_history(
@@ -35,20 +36,23 @@ const getAllByUserId = async (userId) => {
           created_at,
           uid
         )
-      `)
+      `,
+      )
       .eq("uid", userId);
 
     if (error) throw error;
 
-    const processedData = data.map(problem => ({
+    const processedData = data.map((problem) => ({
       ...problem,
       likes: problem.likes[0]?.count || 0,
-      latest_status: problem.history
-        ?.filter(h => h.uid === userId)
-        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0]?.status || 'none'
+      latest_status:
+        problem.history
+          ?.filter((h) => h.uid === userId)
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0]
+          ?.status || "none",
     }));
 
-    console.log('처리된 데이터:', processedData);
+    console.log("처리된 데이터:", processedData);
 
     return processedData;
   } catch (error) {
@@ -233,12 +237,10 @@ const addMultiple = async (workbook_id, problemIds) => {
     if (error) throw new Error(`데이터 삽입 중 오류 발생: ${error.message}`);
 
     // 추가된 행의 개수 계산
-    const existingSet = new Set(
-      workbookProblems.map((wp) => `${wp.workbook_id}-${wp.problem_id}`),
+    const insertedData = data.filter(
+      (item) => item.created_at === item.updated_at,
     );
-    const insertedCount = data.filter(
-      (wp) => !existingSet.has(`${wp.workbook_id}-${wp.problem_id}`),
-    ).length;
+    const insertedCount = insertedData.length;
     return { data, insertedCount };
   } catch (error) {
     console.error(error);
@@ -349,7 +351,8 @@ const getUserSharedProblems = async (uid) => {
   try {
     const { data, error } = await supabase
       .from("shared_problem")
-      .select(`
+      .select(
+        `
         problem:problem_id (
           id,
           question,
@@ -375,22 +378,24 @@ const getUserSharedProblems = async (uid) => {
             uid
           )
         )
-      `)
+      `,
+      )
       .eq("uid", uid);
 
     if (error) throw error;
 
-    const processedData = data.map(item => ({
+    const processedData = data.map((item) => ({
       ...item.problem,
       likes: [{ count: item.problem.likes[0]?.count || 0 }],
-      latest_status: item.problem.history
-        ?.filter(h => h.uid === uid)
-        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0]?.status || 'none'
+      latest_status:
+        item.problem.history
+          ?.filter((h) => h.uid === uid)
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0]
+          ?.status || "none",
     }));
 
-    console.log('처리된 공유 문제 데이터:', processedData);
+    console.log("처리된 공유 문제 데이터:", processedData);
     return processedData;
-
   } catch (error) {
     console.error("사용자의 공유된 문제를 가져오는 중 오류 발생:", error);
     return [];
