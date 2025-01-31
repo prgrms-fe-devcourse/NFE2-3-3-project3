@@ -1,7 +1,7 @@
 <script setup>
 import { followAPI } from "@/api/follow";
 import { useRoute } from "vue-router";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch, watchEffect } from "vue";
 import { Button, useToast } from "primevue";
 import { useAuthStore } from "@/store/authStore";
 import { storeToRefs } from "pinia";
@@ -19,17 +19,19 @@ const { imgSrc, name, email } = defineProps({
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
 const toast = useToast();
-
 const route = useRoute();
-const followId = route.params.userId;
 
+const followId = ref(route.params.userId);
 const isFollowing = ref(false);
 
 const followUser = async () => {
-  if (!followId) return;
+  if (!followId.value) return;
 
   isFollowing.value = !isFollowing.value;
-  const { data, error } = await followAPI.followUser(user.value.id, followId);
+  const { data, error } = await followAPI.followUser(
+    user.value.id,
+    followId.value,
+  );
   if (error) {
     toast.add({
       severity: "error",
@@ -48,10 +50,10 @@ const followUser = async () => {
 };
 
 const unfollowUser = async () => {
-  if (!followId) return;
+  if (!followId.value) return;
 
   isFollowing.value = !isFollowing.value;
-  await followAPI.unfollowUser(followId);
+  await followAPI.unfollowUser(followId.value);
   toast.add({
     severity: "success",
     summary: "팔로우 취소 성공",
@@ -60,8 +62,12 @@ const unfollowUser = async () => {
   });
 };
 
-onMounted(async () => {
-  isFollowing.value = await followAPI.checkIsFollowing(user.value.id, followId);
+watchEffect(async () => {
+  const userId = route.params.userId;
+  if (!userId) return;
+
+  followId.value = userId;
+  isFollowing.value = await followAPI.checkIsFollowing(user.value.id, userId);
 });
 </script>
 <template>
