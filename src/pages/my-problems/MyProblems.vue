@@ -182,7 +182,7 @@ watch(filterType, filterProblems);
 </script>
 
 <template>
-  <section class="flex flex-col gap-16 w-[1000px] mx-auto mt-[72px] relative">
+  <section class="flex flex-col gap-16 w-[1000px] mx-auto relative">
     <Toast />
     <h1 class="text-[42px] font-laundry">보관한 문제</h1>
     <Search :show-status="true" @search="search" />

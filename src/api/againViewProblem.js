@@ -10,11 +10,38 @@ export const againViewProblemAPI = {
     try {
       const { data, error } = await supabase
         .from("again_view_problem")
-        .select("problem_id")
+        .select(`
+          problem:problem_id (
+            id,
+            question,
+            answer,
+            explanation,
+            created_at,
+            updated_at,
+            origin_source,
+            problem_type,
+            title,
+            category_id,
+            uid,
+            image_src,
+            option_one,
+            option_two,
+            option_three,
+            option_four,
+            shared,
+            likes:problem_like(count)
+          )
+        `)
         .eq("uid", userId);
-
+  
       if (error) throw error;
-      return data;
+  
+      // 데이터 구조를 flat하게 변환
+      return data.map(item => ({
+        ...item.problem,
+        likes: [{ count: item.problem.likes[0]?.count || 0 }]
+      }));
+  
     } catch (error) {
       console.error(error);
       throw error;

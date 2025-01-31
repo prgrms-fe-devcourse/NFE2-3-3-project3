@@ -27,11 +27,18 @@ const getAllByUserId = async (userId) => {
   try {
     const { data, error } = await supabase
       .from("problem")
-      .select("*")
+      .select(`
+        *,
+        likes: problem_like(count)
+      `)
       .eq("uid", userId);
 
     if (error) throw error;
-    return data;
+
+    return data.map(problem => ({
+      ...problem,
+      likes: problem.likes[0]?.count || 0
+    }));
   } catch (error) {
     console.error(error);
   }
@@ -69,55 +76,14 @@ const getAllSharedByUserId = async (userId) => {
  */
 const search = async (userId, keyword, startDate, endDate, status) => {
   try {
-    let query = supabase
-      .from("problem")
-      .select(
-        "*, category(*), history: problem_history(*), likes: problem_like(*)",
-      );
-
-    if (keyword) {
-      query.or(`title.ilike.%${keyword}%,question.ilike.%${keyword}%`);
-    }
-    if (startDate) {
-      query.gte("created_at", startDate); // 시작 날짜 조건
-    }
-    if (endDate) {
-      query.lte("created_at", endDate);
-    }
-
-    let { data, error } = await query;
-
-    if (status === "푼 문제") {
-      const { data: historyData } = await supabase
-        .from("problem_history")
-        .select("*, user_info(*)")
-        .eq("uid", userId);
-
-      data = data.filter((problem) =>
-        historyData.some((history) => history.problem_id === problem.id),
-      );
-    } else if (status === "안 푼 문제") {
-      const { data: historyData } = await supabase
-        .from("problem_history")
-        .select("*, user_info(*)")
-        .eq("uid", userId);
-
-      data = data.filter((problem) =>
-        historyData.every((history) => history.problem_id !== problem.id),
-      );
-    } else if (status === "틀린 문제") {
-      const { data: historyData } = await supabase
-        .from("problem_history")
-        .select("*, user_info(*)")
-        .eq("uid", userId)
-        .order("created_at", { ascending: false })
-        .single();
-
-      data = data.filter(
-        (problem) =>
-          problem.id === historyData.problem_id && history.status === "wrong",
-      );
-    }
+    const { data, error } = await supabase.rpc("search_problems", {
+      user_id: userId,
+      keyword,
+      start_date: startDate,
+      end_date: endDate,
+      status,
+    });
+    console.log(data);
 
     if (error) throw error;
     return data;
@@ -359,15 +325,24 @@ const getUserSharedProblems = async (uid) => {
           category_id,
           uid,
           image_src,
-          shared
+          option_one,
+          option_two,
+          option_three,
+          option_four,
+          shared,
+          likes:problem_like(count)
         )
       `)
       .eq("uid", uid);
 
     if (error) throw error;
+    
+    // problem 객체를 한 단계 풀어서 반환
+    return data.map(item => ({
+      ...item.problem,  // problem 객체의 모든 속성을 최상위로 풀어서 복사
+      likes: [{ count: item.problem.likes[0]?.count || 0 }]
+    }));
 
-    // data 형식을 변환하여 problem 객체들의 배열로 반환
-    return data.map(item => item.problem);
   } catch (error) {
     console.error("사용자의 공유된 문제를 가져오는 중 오류 발생:", error);
     return [];
@@ -419,7 +394,7 @@ const getRandom = async () => {
     // 총 개수를 가져오기
     const { count, error: countError } = await supabase
       .from("problem")
-      .select("*", { count: "exact", head: true }) 
+      .select("*", { count: "exact", head: true })
       .eq("shared", true);
 
     if (countError) throw new Error(countError);
@@ -437,7 +412,7 @@ const getRandom = async () => {
       .from("problem")
       .select("id")
       .eq("shared", true)
-      .range(randomIndex, randomIndex) 
+      .range(randomIndex, randomIndex)
       .single();
 
     if (error) throw new Error(error);
