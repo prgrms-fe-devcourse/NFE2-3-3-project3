@@ -69,55 +69,14 @@ const getAllSharedByUserId = async (userId) => {
  */
 const search = async (userId, keyword, startDate, endDate, status) => {
   try {
-    let query = supabase
-      .from("problem")
-      .select(
-        "*, category(*), history: problem_history(*), likes: problem_like(*)",
-      );
-
-    if (keyword) {
-      query.or(`title.ilike.%${keyword}%,question.ilike.%${keyword}%`);
-    }
-    if (startDate) {
-      query.gte("created_at", startDate); // 시작 날짜 조건
-    }
-    if (endDate) {
-      query.lte("created_at", endDate);
-    }
-
-    let { data, error } = await query;
-
-    if (status === "푼 문제") {
-      const { data: historyData } = await supabase
-        .from("problem_history")
-        .select("*, user_info(*)")
-        .eq("uid", userId);
-
-      data = data.filter((problem) =>
-        historyData.some((history) => history.problem_id === problem.id),
-      );
-    } else if (status === "안 푼 문제") {
-      const { data: historyData } = await supabase
-        .from("problem_history")
-        .select("*, user_info(*)")
-        .eq("uid", userId);
-
-      data = data.filter((problem) =>
-        historyData.every((history) => history.problem_id !== problem.id),
-      );
-    } else if (status === "틀린 문제") {
-      const { data: historyData } = await supabase
-        .from("problem_history")
-        .select("*, user_info(*)")
-        .eq("uid", userId)
-        .order("created_at", { ascending: false })
-        .single();
-
-      data = data.filter(
-        (problem) =>
-          problem.id === historyData.problem_id && history.status === "wrong",
-      );
-    }
+    const { data, error } = await supabase.rpc("search_problems", {
+      user_id: userId,
+      keyword,
+      start_date: startDate,
+      end_date: endDate,
+      status,
+    });
+    console.log(data);
 
     if (error) throw error;
     return data;
