@@ -10,7 +10,6 @@ import SharedProblemTab from "./SharedProblemTab.vue";
 const route = useRoute();
 const router = useRouter();
 const { tab, sort } = route.query;
-const { userId } = route.params;
 
 const TABS = ["팔로잉 목록", "공유한 문제", "공유한 문제집"];
 
