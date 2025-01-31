@@ -106,6 +106,34 @@ const search = async (userId, keyword, startDate, endDate, status) => {
 
 /**
  *
+ * @description 보관한 문제집 검색에 사용하는 API
+ * @param {String} userId
+ * @param {String} keyword 검색 키워드
+ * @param {String} status 상태
+ * @param {String} startDate YYYY-MM-DD
+ * @param {String} endDate YYYY-MM-DD
+ * @returns
+ */
+const searchForUser = async (userId, keyword, startDate, endDate, status) => {
+  try {
+    const { data, error } = await supabase.rpc("search_problems_for_user", {
+      user_id: userId,
+      keyword,
+      start_date: startDate,
+      end_date: endDate,
+      status,
+    });
+    console.log(data);
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+/**
+ *
  * @description problem_type = "multiple_choice" | "ox"
  * @param {Number} workbook_id 문제집의 id
  * @param {object} body title, question, answer, explanation, origin_source, problem_type, category_id, image_src, option_one, option_two, option_three, option_four, shared
