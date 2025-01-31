@@ -25,7 +25,7 @@ const toggleAccordion = () => {
 </script>
 
 <template>
-    <div class="w-full rounded-lg bg-black-3/15 px-4 mb-4 py-6">
+    <div class="w-full rounded-lg bg-black-3/15 px-4 mb-4 py-4">
       <div
         @click="toggleAccordion"
         class="cursor-pointer flex justify-between items-center"
@@ -49,7 +49,7 @@ const toggleAccordion = () => {
           {{ answer || "답이 없습니다." }}
         </p>
       </div>
-      <div v-if="isOpen" class="p-4">
+      <div v-if="isOpen" class="p-4 pb-0">
         <h4 class="text-lg font-semibold text-black-2 mb-4">문제 해설</h4>
         <p class="text-gray-700">
           {{ explanation || "해설이 없습니다." }}

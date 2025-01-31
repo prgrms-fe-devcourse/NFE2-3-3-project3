@@ -80,7 +80,7 @@ const fetchUserGrade = async () => {
   try {
     if (props.author?.id) {
       const pointData = await pointAPI.getAll(props.author.id);
-      
+
       if (pointData && pointData.length > 0 && pointData[0].total) {
         const totalPoints = pointData[0].total;
         const gradeInfo = getCurrentGradeInfo(totalPoints);
@@ -188,12 +188,8 @@ const routeConfig = computed(() => {
             <img :src="shareIcon" alt="공유 아이콘" class="w-4 h-4" />
             <span>{{ problem?.shared ? "공개됨" : "미공개" }}</span>
           </div>
-          <button
-            @click="handleToggleLike"
+          <div
             class="flex items-center gap-1 px-2 py-1 rounded-full transition"
-            :class="
-              hasLiked ? 'bg-orange-100 text-orange-1' : 'hover:bg-gray-100'
-            "
           >
             <img
               :src="thumbsUpIcon"
@@ -202,7 +198,7 @@ const routeConfig = computed(() => {
               :class="{ 'opacity-50': !hasLiked }"
             />
             <span>{{ likeCount }}</span>
-          </button>
+          </div>
         </div>
       </div>
 
@@ -214,6 +210,21 @@ const routeConfig = computed(() => {
           aria-label="더보기"
         >
           <i class="pi pi-ellipsis-h"></i>
+        </button>
+        <button
+          v-else
+          @click="handleToggleLike"
+          class="item-middle gap-1 px-2 py-2 rounded-full transition w-14 h-14"
+          :class="
+            hasLiked ? 'bg-orange-100 text-orange-1' : 'hover:bg-gray-100'
+          "
+        >
+          <img
+            :src="thumbsUpIcon"
+            alt="좋아요 아이콘"
+            class="w-10 h-10"
+            :class="{ 'opacity-50': !hasLiked }"
+          />
         </button>
 
         <div
