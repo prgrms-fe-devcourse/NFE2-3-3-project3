@@ -7,7 +7,7 @@ export const commentAPI = {
    * @param {number} [params.problem_id] - 문제 ID
    * @param {number} [params.workbook_id] - 문제집 ID
    * @param {number} [params.page=1] - 페이지 번호 (기본값 = 1)
-   * @param {number} [params.pageSize=20] - 페이지당 댓글 수 (기본값 = 20)
+   * @param {number} [params.pageSize=10] - 페이지당 댓글 수 (기본값 = 20)
    *
    * @returns {object} 댓글 목록과 페이지네이션 정보
    * @returns {Array} return.data - 댓글 데이터 배열
@@ -125,7 +125,7 @@ export const commentAPI = {
    * @param {string} uid - 사용자 ID
    * @param {object} [options] - 조회 옵션
    * @param {number} [options.page=1] - 페이지 번호
-   * @param {number} [options.pageSize=20] - 페이지당 댓글 수
+   * @param {number} [options.pageSize=10] - 페이지당 댓글 수
    * @returns {object} 댓글 목록과 페이지네이션 정보
    * @returns {Array} return.data - 댓글 데이터 배열
    * @returns {number} return.count - 전체 댓글 수
@@ -133,7 +133,7 @@ export const commentAPI = {
    * @returns {number} return.pageSize - 페이지당 댓글 수
    * @returns {number} return.totalPages - 전체 페이지 수
    */
-  async getByUserComment(uid, { page = 1, pageSize = 20 } = {}) {
+  async getByUserComment(uid, { page = 1, pageSize = 10 } = {}) {
     try {
       const from = (page - 1) * pageSize;
       const to = from + pageSize - 1;

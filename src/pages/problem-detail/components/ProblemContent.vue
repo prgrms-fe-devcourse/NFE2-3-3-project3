@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, watch } from "vue";
+import { ref, onMounted, watch, nextTick } from "vue";
 import Viewer from "@toast-ui/editor/dist/toastui-editor-viewer";
 import "@toast-ui/editor/dist/toastui-editor-viewer.css";
 
@@ -10,28 +10,37 @@ const props = defineProps({
   },
 });
 
-let viewer;
+const viewer = ref(null);
+const viewerEl = ref(null);
 
-onMounted(() => {
-  viewer = new Viewer({
-    el: document.querySelector("#viewer"),
-    initialValue: props.problem?.question,
-  });
+onMounted(async () => {
+  // props.problem이 로드될 때까지 대기
+  await nextTick();
+
+  if (viewerEl.value && props.problem?.question) {
+    viewer.value = new Viewer({
+      el: viewerEl.value,
+      initialValue: props.problem.question || "",
+    });
+  }
 });
 
 watch(
   () => props.problem,
-  (newProblem) => {
-    if (viewer) {
-      viewer.setMarkdown(newProblem.question || "");
+  async (newProblem) => {
+    // viewer가 초기화되고 새로운 문제가 있을 때만 업데이트
+    await nextTick();
+    if (viewer.value && newProblem?.question) {
+      viewer.value.setMarkdown(newProblem.question);
     }
   },
+  { deep: true },
 );
 </script>
 
 <template>
   <div class="mb-8">
-    <div id="viewer" class="text-gray-700 min-h-4 mb-10 w-full"></div>
+    <div ref="viewerEl" class="text-gray-700 min-h-4 mb-10 w-full"></div>
 
     <!-- 객관식 보기 -->
     <div
