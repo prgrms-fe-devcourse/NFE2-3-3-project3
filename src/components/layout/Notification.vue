@@ -32,6 +32,14 @@ supabase
 const clickNotification = async (notification) => {
   if (notification.read) return;
   newNotificationCount.value -= 1;
+
+  notifications.value = notifications.value.map((n) => {
+    if (n.id === notification.id) {
+      n.read = true;
+    }
+    return n;
+  });
+
   await notificationAPI.read(notification.id);
 };
 
