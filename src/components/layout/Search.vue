@@ -53,6 +53,28 @@ watch(status, (newStatus) => {
   );
 });
 
+watch(startDate, (newStartDate) => {
+  emit(
+    "search",
+    keyword.value,
+    newStartDate,
+    endDate.value,
+    sort,
+    status.value,
+  );
+});
+
+watch(endDate, (newEndDate) => {
+  emit(
+    "search",
+    keyword.value,
+    startDate.value,
+    newEndDate,
+    sort,
+    status.value,
+  );
+});
+
 onMounted(() => {
   window.addEventListener("click", handleClickOutside);
 });
@@ -123,6 +145,7 @@ onBeforeUnmount(() => {
             v-model="startDate"
             class="w-[116px] h-6"
             id="startTime"
+            :max-date="new Date(endDate)"
             dateFormat="yy-mm-dd"
             showButtonBar
           />
