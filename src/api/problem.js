@@ -29,16 +29,28 @@ const getAllByUserId = async (userId) => {
       .from("problem")
       .select(`
         *,
-        likes: problem_like(count)
+        likes: problem_like(count),
+        history:problem_history(
+          status,
+          created_at,
+          uid
+        )
       `)
       .eq("uid", userId);
 
     if (error) throw error;
 
-    return data.map(problem => ({
+    const processedData = data.map(problem => ({
       ...problem,
-      likes: problem.likes[0]?.count || 0
+      likes: problem.likes[0]?.count || 0,
+      latest_status: problem.history
+        ?.filter(h => h.uid === userId)
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0]?.status || 'none'
     }));
+
+    console.log('처리된 데이터:', processedData);
+
+    return processedData;
   } catch (error) {
     console.error(error);
   }
@@ -330,18 +342,28 @@ const getUserSharedProblems = async (uid) => {
           option_three,
           option_four,
           shared,
-          likes:problem_like(count)
+          likes:problem_like(count),
+          history:problem_history(
+            status,
+            created_at,
+            uid
+          )
         )
       `)
       .eq("uid", uid);
 
     if (error) throw error;
-    
-    // problem 객체를 한 단계 풀어서 반환
-    return data.map(item => ({
-      ...item.problem,  // problem 객체의 모든 속성을 최상위로 풀어서 복사
-      likes: [{ count: item.problem.likes[0]?.count || 0 }]
+
+    const processedData = data.map(item => ({
+      ...item.problem,
+      likes: [{ count: item.problem.likes[0]?.count || 0 }],
+      latest_status: item.problem.history
+        ?.filter(h => h.uid === uid)
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0]?.status || 'none'
     }));
+
+    console.log('처리된 공유 문제 데이터:', processedData);
+    return processedData;
 
   } catch (error) {
     console.error("사용자의 공유된 문제를 가져오는 중 오류 발생:", error);

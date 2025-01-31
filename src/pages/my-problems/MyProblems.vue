@@ -19,21 +19,25 @@ const initialProblems = ref([]);
 const loading = ref(false);
 const error = ref(null);
 const toast = useToast();
-const filterType = ref('all'); // 'all', 'againView', 'myProblems', 'sharedProblems'
+const filterType = ref("all"); // 'all', 'againView', 'myProblems', 'sharedProblems'
 
 const handleFilterChange = (type) => {
   filterType.value = type;
 };
 
 const filterProblems = () => {
-  if (filterType.value === 'all') {
+  if (filterType.value === "all") {
     problems.value = initialProblems.value;
-  } else if (filterType.value === 'againView') {
-    problems.value = initialProblems.value.filter(problem => problem.againView);
-  } else if (filterType.value === 'myProblems') {
-    problems.value = initialProblems.value.filter(problem => problem.isOwner);
-  } else if (filterType.value === 'sharedProblems') {
-    problems.value = initialProblems.value.filter(problem => problem.isShared);
+  } else if (filterType.value === "againView") {
+    problems.value = initialProblems.value.filter(
+      (problem) => problem.againView,
+    );
+  } else if (filterType.value === "myProblems") {
+    problems.value = initialProblems.value.filter((problem) => problem.isOwner);
+  } else if (filterType.value === "sharedProblems") {
+    problems.value = initialProblems.value.filter(
+      (problem) => problem.isShared,
+    );
   }
 };
 
@@ -53,9 +57,15 @@ const loadProblems = async (userId) => {
     );
 
     const mergedProblems = [
-      ...(againViewProblems?.length ? againViewProblems.map(p => ({ ...p, againView: true })) : []),
-      ...(userProblems?.length ? userProblems.map(p => ({ ...p, isOwner: true })) : []),
-      ...(sharedProblems?.length ? sharedProblems.map(p => ({ ...p, isShared: true })) : []),
+      ...(againViewProblems?.length
+        ? againViewProblems.map((p) => ({ ...p, againView: true }))
+        : []),
+      ...(userProblems?.length
+        ? userProblems.map((p) => ({ ...p, isOwner: true }))
+        : []),
+      ...(sharedProblems?.length
+        ? sharedProblems.map((p) => ({ ...p, isShared: true }))
+        : []),
     ];
 
     const uniqueProblems = Array.from(
@@ -110,13 +120,11 @@ const search = async (
 
   loading.value = true;
   try {
-    // 검색 조건이 없을 때는 초기 목록 반환
     if (!keyword && !startDate && !endDate && !status) {
       problems.value = initialProblems.value;
     } else {
       let filteredProblems = [...initialProblems.value];
 
-      // 키워드 검색
       if (keyword) {
         const searchTerm = keyword.toLowerCase();
         filteredProblems = filteredProblems.filter(
@@ -126,12 +134,16 @@ const search = async (
         );
       }
 
-      // 날짜 필터링
       if (startDate || endDate) {
         filteredProblems = filteredProblems.filter((problem) => {
           const problemDate = new Date(problem.created_at);
           const start = startDate ? new Date(startDate) : null;
-          const end = endDate ? new Date(endDate) : null;
+          let end = endDate ? new Date(endDate) : null;
+
+          // 종료일이 있으면 하루를 더함
+          if (end) {
+            end.setDate(end.getDate() + 1);
+          }
 
           return (
             (!start || problemDate >= start) && (!end || problemDate <= end)
@@ -139,7 +151,6 @@ const search = async (
         });
       }
 
-      // 상태 필터링
       if (status) {
         filteredProblems = filteredProblems.filter(
           (problem) => problem.status === status,
@@ -149,7 +160,6 @@ const search = async (
       problems.value = filteredProblems;
     }
 
-    // URL 쿼리 파라미터 업데이트
     router.push({
       query: {
         ...(keyword && { keyword }),
@@ -182,18 +192,20 @@ watch(filterType, filterProblems);
 </script>
 
 <template>
-  <section class="flex flex-col gap-16 w-[1000px] mx-auto relative">
+  <section class="flex flex-col w-[1000px] mx-auto relative">
     <Toast />
-    <h1 class="text-[42px] font-laundry">보관한 문제</h1>
-    <Search :show-status="true" @search="search" />
-    <div v-if="loading" class="text-center">로딩 중...</div>
-    <ProblemTable
-      v-else
-      :problems="problems"
-      :show-my-problem="true"
-      :show-shared-problem="true"
-      :show-problem="true"
-      @filter-change="handleFilterChange"
-    />
+    <h1 class="text-[42px] font-laundry mb-16">보관한 문제</h1>
+    <div class="flex flex-col gap-16">
+      <Search :show-status="true" @search="search" />
+      <div v-if="loading" class="text-center">로딩 중...</div>
+      <ProblemTable
+        v-else
+        :problems="problems"
+        :show-my-problem="true"
+        :show-shared-problem="true"
+        :show-problem="true"
+        @filter-change="handleFilterChange"
+      />
+    </div>
   </section>
 </template>
