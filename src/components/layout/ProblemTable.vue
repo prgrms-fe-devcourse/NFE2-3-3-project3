@@ -112,8 +112,6 @@ const shared = ref(false);
 const description = ref("");
 const problemSets = ref([]);
 const sort = ref(currentSort);
-const first = ref(0);
-const rows = ref(10);
 const selectedProblems = ref([]);
 const showProblemSet = ref(false);
 const activeFilter = ref(null);
@@ -269,10 +267,9 @@ watch(sort, (newSort) => {
   router.replace({ query: newQuery });
 });
 
-watchEffect(() => {
-  const page = first.value / rows.value + 1;
-  const newQuery = { ...route.query, page };
-  router.replace({ query: newQuery });
+watchEffect(async () => {
+  if (!user.value) return;
+  problemSets.value = await workbookAPI.getAll(user.value.id);
 });
 
 onBeforeMount(async () => {
@@ -280,8 +277,6 @@ onBeforeMount(async () => {
 });
 
 onMounted(() => {
-  const page = parseInt(route.query.page, 10) || 1;
-  first.value = (page - 1) * rows.value;
   window.addEventListener("click", handleClickOutside);
 });
 
@@ -365,7 +360,6 @@ onBeforeUnmount(() => {
     <div class="overflow-hidden border border-black-5 rounded-2xl">
       <DataTable
         v-model:selection="selectedProblems"
-        v-model:first="first"
         :value="sortedProblems"
         dataKey="id"
         paginator
