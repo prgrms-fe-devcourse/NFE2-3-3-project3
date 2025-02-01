@@ -7,6 +7,7 @@ import { supabase } from "@/api/index.js";
 import Avatar from "primevue/avatar";
 import { useToast } from "primevue/usetoast";
 import { RouterLink } from "vue-router";
+import { useRouter } from "vue-router";
 
 const toast = useToast();
 const props = defineProps({
@@ -18,8 +19,6 @@ const props = defineProps({
   problemId: Number,
 });
 
-const commentList = commentAPI.getByUserComment
-
 const emit = defineEmits(["update:value", "submit-comment", "page-change"]);
 
 const authStore = useAuthStore();
@@ -28,6 +27,7 @@ const formattedComments = ref([]);
 const editingCommentId = ref(null);
 const editingContent = ref("");
 const textareaValue = ref("");
+const router = useRouter();
 
 const commentCount = computed(() => formattedComments.value.length);
 
@@ -42,6 +42,20 @@ watch(
   },
   { immediate: true },
 );
+
+const getUserProfile = async (uid) => {
+  const { data, error } = await supabase
+    .from("user_info")
+    .select("avatar_url, name")
+    .eq("id", uid)
+    .single();
+
+  if (error) {
+    console.error("프로필 로딩 실패:", error);
+    return { avatar_url: "", name: "Unknown" };
+  }
+  return data;
+};
 
 watchEffect(async () => {
   if (props.comments) {
@@ -59,20 +73,6 @@ watchEffect(async () => {
     formattedComments.value = formattedNewComments;
   }
 });
-
-const getUserProfile = async (uid) => {
-  const { data, error } = await supabase
-    .from("user_info")
-    .select("avatar_url, name")
-    .eq("id", uid)
-    .single();
-
-  if (error) {
-    console.error("프로필 로딩 실패:", error);
-    return { avatar_url: "", name: "Unknown" };
-  }
-  return data;
-};
 
 const handleKeyPress = async (event) => {
   if (event.key === "Enter" && !event.shiftKey) {
@@ -100,9 +100,8 @@ const handleSubmitComment = async () => {
       uid: userId.value,
     });
 
-    textareaValue.value = ""; // 로컬 상태 초기화
-    emit("update:value", ""); // 부모 상태 업데이트
-    emit("submit-comment"); // 부모에게 새로고침 요청
+    // 현재 페이지로 리다이렉트
+    router.push(`/problem-board/${props.problemId}`);
 
     toast.add({
       severity: "success",

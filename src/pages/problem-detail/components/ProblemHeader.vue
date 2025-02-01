@@ -180,7 +180,7 @@ const routeConfig = computed(() => {
     <div class="flex items-center gap-4 mb-10">
       <div class="flex-1">
         <h1 class="text-4xl font-bold mb-4">{{ problem?.title }}</h1>
-        <div class="flex items-center gap-2 text-sm text-gray-500">
+        <div class="flex items-center gap-4 text-sm text-gray-500">
           <span class="bg-gray-100 px-2 py-1 rounded">{{
             problem?.category?.name
           }}</span>

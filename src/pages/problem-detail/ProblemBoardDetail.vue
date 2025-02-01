@@ -138,7 +138,7 @@ const handleDelete = async () => {
       detail: '문제가 삭제되었습니다.',
       life: 3000
     });
-    router.push('/problem-board');
+    router.push('/problem-board'); // 변경된 리디렉션 경로
   } catch (error) {
     console.error('문제 삭제 실패:', error);
     toast.add({
