@@ -18,45 +18,62 @@ export const commentAPI = {
    */
   async getComments({ problem_id, workbook_id, page = 1, pageSize = 20 }) {
     try {
-      let query = supabase
-        .from("comment")
-        .select(
-          `
-         *,
-         author:auth.users!inner(
-           id,
-           email
-         )
-       `,
-        )
-        .order("created_at", { ascending: false });
-
+      // 총 개수를 구하는 쿼리
+      const countQuery = supabase
+        .from('comment')
+        .select('id', { count: 'exact' });
+  
       if (problem_id) {
-        query = query.eq("problem_id", problem_id);
+        countQuery.eq('problem_id', problem_id);
       } else if (workbook_id) {
-        query = query.eq("workbook_id", workbook_id);
+        countQuery.eq('workbook_id', workbook_id);
       }
-
+  
+      // 데이터를 가져오는 쿼리
+      let dataQuery = supabase
+        .from('comment')
+        .select(`
+          *,
+          author:user_info(
+            id,
+            email,
+            name,
+            avatar_url
+          )
+        `)
+        .order('created_at', { ascending: false });
+  
+      if (problem_id) {
+        dataQuery = dataQuery.eq('problem_id', problem_id);
+      } else if (workbook_id) {
+        dataQuery = dataQuery.eq('workbook_id', workbook_id);
+      }
+  
       const from = (page - 1) * pageSize;
       const to = from + pageSize - 1;
-      const { data, error, count } = await query
-        .range(from, to)
-        .select("*", { count: "exact" });
-
-      if (error) throw error;
+  
+      // 두 쿼리를 병렬로 실행
+      const [countResult, dataResult] = await Promise.all([
+        countQuery,
+        dataQuery.range(from, to)
+      ]);
+  
+      if (countResult.error) throw countResult.error;
+      if (dataResult.error) throw dataResult.error;
+  
       return {
-        data,
-        count,
+        data: dataResult.data,
+        count: countResult.count || 0,
         currentPage: page,
         pageSize,
-        totalPages: Math.ceil(count / pageSize),
+        totalPages: Math.ceil((countResult.count || 0) / pageSize)
       };
     } catch (error) {
-      console.error(error);
+      console.error('댓글 조회 중 오류:', error);
       throw error;
     }
   },
-
+          
   /**
    * @description 새로운 댓글 생성
    * @param {object} newComment - 생성할 댓글 데이터

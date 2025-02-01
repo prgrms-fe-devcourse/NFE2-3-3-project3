@@ -7,18 +7,41 @@ import { supabase } from "@/api/index.js";
 import { useToast } from "primevue/usetoast";
 import { RouterLink } from "vue-router";
 import { useRouter } from "vue-router";
+import { Paginator } from "primevue";
 
 const toast = useToast();
 const props = defineProps({
-  comments: Array,
-  isLoading: Boolean,
-  currentPage: Number,
-  totalPages: Number,
-  value: String,
-  problemId: String,
+  comments: {
+    type: Array,
+    required: true
+  },
+  isLoading: {
+    type: Boolean,
+    default: false
+  },
+  currentPage: {
+    type: Number,
+    required: true
+  },
+  totalPages: {
+    type: Number,
+    required: true
+  },
+  totalComments: {
+    type: Number,
+    required: true
+  },
+  value: {
+    type: String,
+    default: ""
+  },
+  problemId: {
+    type: String,
+    required: true
+  }
 });
 
-const emit = defineEmits(["update:value", "submit-comment", "page-change"]);
+const emit = defineEmits(["update:value", "submit-comment", "page-change", "comment-change"]);
 
 const authStore = useAuthStore();
 const userId = ref(authStore.user?.id);
@@ -39,7 +62,7 @@ watch(
   (newUser) => {
     userId.value = newUser?.id;
   },
-  { immediate: true },
+  { immediate: true }
 );
 
 const getUserProfile = async (uid) => {
@@ -65,9 +88,9 @@ watchEffect(async () => {
           ...comment,
           avatar_url: userProfile.avatar_url,
           name: userProfile.name,
-          formattedDate: formatDateForComment(new Date(comment.created_at)),
+          formattedDate: formatDateForComment(new Date(comment.created_at))
         };
-      }),
+      })
     );
     formattedComments.value = formattedNewComments;
   }
@@ -82,12 +105,22 @@ const handleKeyPress = async (event) => {
 
 const handleSubmitComment = async () => {
   if (!textareaValue.value.trim()) return;
+  if (!authStore.user?.id) {
+    toast.add({
+      severity: "error",
+      summary: "로그인 필요",
+      detail: "댓글을 작성하려면 로그인이 필요합니다.",
+      life: 3000
+    });
+    return;
+  }
+  
   if (textareaValue.value.length > 500) {
     toast.add({
       severity: "error",
       summary: "글자 수 초과",
       detail: "댓글은 500자를 초과할 수 없습니다.",
-      life: 3000,
+      life: 3000
     });
     return;
   }
@@ -96,24 +129,24 @@ const handleSubmitComment = async () => {
     await commentAPI.createComment({
       problem_id: props.problemId,
       comment: textareaValue.value,
-      uid: userId.value,
+      uid: userId.value
     });
 
-    // 현재 페이지로 리다이렉트
-    router.push(`/problem-board/${props.problemId}`);
+    textareaValue.value = "";
+    emit("comment-change");
 
     toast.add({
       severity: "success",
       summary: "댓글 작성 완료",
       detail: "댓글이 등록되었습니다.",
-      life: 3000,
+      life: 3000
     });
   } catch (error) {
     console.error("댓글 작성 실패:", error);
     toast.add({
       severity: "error",
       detail: "댓글 작성 중 오류가 발생했습니다.",
-      life: 3000,
+      life: 3000
     });
   }
 };
@@ -121,23 +154,20 @@ const handleSubmitComment = async () => {
 const handleDeleteComment = async (id) => {
   try {
     await commentAPI.deleteComment(id);
-    formattedComments.value = formattedComments.value.filter(
-      (comment) => comment.id !== id,
-    );
-    emit("submit-comment");
+    emit("comment-change");
 
     toast.add({
       severity: "success",
       summary: "삭제 완료",
       detail: "댓글이 삭제되었습니다.",
-      life: 3000,
+      life: 3000
     });
   } catch (error) {
     console.error("Delete error:", error);
     toast.add({
       severity: "error",
       detail: "댓글 삭제 중 오류가 발생했습니다.",
-      life: 3000,
+      life: 3000
     });
   }
 };
@@ -155,37 +185,26 @@ const handleEditSubmit = async (event) => {
         severity: "error",
         summary: "글자 수 초과",
         detail: "댓글은 500자를 초과할 수 없습니다.",
-        life: 3000,
+        life: 3000
       });
       return;
     }
 
-
     try {
       const response = await commentAPI.updateComment(editingCommentId.value, {
-        comment: editingContent.value,
-        comment: editingContent.value,
+        comment: editingContent.value
       });
 
-
       if (response) {
-        const index = formattedComments.value.findIndex(
-          (comment) => comment.id === editingCommentId.value,
-          (comment) => comment.id === editingCommentId.value,
-        );
-        if (index !== -1) {
-          formattedComments.value[index].comment = editingContent.value;
-        }
-
         editingCommentId.value = null;
         editingContent.value = "";
-
+        emit("comment-change");
 
         toast.add({
           severity: "success",
           summary: "수정 완료",
           detail: "댓글이 수정되었습니다.",
-          life: 3000,
+          life: 3000
         });
       }
     } catch (error) {
@@ -193,7 +212,7 @@ const handleEditSubmit = async (event) => {
       toast.add({
         severity: "error",
         detail: "댓글 수정 중 오류가 발생했습니다.",
-        life: 3000,
+        life: 3000
       });
     }
   }
@@ -220,11 +239,11 @@ const onPageChange = (event) => {
     <div v-else class="w-full max-w-full">
       <div class="flex items-center gap-2 mb-6">
         <h3 class="text-gray-700 text-2xl">댓글</h3>
-        <strong class="text-gray-700 text-xl">{{ commentCount }}</strong>
+        <strong class="text-gray-700 text-xl">{{ totalComments }}</strong>
       </div>
 
       <div
-        v-if="comments?.length === 0"
+        v-if="!comments?.length"
         class="text-center text-gray-500 py-4 mb-8"
       >
         첫 번째 댓글을 작성해보세요.
@@ -244,9 +263,7 @@ const onPageChange = (event) => {
           >
             <img :src="comment.avatar_url" class="rounded-full w-7 h-7" />
             <span class="font-bold">{{ comment.name }}</span>
-            <span class="text-gray-400 text-sm">{{
-              comment.formattedDate
-            }}</span>
+            <span class="text-gray-400 text-sm">{{ comment.formattedDate }}</span>
           </RouterLink>
 
           <div
@@ -289,11 +306,12 @@ const onPageChange = (event) => {
     ></textarea>
 
     <Paginator
+      v-if="totalPages > 1"
       :rows="10"
-      :totalRecords="totalPages"
-      :page="currentPage"
+      :totalRecords="totalComments"
+      :first="(currentPage - 1) * 10"
       @page="onPageChange"
+      class="mt-4"
     />
   </div>
 </template>
-
