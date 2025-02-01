@@ -12,7 +12,9 @@ const { problemSet } = defineProps({
       class="flex flex-col justify-between w-full h-40 bg-orange-3 gap-[50px] px-4 py-3 rounded-lg"
     >
       <div class="min-h-12">
-        <p class="font-pretend text-lg line-clamp-1">{{ problemSet?.title }}</p>
+        <p class="font-pretend text-lg line-clamp-1 break-all">
+          {{ problemSet?.title }}
+        </p>
         <p class="text-sm text-gray-1 line-clamp-2">
           {{ problemSet?.description }}
         </p>
