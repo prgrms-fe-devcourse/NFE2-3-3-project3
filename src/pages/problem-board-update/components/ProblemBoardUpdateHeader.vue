@@ -12,6 +12,7 @@ import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useProblemStore } from "@/store/problemStore";
 import { useConfirm } from "primevue/useconfirm";
+import { toRaw } from 'vue';
 
 const props = defineProps({
   problem: {
@@ -64,8 +65,17 @@ const handleTitleChange = (event) => {
 };
 
 // 카테고리 변경 감지
-const handleCategoryChange = (category) => {
-  problemUpdateStore.updateField("category", category[0]);
+const handleCategoryChange = (event) => {
+  console.log('1. MultiSelect에서 받은 값:', event);
+  
+  if (event?.value?.[0]) {
+    const rawCategory = toRaw(event.value[0]); // value 배열의 첫 번째 항목을 변환
+    console.log('2. 변환된 일반 카테고리 객체:', rawCategory);
+
+    problemUpdateStore.updateField("category", rawCategory.id);
+  } else {
+    console.warn('유효하지 않은 카테고리 데이터:', event);
+  }
 };
 
 // 공개 여부 변경 감지
@@ -236,12 +246,13 @@ onMounted(async () => {
   </div>
 
   <div class="flex items-center gap-4 mb-10">
-    <div class="flex-1">
+    <form class="flex-1">
       <input
         type="text"
         class="text-4xl font-bold mb-4 border border-gray-300 rounded p-2 w-full"
         :maxlength="20"
         v-model="problem.title"
+        required
         @change="handleTitleChange"
       />
       <div class="flex items-center gap-2 text-sm">
@@ -280,7 +291,7 @@ onMounted(async () => {
           />
         </fieldset>
       </div>
-    </div>
+    </form>
   </div>
 </template>
 

@@ -6,7 +6,7 @@ import { useToast } from "primevue/usetoast";
 const MAX_LENGTH = {
   TITLE: 20,
   SOURCE: 20,
-  CATEGORY: 20
+  CATEGORY: 20,
 };
 
 const emptyProblem = {
@@ -16,7 +16,7 @@ const emptyProblem = {
   explanation: "",
   origin_source: "",
   problem_type: "",
-  category: [],
+  category: null,
   image_src: "",
   option_one: "",
   option_two: "",
@@ -27,43 +27,44 @@ const emptyProblem = {
 
 const validateField = (field, value) => {
   // 빈 문자열 체크 - 문자열인 경우에만 trim 적용
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     if (!value || value.trim() === "") {
       return {
         isValid: false,
-        message: `${field}을(를) 입력해주세요.`
+        message: `${field}을(를) 입력해주세요.`,
       };
     }
-  } else if (!value) {  // 문자열이 아닌 경우
+  } else if (!value) {
+    // 문자열이 아닌 경우
     return {
       isValid: false,
-      message: `${field}을(를) 입력해주세요.`
+      message: `${field}을(를) 입력해주세요.`,
     };
   }
 
   // 길이 제한 체크
   switch (field) {
-    case 'title':
-      if (typeof value === 'string' && value.length > MAX_LENGTH.TITLE) {
+    case "title":
+      if (typeof value === "string" && value.length > MAX_LENGTH.TITLE) {
         return {
           isValid: false,
-          message: `제목은 ${MAX_LENGTH.TITLE}자를 초과할 수 없습니다.`
+          message: `제목은 ${MAX_LENGTH.TITLE}자를 초과할 수 없습니다.`,
         };
       }
       break;
-    case 'origin_source':
-      if (typeof value === 'string' && value.length > MAX_LENGTH.SOURCE) {
+    case "origin_source":
+      if (typeof value === "string" && value.length > MAX_LENGTH.SOURCE) {
         return {
           isValid: false,
-          message: `출처는 ${MAX_LENGTH.SOURCE}자를 초과할 수 없습니다.`
+          message: `출처는 ${MAX_LENGTH.SOURCE}자를 초과할 수 없습니다.`,
         };
       }
       break;
-    case 'category':
+    case "category":
       if (value?.name && value.name.length > MAX_LENGTH.CATEGORY) {
         return {
           isValid: false,
-          message: `카테고리명은 ${MAX_LENGTH.CATEGORY}자를 초과할 수 없습니다.`
+          message: `카테고리명은 ${MAX_LENGTH.CATEGORY}자를 초과할 수 없습니다.`,
         };
       }
       break;
@@ -110,6 +111,7 @@ export const useProblemUpdateStore = defineStore("problemUpdate", () => {
   };
 
   function updateField(field, value) {
+    console.log("store 업데이트 category:", field, value);
     if (field in editedProblem.value) {
       // 유효성 검사 수행
       const validation = validateField(field, value);
@@ -135,7 +137,7 @@ export const useProblemUpdateStore = defineStore("problemUpdate", () => {
   }
 
   function validateAllFields() {
-    const requiredFields = ['title', 'question', 'answer'];
+    const requiredFields = ["title", "question", "answer"];
     const errors = {};
 
     for (const field of requiredFields) {
@@ -148,7 +150,10 @@ export const useProblemUpdateStore = defineStore("problemUpdate", () => {
 
     // 출처가 있는 경우에만 유효성 검사
     if (editedProblem.value.origin_source) {
-      const sourceValidation = validateField('origin_source', editedProblem.value.origin_source);
+      const sourceValidation = validateField(
+        "origin_source",
+        editedProblem.value.origin_source,
+      );
       if (!sourceValidation.isValid) {
         errors.origin_source = sourceValidation.message;
       }
@@ -156,7 +161,10 @@ export const useProblemUpdateStore = defineStore("problemUpdate", () => {
 
     // 카테고리 유효성 검사
     if (editedProblem.value.category) {
-      const categoryValidation = validateField('category', editedProblem.value.category);
+      const categoryValidation = validateField(
+        "category",
+        editedProblem.value.category,
+      );
       if (!categoryValidation.isValid) {
         errors.category = categoryValidation.message;
       }
@@ -167,11 +175,13 @@ export const useProblemUpdateStore = defineStore("problemUpdate", () => {
   }
 
   async function saveProblem() {
+    const { category } = editedProblem.value;
+    console.log("저장 전 카테고리 상태:", category); // 저장 전 카테고리 상태
     try {
       // 전체 유효성 검사 수행
       if (!validateAllFields()) {
         const errorMessages = Object.values(validationErrors.value);
-        errorMessages.forEach(message => {
+        errorMessages.forEach((message) => {
           toast.add({
             severity: "error",
             summary: "저장 실패",
@@ -206,7 +216,7 @@ export const useProblemUpdateStore = defineStore("problemUpdate", () => {
         explanation: explanation?.trim(),
         origin_source: origin_source?.trim(),
         problem_type,
-        category_id: category?.id,
+        category_id: category,
         option_one: option_one?.trim(),
         option_two: option_two?.trim(),
         option_three: option_three?.trim(),
