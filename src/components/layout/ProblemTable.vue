@@ -37,7 +37,7 @@ import seeMyProblems from "@/assets/icons/my-problems/see-my-problems.svg";
 import checkedMyProblem from "@/assets/icons/my-problems/color-my-problems.svg";
 import { useRoute } from "vue-router";
 import { useRouter } from "vue-router";
-import { watch } from "vue";
+import { watch, onBeforeMount } from "vue";
 import ConfirmModal from "./ConfirmModal.vue";
 
 const props = defineProps({
@@ -93,6 +93,10 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  newTab: {
+    type: Boolean,
+    default: false,
+  },
   workbookId: String,
 });
 
@@ -112,8 +116,6 @@ const shared = ref(false);
 const description = ref("");
 const problemSets = ref([]);
 const sort = ref(currentSort);
-const first = ref(0);
-const rows = ref(10);
 const selectedProblems = ref([]);
 const showProblemSet = ref(false);
 const activeFilter = ref(null);
@@ -269,22 +271,16 @@ watch(sort, (newSort) => {
   router.replace({ query: newQuery });
 });
 
-watchEffect(() => {
-  const page = first.value / rows.value + 1;
-  const newQuery = { ...route.query, page };
-  router.replace({ query: newQuery });
+watchEffect(async () => {
+  if (!user.value) return;
+  problemSets.value = await workbookAPI.getAll(user.value.id);
 });
 
-watch(
-  () => user.value.id,
-  async (userId) => {
-    problemSets.value = await workbookAPI.getAll(userId);
-  },
-);
+onBeforeMount(async () => {
+  problemSets.value = await workbookAPI.getAll(user.value.id);
+});
 
 onMounted(() => {
-  const page = parseInt(route.query.page, 10) || 1;
-  first.value = (page - 1) * rows.value;
   window.addEventListener("click", handleClickOutside);
 });
 
@@ -327,24 +323,13 @@ onBeforeUnmount(() => {
           @click="handleFilterButtonClick('myProblems')"
         >
           <template #icon>
-            <img :src="seeMyProblems" alt="seeMyProblemsIcon" class="w-5 h-5" />
-          </template>
-        </Button>
-        <Button
-          v-if="showSharedProblem"
-          label="공유받은 문제"
-          size="small"
-          severity="secondary"
-          :class="[
-            'text-sm',
-            activeFilter === 'sharedProblems'
-              ? '!bg-orange-3 !text-orange-500'
-              : 'text-white bg-navy-4',
-          ]"
-          @click="handleFilterButtonClick('sharedProblems')"
-        >
-          <template #icon>
-            <img :src="sharedIcon" alt="sharedIcon" class="w-5 h-5" />
+            <img
+              :src="
+                activeFilter === 'myProblems' ? checkedMyProblem : seeMyProblems
+              "
+              alt="myProblemsIcon"
+              class="w-5 h-5"
+            />
           </template>
         </Button>
         <button
@@ -368,7 +353,6 @@ onBeforeUnmount(() => {
     <div class="overflow-hidden border border-black-5 rounded-2xl">
       <DataTable
         v-model:selection="selectedProblems"
-        v-model:first="first"
         :value="sortedProblems"
         dataKey="id"
         paginator
@@ -426,7 +410,7 @@ onBeforeUnmount(() => {
             </div>
           </template>
         </Column>
-        <Column field="title" class="w-full" header="제목">
+        <Column field="title" class="w-[45%]" header="제목" v-if="!newTab">
           <template #body="slotProps">
             <div class="flex justify-between gap-6 w-full">
               <RouterLink
@@ -450,12 +434,32 @@ onBeforeUnmount(() => {
             </div>
           </template>
         </Column>
-        <Column
-          field="problem_type"
-          header="문제 유형"
-          headerStyle="min-width: 7rem"
-          v-if="showCategory"
-        >
+        <Column field="title" class="w-[45%]" header="제목" v-if="newTab">
+          <template #body="slotProps">
+            <div class="flex justify-between w-full">
+              <RouterLink
+                target="_blank"
+                :to="`${
+                  slotProps.data.id === user?.id
+                    ? '/my-problems'
+                    : '/problem-board'
+                }/${slotProps.data.id}`"
+              >
+                <span class="w-full cursor-pointer">{{
+                  slotProps.data.title
+                }}</span>
+              </RouterLink>
+              <img
+                v-if="slotProps.data.uid === user?.id"
+                :src="checkedMyProblem"
+                alt="checkedMyProblemIcon"
+                class="w-5 h-5"
+                v-tooltip.top="'내가 만든 문제'"
+              />
+            </div>
+          </template>
+        </Column>
+        <Column field="problem_type" header="문제 유형" v-if="showCategory">
           <template #body="slotProps">
             <Tag
               v-if="getProblemType(slotProps.data.problem_type) === '4지선다'"

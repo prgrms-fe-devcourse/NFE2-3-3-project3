@@ -32,7 +32,7 @@ onMounted(() => {
 });
 </script>
 <template>
-  <header class="w-full pl-44 pt-20 pb-10 relative">
+  <header class="w-full pl-40 pt-20 pb-10 relative">
     <div class="flex items-center gap-8">
       <div class="flex flex-col items-center justify-center space-y-1">
         <img

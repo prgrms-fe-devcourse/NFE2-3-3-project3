@@ -14,7 +14,7 @@ const emit = defineEmits(["select-workbook"]);
 
 const handleSelect = (book) => {
   // 선택된 문제집 로깅
-  // console.log('Selected workbook:', book);
+  console.log('Selected workbook:', book);
   emit("select-workbook", book);
 };
 
@@ -44,7 +44,7 @@ watchEffect(async () => {
 <template>
   <div class="grid grid-cols-3 gap-2">
     <div
-      v-for="book in books"
+      v-for="book in visibleMyBooks"
       :key="book.id"
       class="w-[calc((100% - 4rem) / 3)] h-[146px] p-4 bg-orange-3 rounded-lg flex flex-col justify-between cursor-pointer hover:bg-orange-200 transition-colors"
       @click="handleSelect(book)"
@@ -56,7 +56,8 @@ watchEffect(async () => {
         </p>
       </div>
       <div class="flex justify-between items-center mt-2">
-        <img :src="shareIcon" alt="share" />
+        <img v-if="book.shared" :src="shareIcon" alt="share" />
+        <span v-else class="w-6"></span>
         <p class="text-sm font-medium">{{ book.problem_count || 0 }}문제</p>
       </div>
     </div>

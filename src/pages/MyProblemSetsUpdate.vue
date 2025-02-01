@@ -91,6 +91,33 @@ const problemDelete = async () => {
 provide("problemDelete", problemDelete);
 
 const problemSetUpdate = async () => {
+  if (!title.value.trim() && !description.value.trim()) {
+    toast.add({
+      severity: "error",
+      summary: "문제집 수정 실패",
+      detail: "제목과 설명을 입력해주세요.",
+      life: 3000,
+    });
+    return;
+  }
+  if (!title.value.trim()) {
+    toast.add({
+      severity: "error",
+      summary: "문제집 수정 실패",
+      detail: "제목을 입력해주세요.",
+      life: 3000,
+    });
+    return;
+  }
+  if (!description.value.trim()) {
+    toast.add({
+      severity: "error",
+      summary: "문제집 수정 실패",
+      detail: "설명을 입력해주세요.",
+      life: 3000,
+    });
+    return;
+  }
   await workbookAPI.update(
     {
       title: title.value,
@@ -99,7 +126,7 @@ const problemSetUpdate = async () => {
     },
     route.params.problemSetId,
   );
-  router.push(`/problem-set-board-detail/${route.params.problemSetId}`);
+  router.push(`/problem-set-board/${route.params.problemSetId}`);
 };
 
 const workbookProblemAdd = async () => {
@@ -111,6 +138,8 @@ const workbookProblemAdd = async () => {
   }));
   await workbookAPI.workbookProblemAdd(workbookProblem.value);
   workbookProblemDataUpdate();
+  addedProblems.value = [];
+  myProblemsDataUpdate();
 };
 
 const workbookProblemDataUpdate = async () => {
@@ -121,7 +150,7 @@ const workbookProblemDataUpdate = async () => {
 };
 
 const myProblemsDataUpdate = async () => {
-  const myProblemsData = await problemAPI.getAllByUserId(uid.value);
+  const myProblemsData = await problemAPI.getAll();
 
   const filteredProblems = myProblemsData.filter(
     (problem) =>
@@ -149,7 +178,7 @@ onMounted(async () => {
   const userInfo = await authAPI.getCurrentUser();
   uid.value = userInfo.id;
 
-  const myProblemsData = await problemAPI.getAllByUserId(userInfo.id);
+  const myProblemsData = await problemAPI.getAll();
 
   const filteredProblems = myProblemsData.filter(
     (problem) =>
@@ -220,6 +249,7 @@ onMounted(async () => {
     @added-problem-minus="addedProblemDelete"
     :workbookId="route.params.problemSetId"
     :showStatus="false"
+    :show-my-problem="false"
   />
 
   <Dialog
@@ -237,6 +267,9 @@ onMounted(async () => {
         :showCategory="false"
         :showPlus="true"
         :showSelect="false"
+        :show-my-problem="false"
+        :show-problem="false"
+        :new-tab="true"
       />
       <div class="my-7">
         <div class="text-[20px] mb-2 font-semibold">추가된 문제</div>
@@ -248,6 +281,8 @@ onMounted(async () => {
           :showMinus="true"
           :showSelect="false"
           :showCount="false"
+          :show-my-problem="false"
+          :new-tab="true"
         />
       </div>
       <div class="flex justify-center">
