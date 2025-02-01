@@ -8,6 +8,7 @@ import EmptyText from "@/components/layout/EmptyText.vue";
 import Badge from "primevue/badge";
 import { storeToRefs } from "pinia";
 import { useAuthStore } from "@/store/authStore";
+import { GRADES } from "@/const/grades";
 
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
@@ -60,7 +61,9 @@ const deleteAllNotifications = async (notification) => {
 
 const getNotificationIcon = (notification) => {
   const { notification_type, follow, invite, comment } = notification;
-  if (!follow && !invite && !comment) return "pi pi-times";
+  if (!follow && !invite && !comment && !notification_type.startsWith("grade"))
+    return "pi pi-times";
+
   switch (notification_type) {
     case "follow":
       return "pi pi-user-plus";
@@ -68,6 +71,10 @@ const getNotificationIcon = (notification) => {
       return "pi pi-comment";
     case "invite":
       return "pi pi-pen-to-square";
+    case "grade_middle":
+      return "pi pi-star";
+    case "grade_high":
+      return "pi pi-star";
     default:
       return "";
   }
@@ -75,7 +82,8 @@ const getNotificationIcon = (notification) => {
 
 const getNotificationURL = (notification) => {
   const { sender, comment, follow, invite, notification_type } = notification;
-  if (!follow && !invite && !comment) return "#";
+  if (!follow && !invite && !comment && !notification_type.startsWith("grade"))
+    return "#";
   switch (notification_type) {
     case "follow":
       return `/users/${sender.id}`;
@@ -88,6 +96,9 @@ const getNotificationURL = (notification) => {
       }
     case "invite":
       return `/exam-room`;
+    case "grade_middle":
+    case "grade_high":
+      return "/mypage?tab=포인트+내역";
     default:
       return "/";
   }
@@ -95,7 +106,8 @@ const getNotificationURL = (notification) => {
 
 const getNotificationMessage = (notification) => {
   const { sender, comment, follow, invite, notification_type } = notification;
-  if (!follow && !invite && !comment) return "삭제된 알림입니다.";
+  if (!follow && !invite && !comment && !notification_type.startsWith("grade"))
+    return "삭제된 알림입니다.";
   switch (notification_type) {
     case "follow":
       return `${sender.name}님이 회원님을 팔로우하기 시작했습니다.`;
@@ -108,6 +120,10 @@ const getNotificationMessage = (notification) => {
       }
     case "invite":
       return `${sender.name}님이 회원님을 시험에 초대했습니다.`;
+    case "grade_middle":
+      return `"중수"로 등급이 올랐습니다! 중수에서의 권한은 시험장 ${GRADES.two.examLimit}개 | 문제집 ${GRADES.two.problemSetLimit}개입니다.`;
+    case "grade_high":
+      return `"고수"로 등급이 올랐습니다! 고수에서의 권한은 시험장 ${GRADES.three.examLimit}개 | 문제집 ${GRADES.two.problemSetLimit}개입니다.`;
     default:
       return "";
   }
