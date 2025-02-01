@@ -1,10 +1,12 @@
 <script setup>
 import { Button, useToast } from "primevue";
 import { storeToRefs } from "pinia";
-import { watch, computed } from "vue";
+import { watch, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useExamResultStore } from "@/store/ExamResultStore";
 import { useAuthStore } from "@/store/authStore";
+import Viewer from "@toast-ui/editor/dist/toastui-editor-viewer";
+import "@toast-ui/editor/dist/toastui-editor-viewer.css";
 
 const route = useRoute();
 const toast = useToast();
@@ -48,13 +50,13 @@ const selectedStatus = computed(() => {
 
 // 초기 데이터 로드
 const loadInitialData = async () => {
-  if (isFetchingProblems) return;
+  if (isFetchingProblems.value) return;
   try {
     if (!userId.value || !testResultId.value) {
       console.warn("유효하지 않은 userId 또는 testResultId");
       return;
     }
-    isFetchingProblems = true;
+    isFetchingProblems.value = true;
     await fetchProblems(userId, testResultId);
     // 첫 번째 문제를 기본 선택
     if (problems.value.length > 0 && !currentProblem.value) {
@@ -69,7 +71,7 @@ const loadInitialData = async () => {
       life: 3000,
     });
   } finally {
-    isFetchingProblems = false;
+    isFetchingProblems.value = false;
   }
 };
 
@@ -106,7 +108,7 @@ watch(
       console.error("checkAgainViewStatus 실행 중 오류 발생:", error);
     }
   },
-  { immediate: true }, // 즉시 실행
+  { immediate: true },
 );
 
 watch(
@@ -118,6 +120,24 @@ watch(
     }
   },
   { immediate: true },
+);
+
+let viewer;
+
+onMounted(() => {
+  viewer = new Viewer({
+    el: document.querySelector("#viewer"),
+    initialValue: currentProblem.value?.question || "",
+  });
+});
+
+watch(
+  () => currentProblem.value?.question,
+  (newQuestion) => {
+    if (viewer) {
+      viewer.setMarkdown(newQuestion || "");
+    }
+  },
 );
 </script>
 
@@ -148,26 +168,18 @@ watch(
               icon="pi pi-flag"
               size="small"
               severity="secondary"
-              :class="{
-                'again-view-active': againViewProblems.includes(
-                  currentProblem?.id,
-                ),
-                'again-view-inactive': !againViewProblems.includes(
-                  currentProblem?.id,
-                ),
-              }"
+              :class="[
+                'text-sm',
+                againViewProblems.includes(currentProblem?.id)
+                  ? '!bg-orange-3 !text-orange-500'
+                  : 'text-white bg-navy-4',
+              ]"
               @click="toggleProblemStatus"
             />
           </div>
 
-          <!-- question -->
-          <div class="text-gray-800 mb-6">
-            <p class="text-lg mb-4 font-medium">
-              {{ currentProblem.question }}
-            </p>
-          </div>
+          <div id="viewer" class="text-gray-700 min-h-4 mb-10 w-full"></div>
 
-          <!-- image -->
           <div v-if="currentProblem.image_src" class="flex justify-center mb-6">
             <img
               :src="currentProblem.image_src"
@@ -176,26 +188,55 @@ watch(
               class="max-w-full h-auto rounded-lg shadow-md"
             />
           </div>
-
-          <!-- 객관식 선택지 -->
           <div
             v-if="currentProblem.problem_type === 'multiple_choice'"
-            class="mt-4"
+            class="space-y-4"
           >
-            <h3 class="font-bold text-lg mb-2">선택지</h3>
-            <ul>
+            <ol class="list-decimal text-gray-700">
               <li
-                v-for="(option, idx) in currentProblem.options"
-                :key="'option-' + currentProblem.id + '-' + idx"
-                class="text-gray-700 bg-gray-100 p-2 rounded-lg mb-2"
+                v-if="currentProblem.options[0]"
+                class="flex items-center gap-2 mb-8 last:mb-0"
               >
-                {{ idx + 1 }}. {{ option }}
+                <strong
+                  class="text-lg rounded-full bg-black-6 w-8 h-8 item-middle"
+                  >1</strong
+                >
+                <span>{{ currentProblem.options[0] }}</span>
               </li>
-            </ul>
+              <li
+                v-if="currentProblem.options[1]"
+                class="flex items-center gap-2 mb-8 last:mb-0"
+              >
+                <strong
+                  class="text-lg rounded-full bg-black-6 w-8 h-8 item-middle"
+                  >2</strong
+                >
+                <span>{{ currentProblem.options[1] }}</span>
+              </li>
+              <li
+                v-if="currentProblem.options[2]"
+                class="flex items-center gap-2 mb-8 last:mb-0"
+              >
+                <strong
+                  class="text-lg rounded-full bg-black-6 w-8 h-8 item-middle"
+                  >3</strong
+                >
+                <span>{{ currentProblem.options[2] }}</span>
+              </li>
+              <li
+                v-if="currentProblem.options[3]"
+                class="flex items-center gap-2 mb-8 last:mb-0"
+              >
+                <strong
+                  class="text-lg rounded-full bg-black-6 w-8 h-8 item-middle"
+                  >4</strong
+                >
+                <span>{{ currentProblem.options[3] }}</span>
+              </li>
+            </ol>
           </div>
 
-          <!-- 내 선택 -->
-          <div class="mb-6">
+          <div class="mt-8">
             <h3 class="font-bold text-lg mb-2">내 선택</h3>
             <div class="flex items-center gap-4 border-b pb-4">
               <template v-if="currentProblem">
@@ -226,11 +267,9 @@ watch(
             </div>
           </div>
 
-          <!-- 정답 -->
-          <div class="mb-6">
+          <div class="mt-4">
             <h3 class="font-bold text-lg mb-3">정답</h3>
             <div class="flex items-start gap-3">
-              <!-- 정답 번호 표시 -->
               <span
                 class="shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-orange-3 text-red-1 font-bold"
                 :class="{
@@ -241,7 +280,6 @@ watch(
                 {{ currentProblem.answer }}
               </span>
 
-              <!-- 선택지 내용 -->
               <div class="flex-1">
                 <p class="text-gray-800 font-medium leading-relaxed">
                   {{ currentProblem.options[currentProblem.answer - 1] }}
@@ -250,10 +288,9 @@ watch(
             </div>
           </div>
 
-          <!-- 풀이 섹션 -->
           <div
             v-if="currentProblem.explanation"
-            class="bg-gray-50 p-4 rounded-lg"
+            class="bg-gray-50 p-4 mt-4 rounded-lg"
           >
             <h3 class="font-bold text-lg mb-2 text-gray-700">상세 풀이</h3>
             <p class="text-gray-600 leading-relaxed">
@@ -268,6 +305,7 @@ watch(
     </template>
   </div>
 </template>
+
 <style scoped>
 /* 다시 볼 문제 활성 상태 */
 .again-view-active {
