@@ -1,95 +1,124 @@
 <script setup>
-import { Button } from "primevue";
+import { Button, useToast } from "primevue";
 import { storeToRefs } from "pinia";
-import { watch, computed, onMounted } from "vue";
+import { watch, computed } from "vue";
 import { useRoute } from "vue-router";
 import { useExamResultStore } from "@/store/ExamResultStore";
 import { useAuthStore } from "@/store/authStore";
 
 const route = useRoute();
+const toast = useToast();
+
+// Pinia Store 설정
 const examResultStore = useExamResultStore();
 const authStore = useAuthStore();
+const {
+  fetchMyOption,
+  fetchProblems,
+  toggleAgainViewProblem,
+  checkAgainViewStatus,
+} = examResultStore;
+const {
+  currentProblem,
+  problems,
+  myOption,
+  status,
+  againViewProblems,
+  isFetchingProblems,
+} = storeToRefs(examResultStore);
+
 const testResultId = computed(() => route.params.examResultId);
-const currentUserId = computed(() => authStore.user?.id);
+const userId = computed(() => authStore.user?.id);
 
-const selectedMyOption = computed(() =>
-  myOption.value.find((item) => item.problem_id === currentProblem.value?.id),
-);
+// 계산된 값
+const selectedMyOption = computed(() => {
+  const problem = myOption.value.find(
+    (item) => item.problem_id === currentProblem.value?.id,
+  );
+  return problem ? problem.my_option : "";
+});
 
-const selectedStatus = computed(() =>
-  status.value.find((item) => item.problem_id === currentProblem.value?.id),
-);
+const selectedStatus = computed(() => {
+  if (!currentProblem.value) return null;
+  const statusForCurrentProblem = status.value.find(
+    (item) => item.problem_id === currentProblem.value.id,
+  );
+  return statusForCurrentProblem || null;
+});
 
-const { fetchProblems, fetchMyOption } = examResultStore;
-const { currentProblem, isFetchingProblems, problems, myOption, status } =
-  storeToRefs(examResultStore);
-
-const fetchData = async (id) => {
+// 초기 데이터 로드
+const loadInitialData = async () => {
+  if (isFetchingProblems) return;
   try {
-    if (!id || isFetchingProblems.value) return;
-    examResultStore.isFetchingProblems = true;
-    examResultStore.error = null;
-    await fetchProblems(id);
-
+    if (!userId.value || !testResultId.value) {
+      console.warn("유효하지 않은 userId 또는 testResultId");
+      return;
+    }
+    isFetchingProblems = true;
+    await fetchProblems(userId, testResultId);
+    // 첫 번째 문제를 기본 선택
     if (problems.value.length > 0 && !currentProblem.value) {
       examResultStore.selectProblem(problems.value[0]);
     }
   } catch (error) {
-    console.error("문제 불러오기 실패:", error);
-    examResultStore.error = error.message || "문제를 불러오는 데 실패했습니다.";
+    console.error("초기 데이터 로드 실패:", error);
+    toast.add({
+      severity: "error",
+      summary: "데이터 로드 실패",
+      detail: "문제 및 선택 데이터를 불러오는 데 실패했습니다.",
+      life: 3000,
+    });
   } finally {
-    examResultStore.isFetchingProblems = false;
+    isFetchingProblems = false;
   }
 };
 
-const fetchOptionData = async () => {
-  if (!problems.value || !problems.value.length === 0) {
-    console.warn("문제id 값을 못찾음");
+// 문제 상태 토글
+const toggleProblemStatus = async () => {
+  if (!currentProblem.value?.id || !userId.value) {
+    toast.add({
+      severity: "error",
+      summary: "오류 발생",
+      detail: "유효하지 않은 문제 또는 사용자 ID입니다.",
+      life: 3000,
+    });
     return;
   }
-  const selectedProblem = problems.value.find(
-    (problem) => problem.id === currentProblem.value?.id,
-  );
-  if (!selectedProblem) {
-    console.warn("현재 선택된 문제가 없습니다.");
-    return;
-  }
+
   try {
-    await fetchMyOption(currentUserId.value, testResultId.value);
+    await toggleAgainViewProblem(userId.value, currentProblem.value.id, toast);
   } catch (error) {
-    console.error("사용자 선택 데이터 가져오기 실패:", error);
+    console.error("문제 상태 토글 실패:", error);
   }
 };
 
-// 문제 변경 시 사용자 선택 데이터 로드
-watch(currentProblem, (newProblem) => {
-  if (newProblem && currentUserId.value) {
-    fetchOptionData();
-  }
-});
-
-// 시험 결과 ID 변경 시 문제 데이터 로드
+// 현재 문제 변경 시 상태 확인
 watch(
-  testResultId,
-  async (newId) => {
-    if (newId) {
-      await fetchData(newId);
-      if (currentProblem.value) {
-        fetchOptionData();
-      }
+  currentProblem,
+  async (newProblem) => {
+    if (!newProblem || !userId.value) {
+      console.warn("currentProblem이 없거나 userId가 유효하지 않습니다.");
+      return;
+    }
+    try {
+      await checkAgainViewStatus(userId.value, newProblem.id);
+    } catch (error) {
+      console.error("checkAgainViewStatus 실행 중 오류 발생:", error);
+    }
+  },
+  { immediate: true }, // 즉시 실행
+);
+
+watch(
+  () => route.params.examResultId,
+  (newExamResultId) => {
+    if (newExamResultId) {
+      loadInitialData();
+      fetchMyOption(newExamResultId);
     }
   },
   { immediate: true },
 );
-
-// 초기 데이터 로드
-onMounted(() => {
-  if (currentUserId.value && currentProblem.value) {
-    fetchOptionData();
-  } else {
-    console.warn("초기 데이터가 로드되지 않았습니다. Watch로 처리 중...");
-  }
-});
 </script>
 
 <template>
@@ -115,13 +144,19 @@ onMounted(() => {
           >
             <h2 class="text-xl font-bold">문제 {{ currentProblem.number }}</h2>
             <Button
-              label="다시 볼 문제"
+              :label="'다시 볼 문제'"
               icon="pi pi-flag"
               size="small"
               severity="secondary"
-              class="!bg-navy-4 !text-white"
-              aria-label="again-view-problem"
-              title="나중에 복습할 문제 표시"
+              :class="{
+                'again-view-active': againViewProblems.includes(
+                  currentProblem?.id,
+                ),
+                'again-view-inactive': !againViewProblems.includes(
+                  currentProblem?.id,
+                ),
+              }"
+              @click="toggleProblemStatus"
             />
           </div>
 
@@ -167,17 +202,19 @@ onMounted(() => {
                 <div
                   class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-black font-bold"
                 >
-                  {{ selectedMyOption.my_option }}
+                  {{ selectedMyOption }}
                 </div>
 
                 <span
-                  v-if="selectedStatus?.status === 'corrected'"
+                  v-if="selectedStatus && selectedStatus.status === 'corrected'"
                   class="text-green-500"
                 >
                   정답
                 </span>
                 <span
-                  v-else-if="selectedStatus?.status === 'wrong'"
+                  v-else-if="
+                    selectedStatus && selectedStatus.status === 'wrong'
+                  "
                   class="text-red-500"
                 >
                   오답
@@ -231,3 +268,18 @@ onMounted(() => {
     </template>
   </div>
 </template>
+<style scoped>
+/* 다시 볼 문제 활성 상태 */
+.again-view-active {
+  background-color: #f1a140 !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+}
+
+/* 다시 볼 문제 비활성 상태 */
+.again-view-inactive {
+  background-color: #8992b5 !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+}
+</style>
