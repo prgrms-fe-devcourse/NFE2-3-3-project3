@@ -4,7 +4,6 @@ import {
   onMounted,
   onBeforeUnmount,
   defineProps,
-  watchEffect,
   computed,
   inject,
 } from "vue";
@@ -298,15 +297,11 @@ watch(sort, (newSort) => {
   router.replace({ query: newQuery, page: 1 });
 });
 
-watch(
-  first,
-  (newFirst) => {
-    const page = newFirst / rows.value + 1;
-    const newQuery = { ...route.query, page };
-    router.replace({ query: newQuery });
-  },
-  { immediate: true },
-);
+watch(first, (newFirst) => {
+  const page = newFirst / rows.value + 1;
+  const newQuery = { ...route.query, page };
+  router.replace({ query: newQuery });
+});
 
 onBeforeMount(async () => {
   const page = route.query.page ?? 1;

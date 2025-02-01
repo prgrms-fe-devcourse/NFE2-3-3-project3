@@ -36,7 +36,7 @@ const search = async (keyword, startDate, endDate, status) => {
 };
 
 const fetchProblems = async () => {
-  const { keyword, startDate, endDate, status, page } = route.query;
+  const { keyword, startDate, endDate, status } = route.query;
   problems.value = await problemAPI.search(
     user.value.id,
     keyword,
@@ -45,7 +45,7 @@ const fetchProblems = async () => {
     status,
   );
   router.replace({
-    query: { ...route.query, page: page ?? 1 },
+    query: { ...route.query },
   });
 };
 
