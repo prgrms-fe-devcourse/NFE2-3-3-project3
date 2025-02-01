@@ -300,8 +300,8 @@ watch(sort, (newSort) => {
 
 watch(
   first,
-  () => {
-    const page = first.value / rows.value + 1;
+  (newFirst) => {
+    const page = newFirst / rows.value + 1;
     const newQuery = { ...route.query, page };
     router.replace({ query: newQuery });
   },
@@ -309,7 +309,8 @@ watch(
 );
 
 onBeforeMount(async () => {
-  first.value = (route.query.page - 1) * rows.value;
+  const page = route.query.page ?? 1;
+  first.value = (page - 1) * rows.value;
   problemSets.value = await workbookAPI.getAll(user.value.id);
 });
 
