@@ -116,6 +116,8 @@ const shared = ref(false);
 const description = ref("");
 const problemSets = ref([]);
 const sort = ref(currentSort);
+const first = ref(0);
+const rows = ref(10);
 const selectedProblems = ref([]);
 const showProblemSet = ref(false);
 const activeFilter = ref(null);
@@ -250,9 +252,9 @@ const sortedProblems = computed(() => {
       );
     case SORT.likes:
       return problems.sort((a, b) => {
-        // problem.likes[0]?.count가 있는 경우
-        const aLikes = a.likes?.[0]?.count ?? 0;
-        const bLikes = b.likes?.[0]?.count ?? 0;
+        // problem.likes_count가 있는 경우
+        const aLikes = a.likes_count ?? 0;
+        const bLikes = b.likes_count ?? 0;
 
         // problem.problem.likes[0]?.count가 있는 경우 (공유받은 문제)
         const aSharedLikes = a.problem?.likes?.[0]?.count ?? 0;
@@ -271,9 +273,10 @@ watch(sort, (newSort) => {
   router.replace({ query: newQuery });
 });
 
-watchEffect(async () => {
-  if (!user.value) return;
-  problemSets.value = await workbookAPI.getAll(user.value.id);
+watchEffect(() => {
+  const page = first.value / rows.value + 1;
+  const newQuery = { ...route.query, page };
+  router.replace({ query: newQuery });
 });
 
 onBeforeMount(async () => {
@@ -281,6 +284,8 @@ onBeforeMount(async () => {
 });
 
 onMounted(() => {
+  const page = parseInt(route.query.page, 10) || 1;
+  first.value = (page - 1) * rows.value;
   window.addEventListener("click", handleClickOutside);
 });
 
@@ -353,6 +358,7 @@ onBeforeUnmount(() => {
     <div class="overflow-hidden border border-black-5 rounded-2xl">
       <DataTable
         v-model:selection="selectedProblems"
+        v-model:first="first"
         :value="sortedProblems"
         dataKey="id"
         paginator
