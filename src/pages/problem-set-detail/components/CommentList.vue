@@ -64,7 +64,7 @@ onMounted(async () => {
 </script>
 <template>
   <div class="flex flex-col w-full">
-    <div class="text-[24px] text-[#6A718B]">댓글</div>
+    <h3 class="text-2xl text-gray-700 mb-6">댓글</h3>
 
     <div class="w-full">
       <Comment

@@ -1,6 +1,16 @@
 import { useAuthStore } from "@/store/authStore.js";
 import { supabase } from "./index.js";
 
+const getAll = async () => {
+  try {
+    const { data, error } = await supabase.from("problem").select("*");
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 /**
  * @description 게시판에서 사용되는 API
  * @param {*} userId
@@ -479,6 +489,7 @@ const getRandom = async () => {
 };
 
 export const problemAPI = {
+  getAll,
   getAllShared,
   getAllByUserId,
   getAllSharedByUserId,

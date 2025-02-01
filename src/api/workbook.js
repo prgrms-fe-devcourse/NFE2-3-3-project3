@@ -312,6 +312,7 @@ const getAllByUserId = async (userId) => {
   return data;
 };
 
+
 const fetchSharedWorkbooks = async (uid) => {
   try {
     const { data: sharedData, error: sharedError } = await supabase
@@ -354,6 +355,19 @@ const fetchSharedWorkbooks = async (uid) => {
   }
 };
 
+const sharedWorkbookDelete = async (uid, workbook_id) => {
+  try {
+    const { data, error } = await supabase
+      .from("shared_workbook")
+      .delete()
+      .eq("uid", uid)
+      .eq("workbook_id", workbook_id);
+    if (error) console.log(error);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 export const workbookAPI = {
   add,
   getAll,
@@ -378,4 +392,6 @@ export const workbookAPI = {
   removeWorkbook,
   getAllByUserId,
   fetchSharedWorkbooks,
+  sharedWorkbookDelete,
+
 };
