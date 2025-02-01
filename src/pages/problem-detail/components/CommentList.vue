@@ -82,11 +82,11 @@ const handleKeyPress = async (event) => {
 
 const handleSubmitComment = async () => {
   if (!textareaValue.value.trim()) return;
-  if (!userId.value) {
+  if (textareaValue.value.length > 500) {
     toast.add({
       severity: "error",
-      summary: "로그인 필요",
-      detail: "로그인이 필요한 기능입니다.",
+      summary: "글자 수 초과",
+      detail: "댓글은 500자를 초과할 수 없습니다.",
       life: 3000,
     });
     return;
@@ -150,6 +150,15 @@ const handleEditComment = (comment) => {
 const handleEditSubmit = async (event) => {
   if (event.key === "Enter" && !event.shiftKey) {
     event.preventDefault();
+    if (editingContent.value.length > 500) {
+      toast.add({
+        severity: "error",
+        summary: "글자 수 초과",
+        detail: "댓글은 500자를 초과할 수 없습니다.",
+        life: 3000,
+      });
+      return;
+    }
 
 
     try {
@@ -264,6 +273,7 @@ const onPageChange = (event) => {
           v-model="editingContent"
           @keypress="handleEditSubmit"
           @keydown.esc="handleEditCancel"
+          maxlength="500"
           class="w-full min-h-[80px] resize-none pt-3 px-4 rounded-lg text-sm bg-gray-100 border border-gray-300"
         ></textarea>
         <p v-else class="text-gray-500 break-words">{{ comment.comment }}</p>
@@ -273,6 +283,7 @@ const onPageChange = (event) => {
     <textarea
       v-model="textareaValue"
       @keypress="handleKeyPress"
+      maxlength="500"
       class="w-full max-w-full h-32 resize-none pt-3 px-6 rounded-lg text-sm bg-gray-100 border border-gray-300"
       placeholder="문제집에 대해 어떻게 생각하시나요?"
     ></textarea>
