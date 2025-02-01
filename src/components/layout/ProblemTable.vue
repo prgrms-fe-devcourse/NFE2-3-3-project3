@@ -93,6 +93,10 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  newTab: {
+    type: Boolean,
+    default: false,
+  },
   workbookId: String,
 });
 
@@ -406,7 +410,7 @@ onBeforeUnmount(() => {
             </div>
           </template>
         </Column>
-        <Column field="title" class="w-full" header="제목">
+        <Column field="title" class="w-[45%]" header="제목" v-if="!newTab">
           <template #body="slotProps">
             <div class="flex justify-between gap-6 w-full">
               <RouterLink
@@ -430,12 +434,32 @@ onBeforeUnmount(() => {
             </div>
           </template>
         </Column>
-        <Column
-          field="problem_type"
-          header="문제 유형"
-          headerStyle="min-width: 7rem"
-          v-if="showCategory"
-        >
+        <Column field="title" class="w-[45%]" header="제목" v-if="newTab">
+          <template #body="slotProps">
+            <div class="flex justify-between w-full">
+              <RouterLink
+                target="_blank"
+                :to="`${
+                  slotProps.data.id === user?.id
+                    ? '/my-problems'
+                    : '/problem-board'
+                }/${slotProps.data.id}`"
+              >
+                <span class="w-full cursor-pointer">{{
+                  slotProps.data.title
+                }}</span>
+              </RouterLink>
+              <img
+                v-if="slotProps.data.uid === user?.id"
+                :src="checkedMyProblem"
+                alt="checkedMyProblemIcon"
+                class="w-5 h-5"
+                v-tooltip.top="'내가 만든 문제'"
+              />
+            </div>
+          </template>
+        </Column>
+        <Column field="problem_type" header="문제 유형" v-if="showCategory">
           <template #body="slotProps">
             <Tag
               v-if="getProblemType(slotProps.data.problem_type) === '4지선다'"

@@ -97,6 +97,23 @@ const submitAnswers = async () => {
 
   examStore.initExam();
   await Promise.all(problemHistoryPromise, testResult);
+
+  if (correctCount && problems.value.length === correctCount) {
+    toast.add({
+      severity: "info",
+      summary: "🎉시험 만점 포인트 지급🎉",
+      detail: "시험 만점으로 10포인트를 획득했습니다.",
+      life: 3000,
+    });
+  } else {
+    toast.add({
+      severity: "info",
+      summary: "시험 완료 포인트 지급",
+      detail: "시험 완료로 9포인트를 획득했습니다.",
+      life: 3000,
+    });
+  }
+
   router.push(`/exam-result/${testResult.id}`);
 };
 

@@ -4,7 +4,6 @@ import { useAuthStore } from "@/store/authStore";
 import { commentAPI } from "@/api/comment";
 import { formatDateForComment } from "@/utils/formatDateForComment";
 import { supabase } from "@/api/index.js";
-import Avatar from "primevue/avatar";
 import { useToast } from "primevue/usetoast";
 import { RouterLink } from "vue-router";
 import { useRouter } from "vue-router";
@@ -16,7 +15,7 @@ const props = defineProps({
   currentPage: Number,
   totalPages: Number,
   value: String,
-  problemId: Number,
+  problemId: String,
 });
 
 const emit = defineEmits(["update:value", "submit-comment", "page-change"]);
@@ -152,13 +151,17 @@ const handleEditSubmit = async (event) => {
   if (event.key === "Enter" && !event.shiftKey) {
     event.preventDefault();
 
+
     try {
       const response = await commentAPI.updateComment(editingCommentId.value, {
         comment: editingContent.value,
+        comment: editingContent.value,
       });
+
 
       if (response) {
         const index = formattedComments.value.findIndex(
+          (comment) => comment.id === editingCommentId.value,
           (comment) => comment.id === editingCommentId.value,
         );
         if (index !== -1) {
@@ -167,6 +170,7 @@ const handleEditSubmit = async (event) => {
 
         editingCommentId.value = null;
         editingContent.value = "";
+
 
         toast.add({
           severity: "success",
@@ -281,3 +285,4 @@ const onPageChange = (event) => {
     />
   </div>
 </template>
+
