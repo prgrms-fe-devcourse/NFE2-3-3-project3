@@ -140,7 +140,7 @@ watch(
 
 /* 셀에 마우스 오버 스타일 */
 .cell:hover {
-  background-color: #fbe1c0;
+  background-color: #e5e4e6;
 }
 /* 버튼 스타일 */
 button {
