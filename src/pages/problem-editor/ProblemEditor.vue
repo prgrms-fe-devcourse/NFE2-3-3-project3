@@ -165,6 +165,13 @@ const submitProblems = async () => {
       return;
     }
 
+    toast.add({
+      severity: "info",
+      summary: "문제 생성 포인트 지급",
+      detail: "문제 생성으로 5포인트를 획득했습니다.",
+      life: 3000,
+    });
+
     // 업로드 완료 후 홈으로 리다이렉트
     router.push("/");
   } catch (error) {

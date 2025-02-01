@@ -4,7 +4,6 @@ import { useAuthStore } from "@/store/authStore";
 import { commentAPI } from "@/api/comment";
 import { formatDateForComment } from "@/utils/formatDateForComment";
 import { supabase } from "@/api/index.js";
-import Avatar from "primevue/avatar";
 import { useToast } from "primevue/usetoast";
 import { RouterLink } from "vue-router";
 const toast = useToast();
@@ -56,6 +55,14 @@ const handleSubmitComment = async () => {
     comment: props.value,
     uid: userId.value,
   });
+
+  toast.add({
+    severity: "info",
+    summary: "댓글 작성 포인트 지급",
+    detail: "댓글 작성으로 2포인트를 획득했습니다.",
+    life: 3000,
+  });
+
   const userProfile = await getUserProfile(userId.value);
   formattedComments.value.push({
     id: newComment.id,
@@ -79,7 +86,9 @@ const handleDeleteComment = async (id) => {
         summary: "삭제 완료",
         detail: "댓글이 삭제되었습니다.",
       });
-      formattedComments.value = formattedComments.value.filter(comment => comment.id !== id);
+      formattedComments.value = formattedComments.value.filter(
+        (comment) => comment.id !== id,
+      );
       emit("submit-comment");
     }
   } catch (error) {
@@ -99,25 +108,25 @@ const handleEditComment = (comment) => {
 const handleEditSubmit = async (event) => {
   if (event.key === "Enter" && !event.shiftKey) {
     event.preventDefault();
-    
+
     try {
       const response = await commentAPI.updateComment(editingCommentId.value, {
-        comment: editingContent.value
+        comment: editingContent.value,
       });
-      
+
       if (response) {
         // 수정된 댓글을 찾아서 업데이트
         const index = formattedComments.value.findIndex(
-          comment => comment.id === editingCommentId.value
+          (comment) => comment.id === editingCommentId.value,
         );
         if (index !== -1) {
           formattedComments.value[index].comment = editingContent.value;
         }
-        
+
         // 수정 모드 종료
         editingCommentId.value = null;
         editingContent.value = "";
-        
+
         toast.add({
           severity: "success",
           summary: "수정 완료",
@@ -200,7 +209,7 @@ watchEffect(async () => {
         <div class="flex justify-between items-center mb-2">
           <!-- 유저 프로필 -> 클릭시 해당 유저 상세 페이지 -->
           <RouterLink
-            :to="{ name: 'UserProfile', params: { userId: comment.uid }}"
+            :to="{ name: 'UserProfile', params: { userId: comment.uid } }"
             aria-label="유저 프로필"
             class="flex items-center gap-2 flex-grow"
           >
