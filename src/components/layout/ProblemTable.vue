@@ -459,7 +459,12 @@ onBeforeUnmount(() => {
             </div>
           </template>
         </Column>
-        <Column field="problem_type" header="문제 유형" v-if="showCategory">
+        <Column
+          field="problem_type"
+          header="문제 유형"
+          headerStyle="min-width: 6rem"
+          v-if="showCategory"
+        >
           <template #body="slotProps">
             <Tag
               v-if="getProblemType(slotProps.data.problem_type) === '4지선다'"
