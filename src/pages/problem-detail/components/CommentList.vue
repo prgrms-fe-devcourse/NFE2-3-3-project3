@@ -4,7 +4,6 @@ import { useAuthStore } from "@/store/authStore";
 import { commentAPI } from "@/api/comment";
 import { formatDateForComment } from "@/utils/formatDateForComment";
 import { supabase } from "@/api/index.js";
-import Avatar from "primevue/avatar";
 import { useToast } from "primevue/usetoast";
 import { RouterLink } from "vue-router";
 import Paginator from "primevue/paginator";
@@ -58,6 +57,14 @@ const handleSubmitComment = async () => {
     comment: props.value,
     uid: userId.value,
   });
+
+  toast.add({
+    severity: "info",
+    summary: "댓글 작성 포인트 지급",
+    detail: "댓글 작성으로 2포인트를 획득했습니다.",
+    life: 3000,
+  });
+
   const userProfile = await getUserProfile(userId.value);
   formattedComments.value.push({
     id: newComment.id,
