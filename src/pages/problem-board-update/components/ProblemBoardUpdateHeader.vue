@@ -11,6 +11,7 @@ import { useProblemUpdateStore } from "@/store/problemUpdateStore";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useProblemStore } from "@/store/problemStore";
+import { useConfirm } from "primevue/useconfirm";
 
 const props = defineProps({
   problem: {
@@ -33,7 +34,9 @@ const { editedProblem } = storeToRefs(problemUpdateStore);
 const author = computed(() => problemStore.author);
 
 // 사용자 등급 정보
-const userGrade = computed(() => getCurrentGradeInfo(author.value?.total_points || 0));
+const userGrade = computed(() =>
+  getCurrentGradeInfo(author.value?.total_points || 0),
+);
 
 // 라우트 설정
 const routeConfig = computed(() => {
@@ -92,7 +95,7 @@ const createCategory = async () => {
   }
 
   try {
-    const newCategory = await categoryAPI.create({
+    const newCategory = await categoryAPI.createCategory({
       name: filteredCategory.value.trim(),
     });
 
@@ -108,11 +111,10 @@ const createCategory = async () => {
       life: 3000,
     });
   } catch (error) {
-    console.error("카테고리 생성 실패:", error);
     toast.add({
       severity: "error",
       summary: "오류",
-      detail: "카테고리 생성에 실패했습니다.",
+      detail: error.message || "카테고리 생성에 실패했습니다.",
       life: 3000,
     });
   }
@@ -133,7 +135,16 @@ const handleUpdate = async () => {
 // 취소 핸들러
 const handleCancel = () => {
   problemUpdateStore.cancelEdit();
-  router.back();
+  confirm.require({
+    message:
+      "정말 수정을 취소하시겠습니까? \n 지금까지 수정한 내용은 저장되지 않습니다.",
+    header: "수정 취소 확인",
+    icon: "pi pi-exclamation-triangle",
+    accept: () => {
+      problemUpdateStore.cancelEdit();
+      router.back();
+    },
+  });
 };
 
 const fetchUserGrade = async () => {
@@ -229,6 +240,7 @@ onMounted(async () => {
       <input
         type="text"
         class="text-4xl font-bold mb-4 border border-gray-300 rounded p-2 w-full"
+        :maxlength="20"
         v-model="problem.title"
         @change="handleTitleChange"
       />
