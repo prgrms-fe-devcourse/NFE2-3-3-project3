@@ -19,7 +19,6 @@ const {
   startDate: startDateFromQuery,
   endDate: endDateFromQuery,
   status: statusFromQuery,
-  sort,
 } = route.query;
 
 const keyword = ref(keywordFromQuery);
@@ -43,36 +42,15 @@ const handleClickOutside = (event) => {
 };
 
 watch(status, (newStatus) => {
-  emit(
-    "search",
-    keyword.value,
-    startDate.value,
-    endDate.value,
-    sort,
-    newStatus,
-  );
+  emit("search", keyword.value, startDate.value, endDate.value, newStatus);
 });
 
 watch(startDate, (newStartDate) => {
-  emit(
-    "search",
-    keyword.value,
-    newStartDate,
-    endDate.value,
-    sort,
-    status.value,
-  );
+  emit("search", keyword.value, newStartDate, endDate.value, status.value);
 });
 
 watch(endDate, (newEndDate) => {
-  emit(
-    "search",
-    keyword.value,
-    startDate.value,
-    newEndDate,
-    sort,
-    status.value,
-  );
+  emit("search", keyword.value, startDate.value, newEndDate, status.value);
 });
 
 onMounted(() => {

@@ -30,7 +30,6 @@ import { workbookAPI } from "@/api/workbook";
 import { useAuthStore } from "@/store/authStore";
 import plus from "@/assets/icons/problem-board/plus.svg";
 import minus from "@/assets/icons/problem-board/minus.svg";
-import sharedIcon from "@/assets/icons/my-problem-sets/share.svg";
 import statusWrong from "@/assets/icons/problem-board/status-wrong.svg";
 import statusSolved from "@/assets/icons/problem-board/status-solved.svg";
 import seeMyProblems from "@/assets/icons/my-problems/see-my-problems.svg";
@@ -268,24 +267,53 @@ const sortedProblems = computed(() => {
   }
 });
 
+watch(
+  () => route.query.status,
+  () => {
+    first.value = 0;
+  },
+);
+watch(
+  () => route.query.keyword,
+  () => {
+    first.value = 0;
+  },
+);
+watch(
+  () => route.query.startDate,
+  () => {
+    first.value = 0;
+  },
+);
+watch(
+  () => route.query.endDate,
+  () => {
+    first.value = 0;
+  },
+);
+
 watch(sort, (newSort) => {
+  first.value = 0;
   const newQuery = { ...route.query, sort: newSort.value };
-  router.replace({ query: newQuery });
+  router.replace({ query: newQuery, page: 1 });
 });
 
-watchEffect(() => {
-  const page = first.value / rows.value + 1;
-  const newQuery = { ...route.query, page };
-  router.replace({ query: newQuery });
-});
+watch(
+  first,
+  () => {
+    const page = first.value / rows.value + 1;
+    const newQuery = { ...route.query, page };
+    router.replace({ query: newQuery });
+  },
+  { immediate: true },
+);
 
 onBeforeMount(async () => {
+  first.value = (route.query.page - 1) * rows.value;
   problemSets.value = await workbookAPI.getAll(user.value.id);
 });
 
 onMounted(() => {
-  const page = parseInt(route.query.page, 10) || 1;
-  first.value = (page - 1) * rows.value;
   window.addEventListener("click", handleClickOutside);
 });
 
