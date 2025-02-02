@@ -273,12 +273,13 @@ watchEffect(() => {
     });
 
     // 초기 explanation 값 설정
-        nextTick(() => {
+    nextTick(() => {
       if (localProblem.question) {
         const rawQuestion = toRaw(localProblem.question); // 반응형 객체에서 순수 값 가져오기
         console.log("🚀 전:", rawQuestion);
 
-        setTimeout(() => {  // 🔥 `setMarkdown`이 실행될 때까지 약간의 시간 지연
+        setTimeout(() => {
+          // 🔥 `setMarkdown`이 실행될 때까지 약간의 시간 지연
           if (questionEditorInstance) {
             questionEditorInstance.setMarkdown(rawQuestion);
             console.log("✅ 후:", questionEditorInstance.getMarkdown());
