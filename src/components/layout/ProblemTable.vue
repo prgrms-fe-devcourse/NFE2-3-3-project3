@@ -255,8 +255,8 @@ const sortedProblems = computed(() => {
         const bLikes = b.likes_count ?? 0;
 
         // problem.problem.likes[0]?.count가 있는 경우 (공유받은 문제)
-        const aSharedLikes = a.problem?.likes?.[0]?.count ?? 0;
-        const bSharedLikes = b.problem?.likes?.[0]?.count ?? 0;
+        const aSharedLikes = a.likes ?? 0;
+        const bSharedLikes = b.likes ?? 0;
 
         // 둘 중 존재하는 값 사용
         return (bLikes || bSharedLikes) - (aLikes || aSharedLikes);

@@ -133,6 +133,15 @@ const createCategory = async () => {
 // 수정 완료 핸들러
 const handleUpdate = async () => {
   try {
+    const category = editedProblem.value.category;
+    const normalizedCategoryId = category ? 
+      (typeof category === 'object' ? 
+        (toRaw(category)?.id || category.id) : 
+        category) 
+      : null;
+    
+    editedProblem.value.category = normalizedCategoryId;
+
     const success = await problemUpdateStore.saveProblem();
     if (success) {
       router.push(`/problem-board/${props.problem.id}`);
