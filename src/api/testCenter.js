@@ -58,6 +58,47 @@ const getAllFields = async (uid) => {
   return data;
 };
 
+const getTestCenterParticipants = async (testCenterId) => {
+  try {
+    // 1. 시험장 정보와 생성자 정보 가져오기
+    const { data: testCenter, error: testCenterError } = await supabase
+      .from("test_center")
+      .select(`
+        uid,
+        user_info!inner(name)
+      `)
+      .eq("id", testCenterId)
+      .single();
+
+    if (testCenterError) throw testCenterError;
+
+    // 2. 초대된 참가자들의 정보 가져오기
+    const { data: invites, error: inviteError } = await supabase
+      .from("invite")
+      .select("target_uid")
+      .eq("test_center_id", testCenterId)
+      .eq("participate", true);
+
+    if (inviteError) throw inviteError;
+
+    // 3. 참가자들의 이름 가져오기
+    const { data: participants, error: userError } = await supabase
+      .from("user_info")
+      .select("name")
+      .in("id", invites.map(invite => invite.target_uid));
+
+    if (userError) throw userError;
+
+    return {
+      creator: testCenter.user_info,
+      participants: participants || []
+    };
+  } catch (error) {
+    console.error("참가자 목록 조회 실패:", error);
+    throw error;
+  }
+};
+
 /**
  * @description 시험에 사용되는 정보들을 반환하는 API
  * @param {Number} testCenterId 시험장 id
@@ -142,5 +183,6 @@ export const testCenterAPI = {
   updateStartTime,
   updateEndTime,
   getAllFields,
+  getTestCenterParticipants,
   deleteTestCenter,
 };

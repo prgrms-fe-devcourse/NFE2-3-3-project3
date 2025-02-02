@@ -6,7 +6,6 @@ import { RouterLink, useRouter } from "vue-router";
 // Components
 import ExamCard from "@/pages/exam-room/components/ExamCard.vue";
 import InvitedExamCard from "./components/InvitedExamCard.vue";
-import ConfirmDialog from "primevue/confirmdialog";
 
 // Icons
 import createIcon from "@/assets/icons/exam-room/edit_square.svg";
@@ -18,6 +17,7 @@ import { inviteAPI } from "@/api/invite";
 // Store & Composables
 import { useAuthStore } from "@/store/authStore";
 import { useConfirm } from "primevue/useconfirm";
+import { ConfirmDialog } from 'primevue';
 
 // Constants
 const ITEMS_PER_PAGE = 4;
@@ -94,7 +94,7 @@ const fetchExams = async () => {
       authStore.user.id,
     );
 
-    // 2. 초대받은 시험장 중 수락한 목록
+    // 2. 초대받은 시험장 목록
     const inviteResponse = await inviteAPI.getAll(authStore.user.id);
     const acceptedInvites =
       inviteResponse?.filter((invite) => invite.participate) || [];
@@ -127,9 +127,12 @@ const fetchExams = async () => {
         return !ongoingExamIds.includes(exam.id) && endDate >= now;
       }) || [];
 
-    // 초대된 시험 중 미응답 목록
-    invitedExams.value =
-      inviteResponse?.filter((invite) => !invite.participate) || [];
+    // 초대된 시험 중 미응답이면서 종료일이 지나지 않은 시험만 표시
+    invitedExams.value = inviteResponse?.filter((invite) => {
+      const endDate = new Date(invite.test_center.end_date);
+      return !invite.participate && endDate >= now;  // 종료일이 현재보다 이후인 시험만 필터링
+    }) || [];
+    
   } catch (error) {
     console.error("시험 데이터 로딩 실패:", error);
   }
@@ -267,6 +270,7 @@ watchEffect(fetchExams);
   </RouterLink>
 
   <ConfirmDialog />
+
 </template>
 
 <style scoped>
