@@ -113,10 +113,10 @@ onBeforeUnmount(() => {
         v-if="isAgainViewProblem"
         @click="deleteAgainViewProblem"
         label="다시 볼 문제"
-        icon="pi pi-flag-fill"
+        icon="pi pi-flag"
         size="small"
         severity="secondary"
-        class="w-24"
+        class="w-24 !bg-orange-3 !text-orange-500"
       />
       <Button
         v-else
