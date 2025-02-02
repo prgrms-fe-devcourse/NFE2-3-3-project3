@@ -1,7 +1,7 @@
 <script setup>
 import ProblemTable from "@/components/layout/ProblemTable.vue";
 import Search from "@/components/layout/Search.vue";
-import { ref, watch } from "vue";
+import { ref, watch, onBeforeMount, computed } from "vue";
 import { SORT } from "@/const/sorts";
 import { useAuthStore } from "@/store/authStore";
 import { storeToRefs } from "pinia";
@@ -10,7 +10,10 @@ import { problemAPI } from "@/api/problem";
 import { categoryAPI } from "@/api/category";
 import { useToast } from "primevue/usetoast";
 import { useRouter } from "vue-router";
+import { useRoute } from "vue-router";
+import { formatDate } from "@/utils/formatDate";
 
+const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
@@ -25,17 +28,13 @@ const handleFilterChange = (type) => {
   filterType.value = type;
 };
 
-const filterProblems = () => {
+const filteredProblems = computed(() => {
   if (filterType.value === "all") {
-    problems.value = initialProblems.value;
+    return problems.value;
   } else if (filterType.value === "againView") {
-    problems.value = initialProblems.value.filter(
-      (problem) => problem.againView,
-    );
-  } else if (filterType.value === "myProblems") {
-    problems.value = initialProblems.value.filter((problem) => problem.isOwner);
+    return problems.value.filter((problem) => problem.againView);
   }
-};
+});
 
 const loadProblems = async (userId) => {
   if (!userId) return;
@@ -150,11 +149,11 @@ const search = async (
 
     problems.value = filteredProblems;
 
-    router.push({
+    router.replace({
       query: {
         ...(keyword && { keyword }),
-        ...(startDate && { startDate }),
-        ...(endDate && { endDate }),
+        ...(startDate && { startDate: formatDate(startDate) }),
+        ...(endDate && { endDate: formatDate(startDate) }),
         ...(status && { status }),
         sort,
       },
@@ -167,30 +166,28 @@ const search = async (
   }
 };
 
+onBeforeMount(() => {
+  loadProblems(user.value.id);
+});
+
 watch(
-  () => user.value?.id,
-  (newUserId) => {
-    if (newUserId) {
-      loadProblems(newUserId);
-    }
+  () => route.query,
+  (newQuery) => {
+    filterType.value = newQuery.type || "all";
   },
   { immediate: true },
 );
-
-// 필터 변경 감시
-watch(filterType, filterProblems);
 </script>
 
 <template>
   <section class="flex flex-col w-[1000px] mx-auto relative">
-    <Toast />
     <h1 class="text-[42px] font-laundry mb-16">보관한 문제</h1>
     <div class="flex flex-col gap-16">
       <Search :show-status="true" @search="search" />
       <div v-if="loading" class="text-center">로딩 중...</div>
       <ProblemTable
         v-else
-        :problems="problems"
+        :problems="filteredProblems"
         :show-my-problem="true"
         :show-shared-problem="true"
         :show-problem="true"
