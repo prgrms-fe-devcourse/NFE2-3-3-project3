@@ -81,7 +81,6 @@ watch(
 <template>
   <section class="w-full pl-4">
     <div class="grid grid-cols-3 gap-4">
-      <!-- 카드 시작 -->
       <div
         class="flex items-center pl-8 pr-4 pb-10 pt-4 bg-white border border-[#D4D4D4] rounded-2xl text-start overflow-hidden"
       >
