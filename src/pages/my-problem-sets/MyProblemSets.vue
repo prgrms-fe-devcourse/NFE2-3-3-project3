@@ -294,7 +294,7 @@ onMounted(() => {
         <button
           v-if="workbooks.length > 4"
           @click="toggleMyBooksViewAll"
-          class="px-2 py-2 text-sm font-medium text-orange-1 border border-orange-1 rounded-md hover:bg-orange-1 hover:text-white transition-all flex items-center gap-2"
+          class="px-2 py-2 font-medium text-[#B1B1B1] border rounded-md hover:bg-black-5 hover:text-black transition-all flex items-center gap-2"
         >
           {{ isMyBooksViewAll ? "접기" : "전체보기" }}
           <span
@@ -315,8 +315,10 @@ onMounted(() => {
           @click="goToProblemSet(book.id)"
         >
           <div>
-            <h3 class="font-semibold">{{ book.title }}</h3>
-            <p class="text-sm text-gray-600 truncate">{{ book.description }}</p>
+            <p class="text-lg font-semibold truncate">{{ book.title }}</p>
+            <p class="text-sm text-gray-600 line-clamp-2">
+              {{ book.description }}
+            </p>
           </div>
           <div class="flex justify-between items-center mt-2">
             <img
@@ -344,8 +346,8 @@ onMounted(() => {
             @click="goToProblemSet(book.id)"
           >
             <div>
-              <h3 class="font-semibold">{{ book.title }}</h3>
-              <p class="text-sm text-gray-600 truncate">
+              <h3 class="font-semibold line-clamp-1">{{ book.title }}</h3>
+              <p class="text-sm text-gray-600 line-clamp-2">
                 {{ book.description }}
               </p>
             </div>
@@ -387,8 +389,10 @@ onMounted(() => {
           @click="goToProblemSet(book.id)"
         >
           <div>
-            <h3 class="font-semibold">{{ book.title }}</h3>
-            <p class="text-sm text-gray-600 truncate">{{ book.description }}</p>
+            <h3 class="font-semibold line-clamp-1">{{ book.title }}</h3>
+            <p class="text-sm text-gray-600 line-clamp-2">
+              {{ book.description }}
+            </p>
           </div>
           <div class="flex justify-between items-center mt-2">
             <div class="flex items-center">
@@ -419,10 +423,24 @@ onMounted(() => {
     <!-- 모달 -->
     <Dialog
       v-model:visible="showDialog"
-      header="문제집 추가하기"
       modal
-      class="w-[500px]"
+      :closable="false"
+      class="custom-dialog w-[500px]"
     >
+      <template #header>
+        <div class="flex justify-between items-center w-full border-gray-200">
+          <span class="font-bold text-lg text-gray-800 flex-shrink-0"
+            >문제집 추가하기</span
+          >
+          <button
+            @click="showDialog = false"
+            class="font-medium flex justify-center items-center w-8 h-8 rounded-full bg-transparent hover:bg-[#F0F0F0] transition-colors duration-300 text-xl"
+          >
+            X
+          </button>
+        </div>
+      </template>
+
       <div class="flex flex-col gap-4">
         <div>
           <label for="title" class="block text-sm font-medium"
@@ -445,7 +463,7 @@ onMounted(() => {
           <textarea
             id="description"
             rows="4"
-            class="w-full border rounded px-2 py-1"
+            class="w-full border rounded px-2 py-1 resize-none"
             v-model="description"
           ></textarea>
           <p class="text-xs text-gray-500 mt-1 text-right">
@@ -467,7 +485,7 @@ onMounted(() => {
           />
           <Button
             label="취소"
-            class="group p-button-text hover:bg-orange-1"
+            class="group p-button-text button-cancel"
             @click="showDialog = false"
           />
         </div>
@@ -494,5 +512,11 @@ onMounted(() => {
 .fade-leave-to {
   opacity: 0;
   transform: translateY(-10px);
+}
+
+.custom-dialog .button-cancel:hover {
+  background-color: #ffa500;
+  color: #ffffff;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 </style>
