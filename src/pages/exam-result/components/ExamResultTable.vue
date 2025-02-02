@@ -41,7 +41,7 @@ watch(
     if (!newProblem) {
       console.warn("currentProblem이 설정되지 않았습니다.");
       examResultStore.currentProblem = null; // currentProblem 초기화
-      examResultStore.againViewProblems = []; // "다시 볼 문제" 상태 초기화
+      examResultStore.againViewProblems = []; // "다시 풀 문제" 상태 초기화
       return;
     }
 

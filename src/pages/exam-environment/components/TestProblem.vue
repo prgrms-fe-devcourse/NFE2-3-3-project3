@@ -35,8 +35,8 @@ const addAgainViewProblem = async () => {
   isAgainViewProblem.value = true;
   toast.add({
     severity: "success",
-    summary: "다시 볼 문제 추가",
-    detail: "다시 볼 문제에 추가되었습니다.",
+    summary: "다시 풀 문제 추가",
+    detail: "다시 풀 문제에 추가되었습니다.",
     life: 3000,
   });
 };
@@ -46,8 +46,8 @@ const deleteAgainViewProblem = async () => {
   isAgainViewProblem.value = false;
   toast.add({
     severity: "success",
-    summary: "다시 볼 문제 삭제",
-    detail: "다시 볼 문제에서 삭제되었습니다.",
+    summary: "다시 풀 문제 삭제",
+    detail: "다시 풀 문제에서 삭제되었습니다.",
     life: 3000,
   });
 };
@@ -89,7 +89,7 @@ watch(
     // 이미지 전체화면 이벤트리스너 등록
     addImageClickListeners();
 
-    // 다시 볼 문제 여부 체크
+    // 다시 풀 문제 여부 체크
     const data = await againViewProblemAPI.getByProblemId(
       user.value.id,
       problemId,
@@ -112,7 +112,7 @@ onBeforeUnmount(() => {
       <Button
         v-if="isAgainViewProblem"
         @click="deleteAgainViewProblem"
-        label="다시 볼 문제"
+        label="다시 풀 문제"
         icon="pi pi-flag"
         size="small"
         severity="secondary"
@@ -121,7 +121,7 @@ onBeforeUnmount(() => {
       <Button
         v-else
         @click="addAgainViewProblem"
-        label="다시 볼 문제"
+        label="다시 풀 문제"
         icon="pi pi-flag"
         size="small"
         severity="secondary"
