@@ -14,9 +14,10 @@ const props = defineProps({
 
 const emit = defineEmits(["update:examDateTime", "update:duration"]);
 
+const now = new Date();
 const selectedDate = ref(new Date());
-const startHours = ref(0);
-const startMinutes = ref(0);
+const startHours = ref(now.getHours());
+const startMinutes = ref(now.getMinutes());
 const durationHours = ref(0);
 const durationMinutes = ref(0);
 
@@ -91,6 +92,7 @@ watch([durationHours, durationMinutes], () => {
       />
     </div>
     <div class="flex gap-4 w-fit flex-col">
+      <!-- 시작 시간 -->
       <h3 class="text-lg font-medium shrink-0">시작 시간</h3>
       <div class="flex items-center gap-2">
         <input
@@ -116,6 +118,7 @@ watch([durationHours, durationMinutes], () => {
         <label class="text-gray-600 block shrink-0 text-lg">분</label>
         <span class="text-gray-600 shrink-0 text-lg">부터</span>
       </div>
+      <!-- 지속 시간 -->
       <div class="flex gap-4 w-full flex-col">
         <h3 class="text-lg font-medium w-full">지속 시간 설정</h3>
         <div class="flex items-center gap-2 w-full">
