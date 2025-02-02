@@ -15,7 +15,7 @@ const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
 const problems = ref([]);
 
-const search = async (keyword, startDate, endDate, status) => {
+const search = async (keyword, startDate, endDate, sort, status) => {
   problems.value = await problemAPI.search(
     user.value.id,
     keyword,
@@ -30,6 +30,7 @@ const search = async (keyword, startDate, endDate, status) => {
       startDate: formatDate(startDate),
       endDate: formatDate(endDate),
       status,
+      sort,
       page: 1,
     },
   });

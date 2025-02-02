@@ -42,15 +42,36 @@ const handleClickOutside = (event) => {
 };
 
 watch(status, (newStatus) => {
-  emit("search", keyword.value, startDate.value, endDate.value, newStatus);
+  emit(
+    "search",
+    keyword.value,
+    startDate.value,
+    endDate.value,
+    route.query.sort,
+    newStatus,
+  );
 });
 
 watch(startDate, (newStartDate) => {
-  emit("search", keyword.value, newStartDate, endDate.value, status.value);
+  emit(
+    "search",
+    keyword.value,
+    newStartDate,
+    endDate.value,
+    route.query.sort,
+    status.value,
+  );
 });
 
 watch(endDate, (newEndDate) => {
-  emit("search", keyword.value, startDate.value, newEndDate, status.value);
+  emit(
+    "search",
+    keyword.value,
+    startDate.value,
+    newEndDate,
+    route.query.sort,
+    status.value,
+  );
 });
 
 onMounted(() => {

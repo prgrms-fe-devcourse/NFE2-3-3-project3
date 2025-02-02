@@ -103,7 +103,7 @@ const first = ref(0);
 const rows = ref(10);
 const selectedProblems = ref([]);
 const showProblemSet = ref(false);
-const activeFilter = ref(null);
+const activeFilter = ref(route.query.type || null);
 
 const handleAddClick = () => {
   emit("open-dialog");
@@ -115,10 +115,12 @@ const handleFilterButtonClick = (filterType) => {
     // 같은 버튼을 두 번 클릭하면 필터 해제
     activeFilter.value = null;
     emit("filter-change", "all");
+    router.replace({ query: { ...route.query, type: undefined } });
   } else {
     // 새로운 필터 적용
     activeFilter.value = filterType;
     emit("filter-change", filterType);
+    router.replace({ query: { type: filterType } });
   }
 };
 
