@@ -20,7 +20,6 @@ import plus from "@/assets/icons/problem-board/plus.svg";
 import minus from "@/assets/icons/problem-board/minus.svg";
 import statusWrong from "@/assets/icons/problem-board/status-wrong.svg";
 import statusSolved from "@/assets/icons/problem-board/status-solved.svg";
-import seeMyProblems from "@/assets/icons/my-problems/see-my-problems.svg";
 import checkedMyProblem from "@/assets/icons/my-problems/color-my-problems.svg";
 import { useRoute } from "vue-router";
 import { useRouter } from "vue-router";
@@ -225,7 +224,11 @@ const sortedProblems = computed(() => {
         const bSharedLikes = b.likes ?? 0;
 
         // 둘 중 존재하는 값 사용
-        return (bLikes || bSharedLikes) - (aLikes || aSharedLikes);
+        if (aLikes === bLikes && aSharedLikes === bSharedLikes) {
+          return new Date(b.created_at) - new Date(a.created_at);
+        } else {
+          return (bLikes || bSharedLikes) - (aLikes || aSharedLikes);
+        }
       });
     default:
       return problems;
