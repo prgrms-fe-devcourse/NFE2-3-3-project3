@@ -1,23 +1,12 @@
 <script setup>
-import {
-  ref,
-  onMounted,
-  onBeforeUnmount,
-  defineProps,
-  computed,
-  inject,
-} from "vue";
+import { ref, defineProps, computed, inject } from "vue";
 import {
   Button,
   Column,
   DataTable,
   Select,
   Tag,
-  InputText,
-  Listbox,
-  Textarea,
   useToast,
-  ToggleSwitch,
   useConfirm,
 } from "primevue";
 import { storeToRefs } from "pinia";
@@ -37,6 +26,7 @@ import { useRoute } from "vue-router";
 import { useRouter } from "vue-router";
 import { watch, onBeforeMount } from "vue";
 import ConfirmModal from "./ConfirmModal.vue";
+import ProblemSetPopUp from "./ProblemSetPopUp.vue";
 
 const props = defineProps({
   problems: {
@@ -109,10 +99,6 @@ const currentSort = route.query.sort === SORT.likes ? SORTS[1] : SORTS[0];
 
 const popup = ref(null);
 const sorts = ref(SORTS);
-const title = ref("");
-const shared = ref(false);
-const description = ref("");
-const problemSets = ref([]);
 const sort = ref(currentSort);
 const first = ref(0);
 const rows = ref(10);
@@ -147,12 +133,10 @@ const ShowProblemSetPopup = () => {
 };
 
 const showAddProblemSet = ref(false);
-const showAddProblemSetPopup = () => {
-  showAddProblemSet.value = true;
-};
 
-const addProblemToProblemSet = async (problemSetId, problems) => {
-  const problemIds = problems.map((problem) => problem.id);
+const addProblemToProblemSet = async (selectedProblemSet) => {
+  const problemSetId = selectedProblemSet.id;
+  const problemIds = selectedProblems.value.map((problem) => problem.id);
   const { data, insertedCount } = await problemAPI.addMultiple(
     problemSetId,
     problemIds,
@@ -173,19 +157,7 @@ const addProblemToProblemSet = async (problemSetId, problems) => {
     });
   }
 
-  if (showProblemSet.value) showProblemSet.value = false;
-  if (showAddProblemSet.value) showAddProblemSet.value = false;
   selectedProblems.value = [];
-};
-
-const addProblemSet = async () => {
-  const problemSet = await workbookAPI.add(
-    title.value,
-    description.value,
-    shared.value,
-  );
-  problemSets.value = [...problemSets.value, problemSet];
-  showAddProblemSet.value = false;
 };
 
 const deleteProblem = (problem_id) => {
@@ -232,12 +204,6 @@ const messageStatus = (status) => {
       return "없음";
   }
 };
-const handleClickOutside = (event) => {
-  if (popup?.value && !popup?.value.contains(event.target)) {
-    if (showProblemSet.value) showProblemSet.value = false;
-    if (showAddProblemSet.value) showAddProblemSet.value = false;
-  }
-};
 
 const sortedProblems = computed(() => {
   if (!props.problems) return [];
@@ -255,8 +221,8 @@ const sortedProblems = computed(() => {
         const bLikes = b.likes_count ?? 0;
 
         // problem.problem.likes[0]?.count가 있는 경우 (공유받은 문제)
-        const aSharedLikes = a.problem?.likes?.[0]?.count ?? 0;
-        const bSharedLikes = b.problem?.likes?.[0]?.count ?? 0;
+        const aSharedLikes = a.likes ?? 0;
+        const bSharedLikes = b.likes ?? 0;
 
         // 둘 중 존재하는 값 사용
         return (bLikes || bSharedLikes) - (aLikes || aSharedLikes);
@@ -306,15 +272,6 @@ watch(first, (newFirst) => {
 onBeforeMount(async () => {
   const page = route.query.page ?? 1;
   first.value = (page - 1) * rows.value;
-  problemSets.value = await workbookAPI.getAll(user.value.id);
-});
-
-onMounted(() => {
-  window.addEventListener("click", handleClickOutside);
-});
-
-onBeforeUnmount(() => {
-  window.removeEventListener("click", handleClickOutside);
 });
 </script>
 <template>
@@ -540,70 +497,13 @@ onBeforeUnmount(() => {
         @click="ShowProblemSetPopup"
       />
 
-      <div v-if="showProblemSet" class="w-64 absolute -bottom-0 -right-[17rem]">
-        <Listbox
-          :key="problemSets.length"
-          :options="problemSets"
-          filter
-          optionLabel="title"
-          listStyle="max-height: 14rem"
-        >
-          <template #option="slotProps">
-            <div
-              class="flex items-center w-full gap-2"
-              @click="
-                addProblemToProblemSet(slotProps.option.id, selectedProblems)
-              "
-            >
-              <i class="pi pi-folder"></i>
-              <div>{{ slotProps.option.title }}</div>
-            </div>
-          </template>
-        </Listbox>
-        <Button
-          label="새로운 문제집 만들기"
-          icon="pi pi-plus"
-          class="w-[14.4rem]"
-          @click="showAddProblemSetPopup"
-        />
-      </div>
-
-      <div
-        v-if="showAddProblemSet"
-        class="w-64 absolute bottom-0 -right-[34rem]"
-      >
-        <div class="flex flex-col gap-4 px-4 py-2 bg-white border rounded-lg">
-          <div class="flex flex-col gap-2">
-            <label for="title" class="text-sm">문제집 이름</label>
-            <InputText
-              id="title"
-              v-model="title"
-              placeholder="문제집 이름을 입력해주세요"
-            />
-          </div>
-          <div class="flex flex-col gap-2">
-            <label for="description" class="text-sm">문제집 설명</label>
-            <Textarea
-              v-model="description"
-              id="description"
-              class="border rounded-md resize-none font-sans px-2 py-1.5"
-              rows="5"
-              cols="30"
-              placeholder="문제집 설명을 입력해주세요"
-            />
-          </div>
-          <div class="flex flex-col gap-2">
-            <label for="shared" class="text-sm">게시판 공유 여부</label>
-            <ToggleSwitch id="shared" v-model="shared" />
-          </div>
-        </div>
-        <Button
-          @click="addProblemSet"
-          label="문제집 추가하기"
-          icon="pi pi-plus"
-          class="w-[14.4rem]"
-        />
-      </div>
+      <ProblemSetPopUp
+        :parent-ref="popup"
+        v-model:show-problem-set="showProblemSet"
+        v-model:show-add-popup="showAddProblemSet"
+        @clickProblemSet="addProblemToProblemSet"
+        class="absolute -bottom-0 -right-[17rem]"
+      />
     </div>
   </section>
   <ConfirmModal group="delete" acceptButtonName="제거" />
