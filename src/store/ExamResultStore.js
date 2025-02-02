@@ -202,19 +202,19 @@ export const useExamResultStore = defineStore("examResult", {
           problemId,
         );
         if (result.length > 0) {
-          // "다시 볼 문제"로 설정
+          // "다시 풀 문제"로 설정
           if (!this.againViewProblems.includes(problemId)) {
             this.againViewProblems.push(problemId); // 배열에 추가
           }
         } else {
-          // "다시 볼 문제"에서 제거
+          // "다시 풀 문제"에서 제거
           const index = this.againViewProblems.indexOf(problemId);
           if (index !== -1) {
             this.againViewProblems.splice(index, 1); // 배열에서 제거
           }
         }
       } catch (error) {
-        console.error("다시 볼 문제 상태 확인 실패:", error);
+        console.error("다시 풀 문제 상태 확인 실패:", error);
       }
     },
 
@@ -235,8 +235,8 @@ export const useExamResultStore = defineStore("examResult", {
           });
           toast?.add({
             severity: "success",
-            summary: "다시 볼 문제 추가",
-            detail: "다시 볼 문제로 추가되었습니다.",
+            summary: "다시 풀 문제 추가",
+            detail: "다시 풀 문제로 추가되었습니다.",
             life: 3000,
           });
         } else {
@@ -246,8 +246,8 @@ export const useExamResultStore = defineStore("examResult", {
           await againViewProblemAPI.delete(problemId);
           toast?.add({
             severity: "info",
-            summary: "다시 볼 문제 해제",
-            detail: "다시 볼 문제가 해제되었습니다.",
+            summary: "다시 풀 문제 해제",
+            detail: "다시 풀 문제가 해제되었습니다.",
             life: 3000,
           });
         }
@@ -287,8 +287,8 @@ export const useExamResultStore = defineStore("examResult", {
           problem.flagged = false;
           toast?.add({
             severity: "info",
-            summary: "다시 볼 문제 해제",
-            detail: "다시 볼 문제가 해제되었습니다.",
+            summary: "다시 풀 문제 해제",
+            detail: "다시 풀 문제가 해제되었습니다.",
             life: 3000,
           });
         } else {
@@ -300,17 +300,17 @@ export const useExamResultStore = defineStore("examResult", {
           problem.flagged = true;
           toast?.add({
             severity: "success",
-            summary: "다시 볼 문제 추가",
-            detail: "다시 볼 문제로 추가되었습니다.",
+            summary: "다시 풀 문제 추가",
+            detail: "다시 풀 문제로 추가되었습니다.",
             life: 3000,
           });
         }
       } catch (error) {
-        console.error("다시 볼 문제 토글 실패:", error);
+        console.error("다시 풀 문제 토글 실패:", error);
         toast?.add({
           severity: "error",
           summary: "오류 발생",
-          detail: "다시 볼 문제를 업데이트할 수 없습니다.",
+          detail: "다시 풀 문제를 업데이트할 수 없습니다.",
           life: 3000,
         });
       }
@@ -325,7 +325,7 @@ export const useExamResultStore = defineStore("examResult", {
 
       this.currentProblem = problem;
 
-      // 현재 문제가 "다시 볼 문제"인지 상태를 업데이트
+      // 현재 문제가 "다시 풀 문제"인지 상태를 업데이트
       if (problemId && userId) {
         try {
           await this.checkAgainViewStatus(userId, problemId);

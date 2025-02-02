@@ -283,7 +283,7 @@ onBeforeMount(async () => {
         </p>
         <Button
           v-if="showProblem"
-          label="다시 볼 문제"
+          label="다시 풀 문제"
           icon="pi pi-flag"
           size="small"
           severity="secondary"
