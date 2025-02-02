@@ -1,58 +1,94 @@
 <script setup>
-import { ref, reactive, watchEffect } from "vue";
+import { ref, reactive, watchEffect, onMounted } from "vue";
 import arrowLeftPath from "@/assets/icons/problem-editor/arrow-left.svg";
 import folderPath from "@/assets/icons/problem-editor/folder.svg";
 import arrowTopPath from "@/assets/icons/problem-editor/arrow-top.svg";
 import { Button } from "primevue";
 import { workbookAPI } from "@/api/workbook";
+import { useToast } from "primevue/usetoast";
+import { useCreateProblemStore } from "@/store/createProblemStore";
 import { useAuthStore } from "@/store/authStore";
+import { storeToRefs } from "pinia";
 import ProblemSetPopUp from "@/components/layout/ProblemSetPopUp.vue";
 const props = defineProps({
   storedFolder: {
     type: Object,
   },
 });
-const emits = defineEmits([
-  "submitProblems",
-  "onGoingBack",
-  "setProblemFolder",
-]);
 
+const toast = useToast();
 const { user } = useAuthStore();
 
 const popup = ref(null);
 
+const createProblemStore = useCreateProblemStore();
+const { createdProblems } = storeToRefs(createProblemStore);
+
 // 팝업 열림 상태
 const isFolderOpen = ref(false);
 const isCreateNewFolder = ref(false);
+
+const emits = defineEmits(["submitProblems", "onGoingBack"]);
+
 // 선택된 폴더
 const selectedFolder = ref("");
+const createdNewFolder = ref({
+  title: "",
+  description: "",
+  shared: false,
+});
 
-// 폴더 토글 버튼 조작
+//폴더 토글 버튼 조작
 const onClickFolder = () => {
   isFolderOpen.value = !isFolderOpen.value;
   isCreateNewFolder.value = false;
 };
 
-// 초기값은 API에서 불러오기
-// my problemsets
+//초기값은 API에서 불러오기
+//my problemsets
 const problemSets = reactive([]);
+
+// const setFolder = (folder) => {
+//   if (!folder || typeof folder !== "object") {
+//     console.error("setFolder: 유효하지 않은 folder 값이 전달됨:", folder);
+//     folder = { id: "", title: "문제집을 선택하세요" };
+//   }
+
+//   createProblemStore.setProblemFolder(folder);
+//   // Object.assign(selectedProblemSet, folder);
+
+//   Object.assign(selectedProblemSet.value, folder);
+//   selectedFolder.value = folder.title;
+//   closeAllPopups();
+// };
 
 //폴더 지정 함수
 const setFolder = (folder) => {
   selectedFolder.value = folder.title;
-  emits("setProblemFolder", folder);
+  createProblemStore.setProblemFolder(folder);
 };
 
-const setFolderFromList = (selectedProblemSet) => {
-  if (!selectedProblemSet) {
+const onCreateNewFolder = async (selectedFolder) => {
+  setFolder(selectedFolder);
+  problemSets.push(selectedFolder);
+  selectedProblemSet.value = selectedFolder;
+};
+
+const setFolderFromList = (value) => {
+  console.log("value", value);
+  if (!value) {
     setFolder({ id: "", title: "문제집을 선택하세요" });
-  } else setFolder(selectedProblemSet);
+  } else {
+    setFolder(value);
+  }
+  isFolderOpen.value = false;
 };
 
 watchEffect(() => {
-  // `props.storedFolder`가 존재하는 경우 설정
-  const folder = props.storedFolder || { id: "", title: "문제집을 선택하세요" };
+  const folder = createdProblems.value.folder || {
+    id: "",
+    title: "문제집을 선택하세요",
+  };
   setFolder(folder);
 });
 
@@ -74,7 +110,9 @@ const fetchProblemSets = async () => {
   }
 };
 
-fetchProblemSets();
+onMounted(() => {
+  fetchProblemSets();
+});
 </script>
 <template>
   <header
@@ -95,14 +133,9 @@ fetchProblemSets();
       <p class="p-1.5 bg-orange-1 rounded mr-4">
         <img :src="folderPath" alt="폴더" class="align-middle" />
       </p>
-      <span
-        class="text-xl font-medium mr-4"
-        :class="{
-          'text-red-1':
-            selectedFolder === '문제집을 선택하세요' && !!selectedFolder,
-        }"
-        >{{ selectedFolder }}</span
-      >
+      <span class="text-xl font-medium mr-4">{{
+        createdProblems.folder.title
+      }}</span>
       <img
         :src="arrowTopPath"
         :alt="isFolderOpen ? '폴더 토글 닫힘' : '폴더 토글 열림'"
@@ -111,13 +144,15 @@ fetchProblemSets();
           'transform transition-transform duration-300',
         ]"
       />
+
       <!-- 팝업 -->
       <ProblemSetPopUp
         :parent-ref="popup"
         v-model:show-problem-set="isFolderOpen"
         v-model:show-add-popup="isCreateNewFolder"
         @clickProblemSet="setFolderFromList"
-        class="w-64 absolute top-full left-1/2 -translate-x-1/2 mt-3 ml-5"
+        @clickAddProblemSet="onCreateNewFolder"
+        class="w-64 absolute top-full left-1/2 -translate-x-1/2 mt-3"
       />
     </div>
     <Button label="저장하기" @click="emits('submitProblems')"></Button>

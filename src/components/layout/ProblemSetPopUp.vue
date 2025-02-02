@@ -37,6 +37,7 @@ const emit = defineEmits([
   "update:showProblemSet",
   "update:showAddPopup",
   "clickProblemSet",
+  "clickAddProblemSet",
 ]);
 
 const toast = useToast();
@@ -92,8 +93,8 @@ const addProblemSet = async ({ valid }) => {
   if (!valid) return;
 
   const problemSet = await workbookAPI.add(
-    title.value,
-    description.value,
+    title.value.trim(),
+    description.value.trim(),
     shared.value,
   );
 
@@ -101,6 +102,7 @@ const addProblemSet = async ({ valid }) => {
   description.value = "";
   shared.value = false;
   problemSets.value = [...problemSets.value, problemSet];
+  emit("clickAddProblemSet", problemSet);
   emit("update:showAddPopup", false);
 };
 
@@ -172,6 +174,7 @@ onBeforeUnmount(() => {
             name="title"
             v-model="title"
             placeholder="문제집 이름을 입력해주세요"
+            :maxlength="20"
           />
         </div>
         <div class="flex flex-col gap-2">
@@ -183,6 +186,7 @@ onBeforeUnmount(() => {
             rows="5"
             cols="30"
             placeholder="문제집 설명을 입력해주세요"
+            :maxlength="200"
           />
         </div>
         <div class="flex flex-col gap-2">
