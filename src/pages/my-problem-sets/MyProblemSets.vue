@@ -10,6 +10,8 @@ import { useWorkbookStore } from "@/store/workbookStore";
 import { storeToRefs } from "pinia";
 import { workbookAPI } from "@/api/workbook";
 import { useRouter } from "vue-router";
+import { userAPI } from "@/api/user";
+import { getCurrentGradeInfo } from "@/utils/getCurrentGradeInfo";
 
 const authStore = useAuthStore();
 const workbookStore = useWorkbookStore();
@@ -81,6 +83,23 @@ const resetFormFields = () => {
 //제목 & 설명 길이 제한
 const titleLength = computed(() => title.value?.length || 0);
 const descriptionLength = computed(() => description.value?.length || 0);
+
+const openAddDialog = async () => {
+  const currentUser = await userAPI.getOne(authStore.user.id);
+  const grade = getCurrentGradeInfo(currentUser.total_points);
+  console.log(workbooks.value.length, grade.current.problemSetLimit);
+  if (workbooks.value.length >= grade.current.problemSetLimit) {
+    toast.add({
+      severity: "error",
+      summary: "문제집 생성 실패",
+      detail: "현재 등급에서의 문제집 갯수 제한에 도달했습니다.",
+      life: 3000,
+    });
+    return;
+  }
+
+  showDialog.value = true;
+};
 
 //문제집 추가
 const addWorkbook = async () => {
@@ -194,7 +213,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <section class="flex flex-col gap-16 w-[1000px] mx-auto mt-[72px]">
+  <section class="flex flex-col gap-16 w-[1000px] mx-auto">
     <h1 class="text-[42px] font-laundry">보관한 문제집</h1>
     <section class="flex flex-col gap-[18px] relative">
       <div class="flex items-center gap-[16px]">
@@ -315,15 +334,67 @@ onMounted(() => {
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- 아래의 img가 모달을 나오게 해주는 버튼 -->
-    <img
-      :src="createWorkbook"
-      alt="createWorkbook"
-      class="fixed flex items-center justify-center w-16 h-16 rounded-full cursor-pointer bg-orange-1 right-20 bottom-20"
-      @click="showDialog = true"
-    />
+      <!-- 아래의 img가 모달을 나오게 해주는 버튼 -->
+      <img
+        :src="createWorkbook"
+        alt="createWorkbook"
+        class="fixed flex items-center justify-center w-16 h-16 rounded-full cursor-pointer bg-orange-1 right-20 bottom-20"
+        @click="openAddDialog"
+      />
+
+      <!-- 모달 -->
+      <Dialog
+        v-model:visible="showDialog"
+        header="문제집 추가하기"
+        modal
+        class="w-[500px]"
+      >
+        <div class="flex flex-col gap-4">
+          <div>
+            <label for="title" class="block text-sm font-medium"
+              >문제집 제목</label
+            >
+            <input
+              id="title"
+              type="text"
+              class="w-full border rounded px-2 py-1"
+              v-model="title"
+            />
+          </div>
+          <div>
+            <label for="description" class="block text-sm font-medium"
+              >문제집 설명</label
+            >
+            <textarea
+              id="description"
+              rows="4"
+              class="w-full border rounded px-2 py-1"
+              v-model="description"
+            ></textarea>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <label for="shared" class="text-sm font-medium">공개 여부</label>
+            <ToggleSwitch v-model="shared" name="shared" />
+          </div>
+        </div>
+        <template #footer>
+          <div class="flex justify-end gap-2">
+            <Button
+              label="문제집 추가하기"
+              class="p-button"
+              @click="addWorkbook"
+            />
+            <Button
+              label="취소"
+              class="p-button-text"
+              @click="showDialog = false"
+            />
+          </div>
+        </template>
+      </Dialog>
+    </section>
 
     <!-- 모달 -->
     <Dialog

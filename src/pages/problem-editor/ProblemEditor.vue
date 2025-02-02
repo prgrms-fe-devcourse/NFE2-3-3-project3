@@ -4,7 +4,7 @@ import ProblemEditorHeader from "./components/ProblemEditorHeader.vue";
 import ProblemEditorLists from "./components/ProblemEditorLists.vue";
 import ProblemEditorMain from "./components/ProblemEditorMain.vue";
 import ProblemEditorGuide from "./components/ProblemEditorGuide.vue";
-import { reactive, onBeforeMount, ref, toRaw, watch, nextTick } from "vue";
+import { ref, toRaw, watch, nextTick } from "vue";
 import { problemAPI } from "@/api/problem";
 import { useToast } from "primevue/usetoast";
 import { useConfirm } from "primevue/useconfirm";
@@ -12,8 +12,8 @@ import ConfirmDialog from "primevue/confirmdialog";
 import { useCreateProblemStore } from "@/store/createProblemStore";
 import { storeToRefs } from "pinia";
 
-const router = useRouter();
 const toast = useToast();
+const router = useRouter();
 const confirm = useConfirm();
 const isSubmitClicked = ref(false);
 
@@ -208,6 +208,83 @@ const submitProblems = async () => {
 const onGoingBack = () => {
   window.history.length > 2 ? router.go(-1) : router.push("/");
 };
+
+onBeforeRouteLeave((to, from, next) => {
+  console.log("onbeforeRouterLeave");
+
+  // 제출 클릭한 경우 건너뛰기
+  if (isSubmitClicked.value) return;
+  else {
+    if (createdProblems.value.problemLists.length > 0) {
+      return new Promise((resolve) => {
+        confirm.require({
+          message:
+            "아직 제출되지 않은 문제들이 있습니다. 작성한 문제는 임시 저장됩니다.",
+          header: "페이지 나가기 확인",
+          icon: "pi pi-exclamation-circle",
+          acceptLabel: "저장 후 나가기",
+          rejectLabel: "취소",
+          accept: () => {
+            // sessionStorage.setItem(
+            //   "createdProblem",
+            //   JSON.stringify(createdProblems.value),
+            // );
+            // 페이지 이동 허용
+            confirm.close();
+            next(true);
+          },
+          reject: () => {
+            // 페이지 이동 취소
+            confirm.close();
+            next(false);
+          },
+        });
+      });
+    } else {
+      next(true);
+    }
+  }
+});
+
+// const getSessionData = () => {
+//   const storedData = sessionStorage.getItem("createdProblems");
+
+//   if (storedData) {
+//     confirm.require({
+//       message: "저장된 문제가 있습니다. 불러오시겠습니까?",
+//       header: "문제 복원",
+//       icon: "pi pi-refresh",
+//       acceptLabel: "불러오기",
+//       rejectLabel: "삭제",
+//       accept: () => {
+//         try {
+//           const parsedData = JSON.parse(storedData);
+//           if (typeof parsedData === "object" && parsedData !== null) {
+//             Object.assign(createdProblems, parsedData);
+//           } else {
+//             console.warn("복원할 데이터가 올바르지 않습니다:", parsedData);
+//           }
+//         } catch (error) {
+//           console.error("문제 복원 중 오류 발생:", error);
+//         }
+//         sessionStorage.removeItem("createdProblems");
+//       },
+//       reject: () => {
+//         sessionStorage.removeItem("createdProblems");
+//         toast.add({
+//           severity: "info",
+//           summary: "저장된 문제 삭제",
+//           detail: "임시 저장된 문제가 삭제되었습니다.",
+//           life: 3000,
+//         });
+//       },
+//     });
+//   }
+// };
+
+// setTimeout(() => {
+//   getSessionData();
+// }, 10);
 
 // 새로운 문제로 이동시 -> 스크롤 상단 고정
 watch(

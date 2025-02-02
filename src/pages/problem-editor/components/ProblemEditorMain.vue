@@ -10,23 +10,18 @@ import {
   watch,
   defineExpose,
   toRaw,
-  onBeforeUnmount,
-  nextTick,
 } from "vue";
 import {
-  Listbox,
   Button,
   ToggleSwitch,
   MultiSelect,
   InputText,
-  StyleClass,
   SelectButton,
 } from "primevue";
 
 import Editor from "@toast-ui/editor";
 import "@toast-ui/editor/dist/toastui-editor.css";
 import { storageAPI } from "@/api/storage";
-import { HtmlGenerator, parse } from "latexjs";
 import { categoryAPI } from "@/api/category";
 import { useCreateProblemStore } from "@/store/createProblemStore";
 import { storeToRefs } from "pinia";
@@ -239,6 +234,7 @@ watchEffect(() => {
         change: () => {
           const value = questionEditorInstance.getMarkdown();
           localProblem.question = value;
+          targetProblem.value.content.question = value;
           adjustEditorHeight(); // 높이 조정
         },
       },

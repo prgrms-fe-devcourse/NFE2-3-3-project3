@@ -116,7 +116,7 @@ onBeforeUnmount(() => {
       </div>
       <div class="w-full h-10 px-4 bg-beige-2 border border-black-4 rounded-lg">
         <div class="flex card items-center h-10 gap-4">
-          <span>기간 선택</span>
+          <span>검색 기간</span>
           <span>|</span>
           <span>시작일</span>
           <DatePicker
