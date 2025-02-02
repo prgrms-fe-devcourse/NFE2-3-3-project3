@@ -1,13 +1,10 @@
 <script setup>
 import { onMounted } from "vue";
 import { RouterLink } from "vue-router";
-import ExampleProfileImg from "@/assets/harp seal.jpg";
 import Profile from "@/components/layout/Profile.vue";
 import Grade from "@/components/layout/Grade.vue";
 import { useAuthStore } from "@/store/authStore";
 import { storeToRefs } from "pinia";
-const alertPath = new URL("@/assets/icons/alert.svg", import.meta.url).href;
-const pointPath = new URL("@/assets/icons/point.svg", import.meta.url).href;
 const Card1Img = new URL(
   "@/assets/icons/createProblemsCard.svg",
   import.meta.url,
@@ -92,7 +89,7 @@ onMounted(() => {
 
       <!-- 카드 3 -->
       <RouterLink
-        to="/my-problems"
+        to="/my-problems?type=againView"
         class="bg-beige-2 rounded-lg p-6 flex flex-col justify-between h-[261px] gap-2 items-end"
       >
         <div>
