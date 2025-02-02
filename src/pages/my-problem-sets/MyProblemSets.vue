@@ -4,7 +4,7 @@ import createWorkbook from "@/assets/icons/my-problem-sets/createWorkbook.svg";
 import Dialog from "primevue/dialog";
 import Button from "primevue/button";
 import { Avatar, useToast, ToggleSwitch } from "primevue";
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 import { useAuthStore } from "@/store/authStore";
 import { useWorkbookStore } from "@/store/workbookStore";
 import { storeToRefs } from "pinia";
@@ -23,14 +23,16 @@ const {
   shared,
   isMyBooksViewAll,
   isSharedBooksViewAll,
+  isMounted,
 } = storeToRefs(workbookStore);
 
 //모달
 const toast = useToast();
 const showDialog = ref(false);
+const isTitleWarning = ref(false);
+const isDescriptionWarning = ref(false);
 
-//전체보기
-
+// 전체보기 토글
 const toggleMyBooksViewAll = () => {
   isMyBooksViewAll.value = !isMyBooksViewAll.value;
 };
@@ -69,14 +71,14 @@ const goToProblemSet = (bookId) => {
   router.push(`/problem-set-board/${bookId}`);
 };
 
-//리셋
+//입력 필드 리셋
 const resetFormFields = () => {
   title.value = "";
   description.value = "";
   shared.value = false;
 };
 
-//computed로 안전하게 길이 계산
+//제목 & 설명 길이 제한
 const titleLength = computed(() => title.value?.length || 0);
 const descriptionLength = computed(() => description.value?.length || 0);
 
@@ -110,7 +112,6 @@ const addWorkbook = async () => {
 
     await workbookStore.loadWorkbooks(authStore.user.id);
     await fetchCountsForAllWorkbooks();
-
     showDialog.value = false;
   } catch (error) {
     console.error("문제집 생성에 실패했습니다:", error);
@@ -123,31 +124,55 @@ const addWorkbook = async () => {
   }
 };
 
+// watch(
+//   () => authStore.user.id,
+//   async (newUserId) => {
+//     if (newUserId) {
+//       try {
+//         await workbookStore.loadWorkbooks(newUserId); // 문제집 로드
+//         await workbookStore.loadSharedWorkbooks(newUserId); //공유받은 문제집
+//         await fetchCountsForAllWorkbooks(newUserId); // 문제 수 로드
+//       } catch (error) {
+//         console.error("데이터 로드 중 오류:", error);
+//       }
+//     }
+//   },
+//   { immediate: true },
+// );
 watch(
-  () => authStore.user.id,
-  async (newUserId) => {
-    if (newUserId) {
+  () => authStore.user,
+  async (newUser) => {
+    if (newUser && newUser.id) {
       try {
-        await workbookStore.loadWorkbooks(newUserId); // 문제집 로드
-        await workbookStore.loadSharedWorkbooks(newUserId); //공유받은 문제집
-        await fetchCountsForAllWorkbooks(newUserId); // 문제 수 로드
+        await workbookStore.loadWorkbooks(newUser.id);
+        await workbookStore.loadSharedWorkbooks(newUser.id);
+        await fetchCountsForAllWorkbooks(newUser.id);
       } catch (error) {
         console.error("데이터 로드 중 오류:", error);
       }
+    } else {
+      workbookStore.resetViewState();
     }
   },
-  { immediate: true },
+  { immediate: true, deep: true },
 );
 
 watch(title, (newValue) => {
   if (newValue === "") return;
   if (newValue.length > 20) {
-    toast.add({
-      severity: "warn",
-      summary: "경고",
-      detail: "제목은 최대 20자까지만 입력 가능합니다.",
-      life: 1000,
-    });
+    if (!isTitleWarning.value) {
+      isTitleWarning.value = true;
+      toast.add({
+        severity: "warn",
+        summary: "경고",
+        detail: "제목은 최대 20자까지만 입력 가능합니다.",
+        life: 2000,
+      });
+
+      setTimeout(() => {
+        isTitleWarning.value = false;
+      }, 2000);
+    }
     title.value = newValue.substring(0, 20);
   }
 });
@@ -155,20 +180,31 @@ watch(title, (newValue) => {
 watch(description, (newValue) => {
   if (newValue === "") return;
   if (newValue.length > 200) {
-    toast.add({
-      severity: "warn",
-      summary: "경고",
-      detail: "설명은 최대 200자까지만 입력 가능합니다.",
-      life: 1000,
-    });
+    if (!isDescriptionWarning.value) {
+      isDescriptionWarning.value = true;
+      toast.add({
+        severity: "warn",
+        summary: "경고",
+        detail: "설명은 최대 200자까지만 입력 가능합니다.",
+        life: 2000,
+      });
+
+      setTimeout(() => {
+        isDescriptionWarning.value = false;
+      }, 2000);
+    }
     description.value = newValue.substring(0, 200);
   }
 });
-// 모달이 닫힐 때 초기화
+
 watch(showDialog, (newVal) => {
   if (!newVal) {
     resetFormFields();
   }
+});
+
+onMounted(() => {
+  workbookStore.setMounted();
 });
 </script>
 
@@ -299,8 +335,8 @@ watch(showDialog, (newVal) => {
       </div>
 
       <!-- 2️⃣ "전체보기" 버튼을 누르면 표시되는 추가 문제집 -->
-      <transition name="fade">
-        <div v-if="isMyBooksViewAll" class="grid grid-cols-4 gap-4 mt-4">
+      <transition name="fade" v-if="isMounted">
+        <div v-show="isMyBooksViewAll" class="grid grid-cols-4 gap-4 mt-4">
           <div
             v-for="book in workbooks.slice(4)"
             :key="book.id"

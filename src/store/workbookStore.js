@@ -11,6 +11,7 @@ export const useWorkbookStore = defineStore("workbook", {
     shared: false,
     isMyBooksViewAll: false,
     isSharedBooksViewAll: false,
+    isMounted: false,
   }),
   actions: {
     async loadWorkbooks(userId) {
@@ -54,6 +55,13 @@ export const useWorkbookStore = defineStore("workbook", {
     toggleSharedBooksViewAll() {
       this.isSharedBooksViewAll = !this.isSharedBooksViewAll;
     },
+    resetViewState() {
+      this.isMyBooksViewAll = false;
+      this.isSharedBooksViewAll = false;
+    },
+    setMounted() {
+      this.isMounted = true;
+    },
   },
 
   persist: {
@@ -62,7 +70,7 @@ export const useWorkbookStore = defineStore("workbook", {
       {
         key: "workbookState",
         storage: localStorage,
-        paths: ["isMyBooksViewAll", "isSharedBooksViewAll"], // 필요한 상태만 저장
+        paths: ["isMyBooksViewAll", "isSharedBooksViewAll", "isMounted"], // 필요한 상태만 저장
       },
     ],
   },
