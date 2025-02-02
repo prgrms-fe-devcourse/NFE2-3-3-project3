@@ -3,7 +3,6 @@ import { computed, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useExamResultStore } from "@/store/ExamResultStore";
 import { useAuthStore } from "@/store/authStore";
-import { useRoute } from "vue-router";
 import { useToast } from "primevue";
 
 const examResultStore = useExamResultStore();
@@ -11,8 +10,7 @@ const authStore = useAuthStore();
 const toast = useToast();
 
 const userId = computed(() => authStore.user?.id);
-const { tableData, currentProblem, againViewProblems, status } =
-  storeToRefs(examResultStore);
+const { tableData, currentProblem, status } = storeToRefs(examResultStore);
 const { selectProblem, toggleFlag, checkAgainViewStatus } = examResultStore;
 
 // 플래그 상태 토글 핸들러
@@ -63,49 +61,6 @@ watch(
   { immediate: true },
 );
 </script>
-
-<!-- <template>
-  <div class="container mx-auto mt-8">
-    <div class="border border-[#D4D4D4] rounded-[16px] overflow-hidden mb-8">
-      <table class="custom-table">
-        <tbody>
-          <template
-            v-for="(row, rowIndex) in tableData"
-            :key="'row-' + rowIndex"
-          >
-            <tr>
-              <td
-                v-for="(cell, colIndex) in row"
-                :key="'number-cell-' + colIndex"
-                class="cell problem-cell"
-                :class="{ highlighted: cell.id === currentProblem?.id }"
-                @click="handleSelectProblem(cell)"
-              >
-                <button class="w-full py-2">
-                  {{ cell.number }}
-                </button>
-              </td>
-            </tr>
-            <tr>
-              <td
-                v-for="(cell, colIndex) in row"
-                :key="'flag-cell-' + colIndex"
-                class="cell flag-cell"
-                @click="() => handleToggleFlag(cell)"
-              >
-                <i
-                  v-if="againViewProblems.includes(cell.id)"
-                  class="pi pi-flag"
-                  style="color: orange; cursor: pointer"
-                ></i>
-              </td>
-            </tr>
-          </template>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</template> -->
 
 <template>
   <div class="container mx-auto mt-8">
