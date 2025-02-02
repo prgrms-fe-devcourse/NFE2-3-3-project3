@@ -40,11 +40,12 @@ const getTestCenterId = async (testResultId) => {
   return data;
 };
 
-const getProblemHistory = async (testCenterId) => {
+const getProblemHistory = async (testCenterId, userId) => {
   const query = supabase
     .from("problem_history")
     .select("problem_id, my_option, status")
     .eq("test_center_id", testCenterId)
+    .eq("uid", userId)
     .order("problem_id", { ascending: true });
 
   const { data, error } = await query;

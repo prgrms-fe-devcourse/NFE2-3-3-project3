@@ -150,7 +150,7 @@ export const useExamResultStore = defineStore("examResult", {
     },
 
     //내가고른 선택지
-    async fetchMyOption(testResultId) {
+    async fetchMyOption(testResultId, userId) {
       if (!testResultId) {
         console.error("fetchProblems: testResultId가 정의되지 않았습니다.");
         return;
@@ -169,6 +169,7 @@ export const useExamResultStore = defineStore("examResult", {
 
         const problemHistory = await problemHistoryAPI.getProblemHistory(
           test_center_id,
+          userId,
         );
         if (!problemHistory) {
           console.error(
