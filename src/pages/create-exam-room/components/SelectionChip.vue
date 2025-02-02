@@ -24,7 +24,7 @@ defineEmits(["remove"]);
 </script>
 
 <template>
-  <div v-if="show" class="flex items-center">
+  <div v-if="show" class="flex items-center mb-4">
     <Chip
       :label="label"
       :removable="false"

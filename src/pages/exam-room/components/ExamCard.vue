@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watchEffect } from "vue";
+import { ref, computed, watchEffect, watch } from "vue";
 import { useRouter } from "vue-router";
 import Dialog from "primevue/dialog";
 import Button from "primevue/button";
@@ -19,27 +19,39 @@ import timeFastIcon from "@/assets/icons/exam-room/fi-rr-time-fast.svg";
 import trashIcon from "@/assets/icons/exam-room/fi-rr-trash.svg";
 
 const props = defineProps({
-  id: Number,
-  workbook_id: Number,
+  id: {
+    type: Number,
+    required: true,
+  },
+  workbook_id: {
+    type: Number,
+    required: true,
+  },
   workbook: {
     type: Object,
     required: true,
     default: () => ({
-      title: '',
-      description: '',
-      workbook_problem: [{ count: 0 }]
-    })
+      title: "",
+      description: "",
+      problems: [],
+    }),
   },
-  start_date: String,
-  end_date: String,
+  start_date: {
+    type: String,
+    required: true,
+  },
+  end_date: {
+    type: String,
+    required: true,
+  },
   showEditButtons: {
     type: Boolean,
     default: false,
   },
   confirmed_count: {
-    type: Array,
-    default: () => [{ count: 0 }]
-  }
+    type: Number,
+    default: 0,
+  },
 });
 
 const emit = defineEmits(["delete-exam"]);
@@ -52,8 +64,15 @@ const showExamInfo = ref(false);
 const isProcessing = ref(false);
 const participantCount = ref(0);
 const problemCount = ref(0);
+const creator = ref(null);
+const participants = ref([]);
 
 // Computed
+const workbookTitle = computed(() => props.workbook?.title || "제목 없음");
+const workbookDescription = computed(
+  () => props.workbook?.description || "설명 없음",
+);
+
 const isOngoing = computed(() => {
   const now = new Date();
   const startDate = new Date(props.start_date);
@@ -109,7 +128,10 @@ const confirmDelete = (event) => {
     message: "정말 이 시험을 삭제하시겠습니까?",
     header: "시험 삭제 확인",
     icon: "pi pi-exclamation-triangle",
+    acceptLabel: "삭제",
+    rejectLabel: "취소",
     accept: handleDelete,
+    reject: () => {}
   });
 };
 
@@ -124,12 +146,26 @@ const fetchProblemCount = async () => {
 };
 
 // Watchers
-watchEffect(async () => {
-  if (props.id && props.workbook_id) {
-    participantCount.value = await inviteAPI.getParticipantCount(props.id);
-    await fetchProblemCount();
-  }
-});
+watch(
+  () => [props.id, props.workbook_id],
+  async ([newId, newWorkbookId]) => {
+    if (newId && newWorkbookId) {
+      try {
+        participantCount.value = await inviteAPI.getParticipantCount(props.id);
+        await fetchProblemCount();
+        const participantData = await testCenterAPI.getTestCenterParticipants(
+          props.id,
+        );
+        creator.value = participantData.creator;
+        participants.value = participantData.participants;
+      } catch (error) {
+        console.error("참가자 목록 로딩 실패:", error);
+        participants.value = [];
+      }
+    }
+  },
+  { immediate: true },
+);
 </script>
 
 <template>
@@ -140,9 +176,9 @@ watchEffect(async () => {
     <div class="item-between mb-4">
       <h3
         class="font-medium text-lg line-clamp-1"
-        v-tooltip.top="workbook?.title"
+        v-tooltip.top="workbookTitle"
       >
-        {{ workbook?.title }}
+        {{ workbookTitle }}
       </h3>
       <div v-if="showEditButtons" class="flex gap-2">
         <button
@@ -180,38 +216,51 @@ watchEffect(async () => {
   >
     <div class="flex flex-col gap-4">
       <!-- 문제집 이름 -->
-      <p>
+      <div>
         <h4 class="text-xl font-medium flex items-center gap-3 mb-1">
           <img :src="folderIcon" alt="문제집 이름" class="w-6 h-6" />
-          {{ workbook?.title }}</h4>
-        <p class="text-black-2 ml-9">{{ workbook?.description }}</p>
-      </p>
+          {{ workbookTitle }}
+        </h4>
+        <p class="text-black-2 ml-9">{{ workbookDescription }}</p>
+      </div>
       <!-- 참가자 정보 -->
-      <p>
+      <div>
         <h4 class="text-xl font-medium flex items-center gap-3 mb-1">
           <img :src="userIcon" alt="참가 인원" class="w-6 h-6" />
-          참가자</h4>
-        <p class="text-black-2 ml-9">{{ participantCount + 1 }}명</p>
-      </p>
+          참가자 {{ participantCount + 1 }}명
+        </h4>
+        <div class="text-black-2 ml-9">
+          <p class=" text-gray-600">
+            <strong class="font-semibold">주최자</strong> 
+            {{ creator?.name || "알 수 없음" }}
+          </p>
+          <p class=" text-gray-600">
+            <strong class="font-semibold">참가자</strong> 
+            {{ participants.map((p) => p.name).join("  ") || "없음" }}
+          </p>
+        </div>
+      </div>
       <!-- 시험 일정 -->
-      <p>
+      <div>
         <h4 class="text-xl font-medium flex items-center gap-3 mb-1">
           <img :src="calendarIcon" alt="시험 일정" class="w-6 h-6" />
-          기간</h4>
+          기간
+        </h4>
         <p class="text-black-2 ml-9">
-          {{ formatterIntlKR.format(new Date(props.start_date)) }} - 
+          {{ formatterIntlKR.format(new Date(props.start_date)) }} -
           {{ formatterIntlKR.format(new Date(props.end_date)) }}
         </p>
-      </p>
+      </div>
       <!-- 소요 시간 -->
-      <p>
+      <div>
         <h4 class="text-xl font-medium flex items-center gap-3 mb-1">
           <img :src="timeFastIcon" alt="소요 시간" class="w-6 h-6" />
-          기간</h4>
+          소요 시간
+        </h4>
         <p class="text-black-2 ml-9">
           {{ examDuration }}
         </p>
-      </p>
+      </div>
     </div>
 
     <template #footer>

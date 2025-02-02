@@ -24,6 +24,7 @@ watchEffect(async () => {
       props.visibleMyBooks.map(async (book) => {
         try {
           const count = await workbookAPI.getWorkbookProblemCount(book.id);
+          console.log('Problem count:', count);
           return {
             ...book,
             problem_count: count,
@@ -44,7 +45,7 @@ watchEffect(async () => {
 <template>
   <div class="grid grid-cols-3 gap-2">
     <div
-      v-for="book in visibleMyBooks"
+      v-for="book in books"
       :key="book.id"
       class="w-[calc((100% - 4rem) / 3)] h-[146px] p-4 bg-orange-3 rounded-lg flex flex-col justify-between cursor-pointer hover:bg-orange-200 transition-colors"
       @click="handleSelect(book)"

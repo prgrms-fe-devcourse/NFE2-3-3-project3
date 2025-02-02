@@ -44,6 +44,8 @@ const userName = ref("");
 const userId = ref(null);
 const emit = defineEmits(["exam-status-change"]);
 const toast = useToast();
+const isAccepted = ref(false);
+const isRejected = ref(false); 
 
 const examDuration = computed(() => {
   if (!props.testCenter.start_date || !props.testCenter.end_date) return "";
@@ -102,6 +104,7 @@ const handleAccept = async () => {
   isProcessing.value = true;
   try {
     await inviteAPI.accept(userId.value, props.inviteData.id);
+    isAccepted.value = true; // 승인 상태 저장
     toast.add({
       severity: 'success',
       summary: '승인 완료',
@@ -127,6 +130,7 @@ const handleDeny = async () => {
   isProcessing.value = true;
   try {
     await inviteAPI.deny(props.inviteData.id);
+    isRejected.value = true; 
     toast.add({
       severity: "success",
       summary: "초대 거절",
@@ -157,6 +161,7 @@ watchEffect(() => {
 <template>
   <div 
   @click="showExamInfo = true"
+  v-if="!isRejected"
   class="bg-orange-3 rounded-lg p-4 w-full text-gray-2">
     <!-- 문제집 제목 -->
     <div class="item-between" aria-label="title-wrapper">
@@ -183,7 +188,7 @@ watchEffect(() => {
       <span>{{ examDuration }} 소요</span>
     </div>
 
-    <div v-if="!props.inviteData.participate" class="flex gap-2">
+    <div v-if="!isAccepted" class="flex gap-2">
       <button
         @click="handleAccept"
         class="bg-black-1/10 text-white px-2 py-1 rounded-md font-medium hover:bg-black-1/20 w-1/2 flex justify-center items-center"
