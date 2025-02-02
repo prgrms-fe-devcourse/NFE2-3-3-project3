@@ -295,29 +295,6 @@ onBeforeMount(async () => {
           ]"
           @click="handleFilterButtonClick('againView')"
         />
-        <Button
-          v-if="showMyProblem"
-          label="내 문제만 보기"
-          size="small"
-          severity="secondary"
-          :class="[
-            'text-sm',
-            activeFilter === 'myProblems'
-              ? '!bg-orange-3 !text-orange-500'
-              : 'text-white bg-navy-4',
-          ]"
-          @click="handleFilterButtonClick('myProblems')"
-        >
-          <template #icon>
-            <img
-              :src="
-                activeFilter === 'myProblems' ? checkedMyProblem : seeMyProblems
-              "
-              alt="myProblemsIcon"
-              class="w-5 h-5"
-            />
-          </template>
-        </Button>
         <button
           v-if="showAdd"
           @click="handleAddClick"
