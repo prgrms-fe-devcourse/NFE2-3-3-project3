@@ -18,7 +18,6 @@ import { inviteAPI } from "@/api/invite";
 // Store & Composables
 import { useAuthStore } from "@/store/authStore";
 import { useConfirm } from "primevue/useconfirm";
-import { ConfirmDialog } from 'primevue';
 
 // Constants
 const ITEMS_PER_PAGE = 4;
@@ -44,22 +43,22 @@ const isInvitedExamsExpanded = ref(false);
 
 // Computed - Visible Items
 const visibleOngoingExams = computed(() =>
-  ongoingExams.value.slice(0, ongoingExamsDisplayCount.value)
+  ongoingExams.value.slice(0, ongoingExamsDisplayCount.value),
 );
 
 const visibleMyExams = computed(() =>
-  myExams.value.slice(0, myExamsDisplayCount.value)
+  myExams.value.slice(0, myExamsDisplayCount.value),
 );
 
 const visiblePendingInvites = computed(() =>
-  invitedExams.value.slice(0, invitedExamsDisplayCount.value)
+  invitedExams.value.slice(0, invitedExamsDisplayCount.value),
 );
 
 // Computed - Show More Button
 const showMoreButtons = computed(() => ({
   ongoing: ongoingExams.value.length > ITEMS_PER_PAGE,
   myExams: myExams.value.length > ITEMS_PER_PAGE,
-  invited: invitedExams.value.length > ITEMS_PER_PAGE
+  invited: invitedExams.value.length > ITEMS_PER_PAGE,
 }));
 
 // Methods - Toggle Display
@@ -91,11 +90,14 @@ const fetchExams = async () => {
   const now = new Date();
   try {
     // 1. 내가 만든 시험장 목록
-    const testCenterResponse = await testCenterAPI.getAllFields(authStore.user.id);
+    const testCenterResponse = await testCenterAPI.getAllFields(
+      authStore.user.id,
+    );
 
     // 2. 초대받은 시험장 중 수락한 목록
     const inviteResponse = await inviteAPI.getAll(authStore.user.id);
-    const acceptedInvites = inviteResponse?.filter((invite) => invite.participate) || [];
+    const acceptedInvites =
+      inviteResponse?.filter((invite) => invite.participate) || [];
 
     // 두 목록 합치기
     const allExams = [
@@ -119,13 +121,15 @@ const fetchExams = async () => {
 
     // 진행중이 아닌 시험 필터링 (내가 만든 시험만)
     const ongoingExamIds = ongoingExams.value.map((exam) => exam.id);
-    myExams.value = testCenterResponse?.filter((exam) => {
-      const endDate = new Date(exam.end_date);
-      return !ongoingExamIds.includes(exam.id) && endDate >= now;
-    }) || [];
+    myExams.value =
+      testCenterResponse?.filter((exam) => {
+        const endDate = new Date(exam.end_date);
+        return !ongoingExamIds.includes(exam.id) && endDate >= now;
+      }) || [];
 
     // 초대된 시험 중 미응답 목록
-    invitedExams.value = inviteResponse?.filter((invite) => !invite.participate) || [];
+    invitedExams.value =
+      inviteResponse?.filter((invite) => !invite.participate) || [];
   } catch (error) {
     console.error("시험 데이터 로딩 실패:", error);
   }
@@ -263,7 +267,6 @@ watchEffect(fetchExams);
   </RouterLink>
 
   <ConfirmDialog />
-
 </template>
 
 <style scoped>

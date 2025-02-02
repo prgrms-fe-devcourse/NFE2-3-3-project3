@@ -61,11 +61,11 @@ onMounted(() => {
       >
         <div>
           <p
-            class="mb-3 text-xl font-semibold text-left font-pretend text-gray-2 w-full"
+            class="mb-3 text-xl font-semibold text-left font-pretend text-gray-2"
           >
             문제 생성하기
           </p>
-          <p class="text-sm text-left text-gray-1 font-pretend w-full">
+          <p class="text-sm text-left text-gray-1 font-pretend">
             새로운 문제를 만들고, 문제집에 추가하세요.
           </p>
         </div>
