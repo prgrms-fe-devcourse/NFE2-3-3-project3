@@ -321,8 +321,6 @@ watch(
       <ProblemEditorMain
         v-if="targetProblem.idx !== -1"
         :key="targetProblem.idx"
-        :problem-idx="targetProblem.idx"
-        :problem-content="targetProblem.content"
         @delete-problem="deleteProblem"
       />
       <!-- <ProblemEditorMain

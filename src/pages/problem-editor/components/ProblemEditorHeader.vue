@@ -68,10 +68,45 @@ const setFolder = (folder) => {
   createProblemStore.setProblemFolder(folder);
 };
 
-const onCreateNewFolder = async (selectedFolder) => {
-  setFolder(selectedFolder);
-  problemSets.push(selectedFolder);
-  selectedProblemSet.value = selectedFolder;
+const onCreateNewFolder = async ({ title, description, shared }) => {
+  // 빈문자열
+  if (title.trim() === "") {
+    toast.add({
+      severity: "warn",
+      summary: "문제집 생성 불가",
+      detail: "문제집 제목을 입력해 주세요",
+      life: 3000,
+    });
+    return;
+  }
+  // // 이미 있는 문제집
+  // const isThereSet = problemSets.findIndex((problemSet) => {
+  //   return problemSet.title === title.trim();
+  // });
+
+  // if (isThereSet !== -1) {
+  //   setFolder(problemSets[isThereSet]);
+  //   selectedProblemSet.value = problemSets[isThereSet];
+  //   toast.add({
+  //     severity: "info",
+  //     summary: "문제집 생성 불가",
+  //     detail: "이미 있는 문제집 입니다",
+  //     life: 3000,
+  //   });
+  //   return;
+  // }
+  try {
+    const data = await workbookAPI.add(
+      title.trim(),
+      description.trim(),
+      shared,
+    );
+    setFolder(data);
+    problemSets.push(data);
+    selectedProblemSet.value = data;
+  } catch (error) {
+    console.error("문제집 생성에 실패했습니다.");
+  }
 };
 
 const setFolderFromList = (value) => {
