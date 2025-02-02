@@ -11,12 +11,12 @@ export const useWorkbookStore = defineStore("workbook", {
     shared: false,
     isMyBooksViewAll: false,
     isSharedBooksViewAll: false,
-    isMounted: false,
   }),
   actions: {
     async loadWorkbooks(userId) {
       try {
-        this.workbooks = await workbookAPI.getAll(userId);
+        //최신순으로 바꿈
+        this.workbooks = await workbookAPI.getAllNewWorkbooks(userId);
       } catch (error) {
         console.error("문제집 데이터를 불러오는 중 오류:", error);
       }
@@ -70,7 +70,7 @@ export const useWorkbookStore = defineStore("workbook", {
       {
         key: "workbookState",
         storage: localStorage,
-        paths: ["isMyBooksViewAll", "isSharedBooksViewAll", "isMounted"], // 필요한 상태만 저장
+        paths: ["isMyBooksViewAll", "isSharedBooksViewAll"], // 필요한 상태만 저장
       },
     ],
   },
