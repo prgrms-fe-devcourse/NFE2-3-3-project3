@@ -1,6 +1,5 @@
 <script setup>
 import plusPath from "@/assets/icons/problem-editor/plus.svg";
-import { ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useCreateProblemStore } from "@/store/createProblemStore";
 
