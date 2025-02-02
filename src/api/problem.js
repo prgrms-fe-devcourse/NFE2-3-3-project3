@@ -62,7 +62,6 @@ const getAllByUserId = async (userId) => {
           ?.status || "none",
     }));
 
-    console.log("처리된 데이터:", processedData);
 
     return processedData;
   } catch (error) {
@@ -134,7 +133,6 @@ const searchForUser = async (userId, keyword, startDate, endDate, status) => {
       end_date: endDate,
       status,
     });
-    console.log(data);
 
     if (error) throw error;
     return data;
@@ -170,13 +168,11 @@ const add = async (workbook_id, body) => {
     const { user } = useAuthStore();
     const newBody = { ...body };
     const created_at = Date.now();
-    console.log(newBody);
     const { data, error } = await supabase
       .from("problem")
       .insert([newBody])
       .select();
 
-    console.log(data, error);
     if (workbook_id) {
       await supabase
         .from("workbook_problem")
@@ -405,7 +401,6 @@ const getUserSharedProblems = async (uid) => {
           ?.status || "none",
     }));
 
-    console.log("처리된 공유 문제 데이터:", processedData);
     return processedData;
   } catch (error) {
     console.error("사용자의 공유된 문제를 가져오는 중 오류 발생:", error);
@@ -481,7 +476,6 @@ const getRandom = async () => {
 
     if (error) throw new Error(error);
 
-    console.log("Fetched Random Problem:", data);
     return data.id;
   } catch (error) {
     console.error("Error fetching random problem:", error);

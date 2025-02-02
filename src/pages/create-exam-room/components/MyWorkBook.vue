@@ -13,8 +13,6 @@ const books = ref([]);
 const emit = defineEmits(["select-workbook"]);
 
 const handleSelect = (book) => {
-  // 선택된 문제집 로깅
-  console.log('Selected workbook:', book);
   emit("select-workbook", book);
 };
 
@@ -24,7 +22,6 @@ watchEffect(async () => {
       props.visibleMyBooks.map(async (book) => {
         try {
           const count = await workbookAPI.getWorkbookProblemCount(book.id);
-          console.log('Problem count:', count);
           return {
             ...book,
             problem_count: count,
@@ -59,7 +56,7 @@ watchEffect(async () => {
       <div class="flex justify-between items-center mt-2">
         <img v-if="book.shared" :src="shareIcon" alt="share" />
         <span v-else class="w-6"></span>
-        <p class="text-sm font-medium">{{ book.problem_count || 0 }}문제</p>
+        <p class=" font-medium">{{ book.problem_count || 0 }}문제</p>
       </div>
     </div>
   </div>

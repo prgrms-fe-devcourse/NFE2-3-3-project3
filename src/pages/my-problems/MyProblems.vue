@@ -50,8 +50,6 @@ const loadProblems = async (userId) => {
       categoryAPI.getAll(),
     ]);
 
-    console.log("againViewProblems :", againViewProblems);
-
     const problemsMap = new Map();
 
     userProblems.forEach((problem) => {

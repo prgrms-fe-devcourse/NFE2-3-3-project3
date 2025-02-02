@@ -110,7 +110,6 @@ const onCreateNewFolder = async ({ title, description, shared }) => {
 };
 
 const setFolderFromList = (value) => {
-  console.log("value", value);
   if (!value) {
     setFolder({ id: "", title: "문제집을 선택하세요" });
   } else {

@@ -114,11 +114,7 @@ const submitExam = async () => {
       ),
     };
 
-    console.log("시험 데이터 로그:", body); // 시험 데이터 로그 출력
-
     const result = await testCenterAPI.add(body);
-
-    console.log("시험장 생성 결과:", result); // 시험장 생성 결과 로그 출력
 
     // 시험장 생성이 성공하면 초대 생성
     if (result && result.id) {
@@ -129,10 +125,7 @@ const submitExam = async () => {
           test_center_id: result.id,
         }));
 
-      console.log("초대 데이터 로그:", invites); // 초대 데이터 로그 출력
-
       const inviteResult = await inviteAPI.add(invites);
-      console.log("초대 생성 결과:", inviteResult); // 초대 생성 결과 로그 출력
 
       if (inviteResult) {
         router.push("/exam-room");

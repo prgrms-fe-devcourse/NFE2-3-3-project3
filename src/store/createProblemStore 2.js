@@ -16,7 +16,6 @@ export const useCreateProblemStore = defineStore("createProblem", {
   actions: {
     //Main 함수
     setProblemFolder(folderObject) {
-      console.log("setProblemFolder", folderObject);
       Object.assign(this.createdProblems.folder, folderObject); // 기존 객체를 직접 수정
     },
 
@@ -76,7 +75,6 @@ export const useCreateProblemStore = defineStore("createProblem", {
         };
         this.createdProblems.problemLists.splice(idx, 1, updatedProblem);
       }
-      console.log(idx, content);
     },
   },
   persist: {

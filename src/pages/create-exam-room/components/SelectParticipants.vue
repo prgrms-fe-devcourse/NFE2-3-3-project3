@@ -33,9 +33,6 @@ const fetchFollowing = async () => {
     if (authStore.user?.id) {
       const followData = await followAPI.getFollowing(authStore.user.id);
 
-      // 데이터 확인
-      // console.log("followData:", followData);
-
       // followingUsers 값 생성
       followingUsers.value = followData.map((item) => ({
         email: item.following.email,
@@ -203,7 +200,6 @@ watchEffect(() => {
     ...user,
     uid: user.uid || user.id, // uid 값을 올바르게 설정
   }));
-  // console.log("Selected users:", selectedUsers.value); // 선택된 사용자 로그 출력
 });
 </script>
 
