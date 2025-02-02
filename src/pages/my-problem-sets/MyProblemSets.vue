@@ -46,6 +46,12 @@ const visibleSharedBooks = computed(() => {
     ? sharedWorkbooks.value
     : sharedWorkbooks.value.slice(0, 4);
 });
+// 문제집이 없을 때 표시할 메시지
+const noWorkbooksMessage = computed(() => {
+  return workbooks.value.length === 0
+    ? "현재 보관 중인 문제집이 없습니다."
+    : "";
+});
 
 //문제 수를 개별적으로 가져오는 함수
 const fetchCountsForAllWorkbooks = async () => {
@@ -100,7 +106,6 @@ const addWorkbook = async () => {
     });
     return;
   }
-
   try {
     await workbookAPI.add(title.value, description.value, shared.value);
 
@@ -119,6 +124,7 @@ const addWorkbook = async () => {
 
     await workbookStore.loadWorkbooks(authStore.user.id);
     await fetchCountsForAllWorkbooks();
+
     showDialog.value = false;
   } catch (error) {
     console.error("문제집 생성에 실패했습니다:", error);
@@ -190,6 +196,9 @@ watch(showDialog, (newVal) => {
           {{ isMyBooksViewAll ? "접기" : "전체보기 +" }}
         </button>
       </div>
+      <div v-if="workbooks.length === 0" class="text-gray-500 text-center py-6">
+        {{ noWorkbooksMessage }}
+      </div>
       <div class="grid grid-cols-4 gap-4">
         <article
           v-for="book in workbooks.slice(0, 4)"
@@ -258,6 +267,12 @@ watch(showDialog, (newVal) => {
           >
             {{ isSharedBooksViewAll ? "접기" : "전체보기 +" }}
           </button>
+        </div>
+        <div
+          v-if="sharedWorkbooks.length === 0"
+          class="text-gray-500 text-center py-6"
+        >
+          현재 공유 받은 문제집이 없습니다.
         </div>
         <div class="grid grid-cols-4 gap-4">
           <article
