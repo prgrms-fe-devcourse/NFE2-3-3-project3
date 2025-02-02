@@ -4,9 +4,11 @@ import ProblemEditorHeader from "./components/ProblemEditorHeader.vue";
 import ProblemEditorLists from "./components/ProblemEditorLists.vue";
 import ProblemEditorMain from "./components/ProblemEditorMain.vue";
 import ProblemEditorGuide from "./components/ProblemEditorGuide.vue";
-import { reactive, onBeforeMount, ref, toRaw, watch, nextTick } from "vue";
+import { reactive, ref, toRaw, watch, nextTick } from "vue";
 import { problemAPI } from "@/api/problem";
+import { useToast } from "primevue";
 
+const toast = useToast();
 const router = useRouter();
 
 const problemEditorMain = ref(null);
