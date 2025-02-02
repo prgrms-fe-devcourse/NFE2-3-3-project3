@@ -2,7 +2,7 @@
 import { RouterLink } from "vue-router";
 import { Column, DataTable } from "primevue";
 import { GRADES } from "@/const/grades";
-import { ref, watchEffect, watch, onMounted } from "vue";
+import { ref, watch } from "vue";
 import { formatDate } from "@/utils/formatDate";
 import { PointType } from "@/const/PointType";
 import { useRoute } from "vue-router";
@@ -125,10 +125,10 @@ watch(
 
     <!-- 포인트 내역 탭 -->
     <div v-else class="flex flex-col gap-6">
-      <div class="grid grid-cols-4 h-full gap-3">
+      <div class="flex h-full gap-3">
         <div
           v-for="grade in [GRADES.one, GRADES.two, GRADES.three]"
-          class="flex gap-4 w-full bg-black-6 p-4 rounded-lg"
+          class="flex gap-4 w-[50rem] bg-black-6 p-4 rounded-lg"
         >
           <div class="flex justify-center items-center">
             <img
@@ -137,11 +137,11 @@ watch(
               alt="등급 이미지"
             />
           </div>
-          <div class="flex flex-col gap-2">
-            <p>
-              <span class="font-semibold mr-2">{{ grade.name }}</span>
-              <span class="text-sm text-[10px]">{{ grade.point }}포인트</span>
-            </p>
+          <div class="flex flex-col justify-center gap-4">
+            <div class="flex flex-col">
+              <p class="font-semibold mr-2">{{ grade.name }}</p>
+              <p class="text-sm text-[10px]">{{ grade.point }}포인트</p>
+            </div>
             <div>
               <p class="text-sm">
                 <span
