@@ -273,7 +273,7 @@ const onPageChange = (event) => {
           <RouterLink
             :to="{ name: 'UserProfile', params: { userId: comment.uid } }"
             aria-label="유저 프로필"
-            class="flex items-center gap-2 flex-grow"
+            class="inline-flex items-center gap-2 w-fit"
           >
             <img :src="comment.avatar_url" class="rounded-full w-7 h-7" />
             <span class="font-bold">{{ comment.name }}</span>
