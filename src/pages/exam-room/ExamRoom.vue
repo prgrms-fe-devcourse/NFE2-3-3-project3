@@ -186,7 +186,7 @@ watchEffect(fetchExams);
 
     <!-- 내가 만든 시험 섹션 -->
     <section class="w-full mb-8">
-      <div class="flex justify-between items-center mb-4">
+      <div class="flex gap-2 items-center mb-4">
         <h2 class="text-xl font-medium text-gray-2">내가 만든 시험</h2>
         <button
           v-if="showMoreButtons.myExams"
@@ -222,7 +222,7 @@ watchEffect(fetchExams);
 
     <!-- 초대받은 시험 섹션 -->
     <section class="w-full mb-8">
-      <div class="flex justify-between items-center mb-4">
+      <div class="flex gap-2 items-center mb-4">
         <h2 class="text-xl font-medium text-gray-2">초대받은 시험</h2>
         <button
           v-if="showMoreButtons.invited"
