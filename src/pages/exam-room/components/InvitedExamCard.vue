@@ -190,13 +190,13 @@ watchEffect(() => {
 
     <div v-if="!isAccepted" class="flex gap-2">
       <button
-        @click="handleAccept"
+        @click.stop="handleAccept"
         class="bg-black-1/10 text-white px-2 py-1 rounded-md font-medium hover:bg-black-1/20 w-1/2 flex justify-center items-center"
       >
         승인
       </button>
       <button
-        @click="handleDeny"
+        @click.stop="handleDeny"
         class="bg-red-500/60 deny text-white px-2 py-1 rounded-md font-medium hover:bg-red-600/60 w-1/2 flex justify-center items-center"
       >
         거절
