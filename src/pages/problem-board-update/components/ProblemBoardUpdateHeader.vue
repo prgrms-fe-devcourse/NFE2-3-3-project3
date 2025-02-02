@@ -293,11 +293,6 @@ onMounted(async () => {
             </template>
           </MultiSelect>
 
-          <label for="shared">공개 여부</label>
-          <ToggleSwitch
-            :modelValue="editedProblem.shared"
-            @update:modelValue="handleSharedChange"
-          />
         </fieldset>
       </div>
     </form>

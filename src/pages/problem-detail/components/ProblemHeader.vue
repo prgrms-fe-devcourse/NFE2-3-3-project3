@@ -184,10 +184,6 @@ const routeConfig = computed(() => {
           <span class="bg-gray-100 px-2 py-1 rounded">{{
             problem?.category?.name
           }}</span>
-          <div class="flex items-center gap-1">
-            <img :src="shareIcon" alt="공유 아이콘" class="w-4 h-4" />
-            <span>{{ problem?.shared ? "공개됨" : "미공개" }}</span>
-          </div>
           <div
             class="flex items-center gap-1 px-2 py-1 rounded-full transition"
           >
