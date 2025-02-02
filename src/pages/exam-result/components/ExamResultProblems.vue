@@ -197,9 +197,9 @@ watch(
                 v-if="currentProblem.options[0]"
                 class="flex items-center gap-2 mb-8 last:mb-0"
               >
-                <strong
-                  class="text-lg rounded-full bg-black-6 w-8 h-8 item-middle"
-                  >1</strong
+                <span
+                  class="font-medium text-lg rounded-full bg-black-6 w-8 h-8 item-middle"
+                  >1</span
                 >
                 <span>{{ currentProblem.options[0] }}</span>
               </li>
@@ -207,9 +207,9 @@ watch(
                 v-if="currentProblem.options[1]"
                 class="flex items-center gap-2 mb-8 last:mb-0"
               >
-                <strong
-                  class="text-lg rounded-full bg-black-6 w-8 h-8 item-middle"
-                  >2</strong
+                <span
+                  class="font-medium text-lg rounded-full bg-black-6 w-8 h-8 item-middle"
+                  >2</span
                 >
                 <span>{{ currentProblem.options[1] }}</span>
               </li>
@@ -217,9 +217,9 @@ watch(
                 v-if="currentProblem.options[2]"
                 class="flex items-center gap-2 mb-8 last:mb-0"
               >
-                <strong
-                  class="text-lg rounded-full bg-black-6 w-8 h-8 item-middle"
-                  >3</strong
+                <span
+                  class="font-medium text-lg rounded-full bg-black-6 w-8 h-8 item-middle"
+                  >3</span
                 >
                 <span>{{ currentProblem.options[2] }}</span>
               </li>
@@ -227,9 +227,9 @@ watch(
                 v-if="currentProblem.options[3]"
                 class="flex items-center gap-2 mb-8 last:mb-0"
               >
-                <strong
-                  class="text-lg rounded-full bg-black-6 w-8 h-8 item-middle"
-                  >4</strong
+                <span
+                  class="font-medium text-lg rounded-full bg-black-6 w-8 h-8 item-middle"
+                  >4</span
                 >
                 <span>{{ currentProblem.options[3] }}</span>
               </li>
@@ -241,7 +241,7 @@ watch(
             <div class="flex items-center gap-4 border-b pb-4">
               <template v-if="currentProblem">
                 <div
-                  class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-black font-bold"
+                  class="font-medium w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-black"
                 >
                   {{ selectedMyOption }}
                 </div>
