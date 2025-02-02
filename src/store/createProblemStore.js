@@ -16,8 +16,10 @@ export const useCreateProblemStore = defineStore("createProblem", {
   actions: {
     //Main 함수
     setProblemFolder(folderObject) {
-      this.createdProblems.folder = folderObject;
+      console.log("setProblemFolder", folderObject);
+      Object.assign(this.createdProblems.folder, folderObject); // 기존 객체를 직접 수정
     },
+
     addProblem(problemType = "4지선다") {
       const newItem = {
         type: problemType,

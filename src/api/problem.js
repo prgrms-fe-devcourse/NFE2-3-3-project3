@@ -177,9 +177,11 @@ const add = async (workbook_id, body) => {
       .select();
 
     console.log(data, error);
-    await supabase
-      .from("workbook_problem")
-      .insert([{ workbook_id, problem_id: data[0].id }]);
+    if (workbook_id) {
+      await supabase
+        .from("workbook_problem")
+        .insert([{ workbook_id, problem_id: data[0].id }]);
+    }
 
     if (error) throw error;
     return data;

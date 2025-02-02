@@ -1,65 +1,106 @@
 <script setup>
-import { ref, reactive, onBeforeMount, watchEffect } from "vue";
+import { ref, reactive, onBeforeMount, watchEffect, onMounted } from "vue";
 import arrowLeftPath from "@/assets/icons/problem-editor/arrow-left.svg";
 import folderPath from "@/assets/icons/problem-editor/folder.svg";
 import arrowTopPath from "@/assets/icons/problem-editor/arrow-top.svg";
-import { Listbox, InputText, Textarea, Button } from "primevue";
+import { Listbox, InputText, Textarea, Button, ToggleSwitch } from "primevue";
 import { workbookAPI } from "@/api/workbook";
 import { useAuthStore } from "@/store/authStore";
-const props = defineProps({
-  storedFolder: {
-    type: Object,
-  },
-});
-const emits = defineEmits([
-  "submitProblems",
-  "onGoingBack",
-  "setProblemFolder",
-]);
+import { useToast } from "primevue/usetoast";
+import { useCreateProblemStore } from "@/store/createProblemStore";
+import { storeToRefs } from "pinia";
 
+const toast = useToast();
 const { user } = useAuthStore();
-
+const createProblemStore = useCreateProblemStore();
+const { createdProblems } = storeToRefs(createProblemStore);
 // 팝업 열림 상태
 const isFolderOpen = ref(false);
 const isCreateNewFolder = ref(false);
+
+const emits = defineEmits(["submitProblems", "onGoingBack"]);
+
 // 선택된 폴더
 const selectedFolder = ref("");
-const createdNewFolder = reactive({ title: "", description: "" });
+const createdNewFolder = ref({
+  title: "",
+  description: "",
+  shared: false,
+});
 
-// 폴더 토글 버튼 조작
+//폴더 토글 버튼 조작
 const onClickFolder = () => {
   isFolderOpen.value = !isFolderOpen.value;
-};
-
-const onSubmit = () => {
-  emits("submitProblems");
 };
 
 const showNewFolderPopup = () => {
   isCreateNewFolder.value = true;
 };
 
-// 초기값은 API에서 불러오기
-// my problemsets
+//초기값은 API에서 불러오기
+//my problemsets
 const problemSets = reactive([]);
-const selectedProblemSet = ref({});
+const selectedProblemSet = reactive({});
 
 const closeAllPopups = () => {
   isCreateNewFolder.value = false;
   isFolderOpen.value = false;
 };
 
+// const setFolder = (folder) => {
+//   if (!folder || typeof folder !== "object") {
+//     console.error("setFolder: 유효하지 않은 folder 값이 전달됨:", folder);
+//     folder = { id: "", title: "문제집을 선택하세요" };
+//   }
+
+//   createProblemStore.setProblemFolder(folder);
+//   // Object.assign(selectedProblemSet, folder);
+
+//   Object.assign(selectedProblemSet.value, folder);
+//   selectedFolder.value = folder.title;
+//   closeAllPopups();
+// };
+
 //폴더 지정 함수
 const setFolder = (folder) => {
-  console.log(folder);
   selectedFolder.value = folder.title;
-  emits("setProblemFolder", folder);
+  createProblemStore.setProblemFolder(folder);
   closeAllPopups();
 };
 
-const onCreateNewFolder = async ({ title, description }) => {
+const onCreateNewFolder = async ({ title, description, shared }) => {
+  // 빈문자열
+  if (title.trim() === "") {
+    toast.add({
+      severity: "warn",
+      summary: "문제집 생성 불가",
+      detail: "문제집 제목을 입력해 주세요",
+      life: 3000,
+    });
+    return;
+  }
+  // 이미 있는 문제집
+  const isThereSet = problemSets.findIndex((problemSet) => {
+    return problemSet.title === title.trim();
+  });
+
+  if (isThereSet !== -1) {
+    setFolder(problemSets[isThereSet]);
+    selectedProblemSet.value = problemSets[isThereSet];
+    toast.add({
+      severity: "info",
+      summary: "문제집 생성 불가",
+      detail: "이미 있는 문제집 입니다",
+      life: 3000,
+    });
+    return;
+  }
   try {
-    const data = await workbookAPI.add(title, description);
+    const data = await workbookAPI.add(
+      title.trim(),
+      description.trim(),
+      shared,
+    );
     setFolder(data);
     problemSets.push(data);
     selectedProblemSet.value = data;
@@ -68,16 +109,21 @@ const onCreateNewFolder = async ({ title, description }) => {
   }
 };
 
-const setFolderFromList = () => {
-  if (!selectedProblemSet.value) {
+const setFolderFromList = (value) => {
+  console.log("value", value);
+  if (!value) {
     setFolder({ id: "", title: "문제집을 선택하세요" });
-  } else setFolder(selectedProblemSet.value);
+  } else {
+    setFolder(value);
+  }
   isFolderOpen.value = false;
 };
 
 watchEffect(() => {
-  // `props.storedFolder`가 존재하는 경우 설정
-  const folder = props.storedFolder || { id: "", title: "문제집을 선택하세요" };
+  const folder = createdProblems.value.folder || {
+    id: "",
+    title: "문제집을 선택하세요",
+  };
   setFolder(folder);
   selectedProblemSet.value = folder;
 });
@@ -100,7 +146,9 @@ const fetchProblemSets = async () => {
   }
 };
 
-fetchProblemSets();
+onMounted(() => {
+  fetchProblemSets();
+});
 </script>
 <template>
   <header
@@ -120,14 +168,9 @@ fetchProblemSets();
       <p class="p-1.5 bg-orange-1 rounded mr-4">
         <img :src="folderPath" alt="폴더" class="align-middle" />
       </p>
-      <span
-        class="text-xl font-medium mr-4"
-        :class="{
-          'text-red-1':
-            selectedFolder === '문제집을 선택하세요' && !selectedProblemSet?.id,
-        }"
-        >{{ selectedFolder }}</span
-      >
+      <span class="text-xl font-medium mr-4">{{
+        createdProblems.folder.title
+      }}</span>
       <img
         :src="arrowTopPath"
         :alt="isFolderOpen ? '폴더 토글 닫힘' : '폴더 토글 열림'"
@@ -144,7 +187,7 @@ fetchProblemSets();
           filter
           optionLabel="title"
           listStyle="max-height: 14rem"
-          @change="setFolderFromList(selectedProblemSet)"
+          @change="(event) => setFolderFromList(event.value)"
         >
           <template #option="slotProps">
             <div class="flex items-center gap-2">
@@ -178,6 +221,7 @@ fetchProblemSets();
               id="title"
               v-model="createdNewFolder.title"
               placeholder="문제집 이름을 입력해주세요"
+              maxlength="20"
             />
           </div>
           <div class="flex flex-col gap-2">
@@ -189,6 +233,14 @@ fetchProblemSets();
               rows="5"
               cols="30"
               placeholder="문제집 설명을 입력해주세요"
+            />
+          </div>
+          <div class="flex gap-2 place-items-center">
+            <label for="description" class="text-sm">공개 여부</label>
+            <ToggleSwitch
+              v-model="createdNewFolder.shared"
+              name="shared"
+              class="align-middle"
             />
           </div>
           <Button
