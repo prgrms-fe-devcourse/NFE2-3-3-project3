@@ -128,6 +128,7 @@ watch(
     <input
       type="text"
       :value="source"
+      :maxlength="20"
       @input="handleSourceChange"
       class="border border-gray-300 rounded p-1 flex-grow"
     />

@@ -2,27 +2,20 @@
 import { problemAPI } from "@/api/problem";
 import ProblemTable from "@/components/layout/ProblemTable.vue";
 import Search from "@/components/layout/Search.vue";
-import { ref, onMounted } from "vue";
+import { ref, onBeforeMount } from "vue";
 import { formatDate } from "@/utils/formatDate";
 import { useAuthStore } from "@/store/authStore";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
-import { SORT } from "@/const/sorts";
+import { useRoute } from "vue-router";
 
+const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
 const problems = ref([]);
-const queries = router.currentRoute.value.query;
-const { keyword, startDate, endDate, status, sort } = queries;
 
-const search = async (
-  keyword,
-  startDate,
-  endDate,
-  sort = SORT.latest,
-  status,
-) => {
+const search = async (keyword, startDate, endDate, status) => {
   problems.value = await problemAPI.search(
     user.value.id,
     keyword,
@@ -32,17 +25,32 @@ const search = async (
   );
   router.replace({
     query: {
+      ...route.query,
       keyword,
       startDate: formatDate(startDate),
       endDate: formatDate(endDate),
       status,
-      sort,
+      page: 1,
     },
   });
 };
 
-onMounted(() => {
-  search(keyword, startDate, endDate, sort, status);
+const fetchProblems = async () => {
+  const { keyword, startDate, endDate, status } = route.query;
+  problems.value = await problemAPI.search(
+    user.value.id,
+    keyword,
+    startDate ? new Date(startDate).toISOString() : null,
+    endDate ? new Date(endDate).toISOString() : null,
+    status,
+  );
+  router.replace({
+    query: { ...route.query },
+  });
+};
+
+onBeforeMount(() => {
+  fetchProblems();
 });
 </script>
 <template>

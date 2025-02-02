@@ -93,7 +93,8 @@ const search = async (userId, keyword, startDate, endDate) => {
       .from("test_result")
       .select("*, test_center(*, workbook(id, title, description))")
       .eq("uid", userId)
-      .not("test_center", "is", null);
+      .not("test_center", "is", null)
+      .order("created_at", { ascending: false });
 
     if (keyword) {
       const { data: workbooks, error: workbookError } = await supabase

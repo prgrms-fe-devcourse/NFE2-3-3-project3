@@ -130,6 +130,8 @@ onBeforeUnmount(() => {
       <h2>문제 {{ currentProblemIndex + 1 }} : {{ problem?.title }}</h2>
     </div>
     <div ref="el" class="w-full overflow-hidden mt-6 mb-12"></div>
+
+    <!-- 4지선다 -->
     <template v-if="problem?.problem_type === 'multiple_choice'">
       <div class="flex flex-col gap-4 mb-20">
         <div
@@ -154,8 +156,10 @@ onBeforeUnmount(() => {
         </div>
       </div>
     </template>
+
+    <!-- OX -->
     <template v-if="problem?.problem_type === 'ox'">
-      <div class="flex items-center gap-4 mb-20">
+      <div class="flex justify-center items-center gap-4 mb-20">
         <button
           v-for="(option, index) in ['O', 'X']"
           @click="emit('selectAnswer', option)"
@@ -163,7 +167,7 @@ onBeforeUnmount(() => {
           :id="index"
           type="button"
           :class="[
-            'flex justify-center items-center w-full border-2 border-solid text-2xl font-semibold py-6 rounded transition-colors',
+            'flex justify-center items-center w-24 border-2 border-solid text-2xl font-semibold py-2 rounded-lg transition-colors',
             userAnswer === option
               ? 'border-orange-1 bg-orange-1 text-white'
               : 'text-black-3 hover:bg-orange-1/30 hover:border-orange-1/30',

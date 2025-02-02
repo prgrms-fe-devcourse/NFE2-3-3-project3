@@ -4,7 +4,6 @@ import {
   onMounted,
   onBeforeUnmount,
   defineProps,
-  watchEffect,
   computed,
   inject,
 } from "vue";
@@ -30,7 +29,6 @@ import { workbookAPI } from "@/api/workbook";
 import { useAuthStore } from "@/store/authStore";
 import plus from "@/assets/icons/problem-board/plus.svg";
 import minus from "@/assets/icons/problem-board/minus.svg";
-import sharedIcon from "@/assets/icons/my-problem-sets/share.svg";
 import statusWrong from "@/assets/icons/problem-board/status-wrong.svg";
 import statusSolved from "@/assets/icons/problem-board/status-solved.svg";
 import seeMyProblems from "@/assets/icons/my-problems/see-my-problems.svg";
@@ -116,6 +114,8 @@ const shared = ref(false);
 const description = ref("");
 const problemSets = ref([]);
 const sort = ref(currentSort);
+const first = ref(0);
+const rows = ref(10);
 const selectedProblems = ref([]);
 const showProblemSet = ref(false);
 const activeFilter = ref(null);
@@ -250,9 +250,9 @@ const sortedProblems = computed(() => {
       );
     case SORT.likes:
       return problems.sort((a, b) => {
-        // problem.likes[0]?.count가 있는 경우
-        const aLikes = a.likes?.[0]?.count ?? 0;
-        const bLikes = b.likes?.[0]?.count ?? 0;
+        // problem.likes_count가 있는 경우
+        const aLikes = a.likes_count ?? 0;
+        const bLikes = b.likes_count ?? 0;
 
         // problem.problem.likes[0]?.count가 있는 경우 (공유받은 문제)
         const aSharedLikes = a.problem?.likes?.[0]?.count ?? 0;
@@ -266,17 +266,46 @@ const sortedProblems = computed(() => {
   }
 });
 
+watch(
+  () => route.query.status,
+  () => {
+    first.value = 0;
+  },
+);
+watch(
+  () => route.query.keyword,
+  () => {
+    first.value = 0;
+  },
+);
+watch(
+  () => route.query.startDate,
+  () => {
+    first.value = 0;
+  },
+);
+watch(
+  () => route.query.endDate,
+  () => {
+    first.value = 0;
+  },
+);
+
 watch(sort, (newSort) => {
+  first.value = 0;
   const newQuery = { ...route.query, sort: newSort.value };
+  router.replace({ query: newQuery, page: 1 });
+});
+
+watch(first, (newFirst) => {
+  const page = newFirst / rows.value + 1;
+  const newQuery = { ...route.query, page };
   router.replace({ query: newQuery });
 });
 
-watchEffect(async () => {
-  if (!user.value) return;
-  problemSets.value = await workbookAPI.getAll(user.value.id);
-});
-
 onBeforeMount(async () => {
+  const page = route.query.page ?? 1;
+  first.value = (page - 1) * rows.value;
   problemSets.value = await workbookAPI.getAll(user.value.id);
 });
 
@@ -323,24 +352,13 @@ onBeforeUnmount(() => {
           @click="handleFilterButtonClick('myProblems')"
         >
           <template #icon>
-            <img :src="seeMyProblems" alt="seeMyProblemsIcon" class="w-5 h-5" />
-          </template>
-        </Button>
-        <Button
-          v-if="showSharedProblem"
-          label="공유받은 문제"
-          size="small"
-          severity="secondary"
-          :class="[
-            'text-sm',
-            activeFilter === 'sharedProblems'
-              ? '!bg-orange-3 !text-orange-500'
-              : 'text-white bg-navy-4',
-          ]"
-          @click="handleFilterButtonClick('sharedProblems')"
-        >
-          <template #icon>
-            <img :src="sharedIcon" alt="sharedIcon" class="w-5 h-5" />
+            <img
+              :src="
+                activeFilter === 'myProblems' ? checkedMyProblem : seeMyProblems
+              "
+              alt="myProblemsIcon"
+              class="w-5 h-5"
+            />
           </template>
         </Button>
         <button
@@ -364,6 +382,7 @@ onBeforeUnmount(() => {
     <div class="overflow-hidden border border-black-5 rounded-2xl">
       <DataTable
         v-model:selection="selectedProblems"
+        v-model:first="first"
         :value="sortedProblems"
         dataKey="id"
         paginator
@@ -470,7 +489,12 @@ onBeforeUnmount(() => {
             </div>
           </template>
         </Column>
-        <Column field="problem_type" header="문제 유형" v-if="showCategory">
+        <Column
+          field="problem_type"
+          header="문제 유형"
+          headerStyle="min-width: 6rem"
+          v-if="showCategory"
+        >
           <template #body="slotProps">
             <Tag
               v-if="getProblemType(slotProps.data.problem_type) === '4지선다'"

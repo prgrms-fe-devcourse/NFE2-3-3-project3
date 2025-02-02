@@ -49,7 +49,7 @@ const search = async (
     endDate ? new Date(endDate).toISOString() : null,
   );
 
-  router.push({
+  router.replace({
     query: {
       keyword,
       startDate: formatDate(startDate),
