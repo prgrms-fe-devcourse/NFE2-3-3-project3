@@ -156,7 +156,7 @@ const routeConfig = computed(() => {
     <RouterLink
       v-if="routeConfig"
       :to="routeConfig"
-      class="flex gap-2 items-center"
+      class="inline-flex gap-2 items-center w-fit"
     >
       <Avatar
         :image="author?.avatar_url"
