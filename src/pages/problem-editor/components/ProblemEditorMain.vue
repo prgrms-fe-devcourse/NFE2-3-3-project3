@@ -338,13 +338,6 @@ watch(
               </div>
             </template>
           </MultiSelect>
-
-          <label for="shared" class="mr-2"> 공개 여부 </label>
-          <ToggleSwitch
-            v-model="localProblem.shared"
-            name="shared"
-            class="align-middle"
-          />
         </fieldset>
 
         <fieldset class="addDivider flex flex-col gap-4 mb-4">
