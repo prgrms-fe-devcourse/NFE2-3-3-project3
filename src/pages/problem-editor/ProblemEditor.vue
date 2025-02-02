@@ -178,7 +178,7 @@ const submitProblems = async () => {
 
     if (failedProblems.length > 0) {
       throw new Error(
-        `🚨 ${
+        ` ${
           failedProblems.length
         }개의 문제가 제출되지 않았습니다: ${failedProblems.join(", ")}`,
       );
@@ -199,8 +199,7 @@ const submitProblems = async () => {
       severity: "error",
       summary: "문제 제출 중 오류 발생",
       detail:
-        error.message ||
-        "🚨 서버 오류가 발생했습니다. 나중에 다시 시도해주세요.",
+        error.message || "서버 오류가 발생했습니다. 나중에 다시 시도해주세요.",
       life: 5000,
     });
   }

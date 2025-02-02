@@ -72,6 +72,7 @@ const emits = defineEmits(["deleteProblem"]);
 
 const localProblem = reactive({
   ...props.problemContent,
+  category: toRaw(props.problemContent.category),
 });
 
 const setType = (type) => {
@@ -214,12 +215,12 @@ const adjustEditorHeight = (type) => {
   }
 };
 
+// 문제 에디터 초기화
 watchEffect(() => {
-  // 문제 에디터 초기화
   if (questionEditor.value && !questionEditorInstance) {
     questionEditorInstance = new Editor({
       el: questionEditor.value,
-      height: "300px",
+      height: "200px",
       initialEditType: "wysiwyg",
       previewStyle: "vertical",
       toolbarItems: [
@@ -239,6 +240,7 @@ watchEffect(() => {
       },
       hooks: {
         addImageBlobHook: async (fileOrBlob, callback) => {
+          // 이미지 업로드 처리
           try {
             const { type, size } = fileOrBlob;
             if (!type.startsWith("image/")) {
@@ -255,7 +257,7 @@ watchEffect(() => {
             img.src = imageUrl; //
             img.onload = () => {
               uploadedQuestionImages[imageUrl] = img.naturalHeight;
-              adjustEditorHeight("Question");
+              adjustEditorHeight("Explanation");
               console.log(
                 `업로드된 이미지 크기: ${img.naturalWidth}x${img.naturalHeight}px`,
               );
@@ -270,13 +272,27 @@ watchEffect(() => {
       },
     });
 
-    // 초기 question 값 설정
-    if (localProblem.question) {
-      questionEditorInstance.setMarkdown(targetProblem.value.content.question);
-    }
-  }
+    // 초기 explanation 값 설정
+        nextTick(() => {
+      if (localProblem.question) {
+        const rawQuestion = toRaw(localProblem.question); // 반응형 객체에서 순수 값 가져오기
+        console.log("🚀 전:", rawQuestion);
 
-  // 풀이 에디터 초기화
+        setTimeout(() => {  // 🔥 `setMarkdown`이 실행될 때까지 약간의 시간 지연
+          if (questionEditorInstance) {
+            questionEditorInstance.setMarkdown(rawQuestion);
+            console.log("✅ 후:", questionEditorInstance.getMarkdown());
+          } else {
+            console.warn("❌ questionEditorInstance가 아직 생성되지 않았음");
+          }
+        }, 100);
+      }
+    });
+  }
+});
+
+// 풀이 에디터 초기화
+watchEffect(() => {
   if (explanationEditor.value && !explanationEditorInstance) {
     explanationEditorInstance = new Editor({
       el: explanationEditor.value,
@@ -357,7 +373,6 @@ const updateValidity = () => {
   localProblem.validity.origin_source =
     localProblem.origin_source?.length > 0 ? true : false;
   localProblem.isValid = Object.values(localProblem.validity).every(Boolean);
-  console.log("cate", localProblem.validity.category);
 };
 
 watchEffect(() => {
