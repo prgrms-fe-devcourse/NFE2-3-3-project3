@@ -18,6 +18,7 @@ import { inviteAPI } from "@/api/invite";
 // Store & Composables
 import { useAuthStore } from "@/store/authStore";
 import { useConfirm } from "primevue/useconfirm";
+import { ConfirmDialog } from 'primevue';
 
 // Constants
 const ITEMS_PER_PAGE = 4;
@@ -262,6 +263,7 @@ watchEffect(fetchExams);
   </RouterLink>
 
   <ConfirmDialog />
+
 </template>
 
 <style scoped>

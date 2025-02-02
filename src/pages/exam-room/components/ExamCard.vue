@@ -109,7 +109,10 @@ const confirmDelete = (event) => {
     message: "정말 이 시험을 삭제하시겠습니까?",
     header: "시험 삭제 확인",
     icon: "pi pi-exclamation-triangle",
+    acceptLabel: "삭제",
+    rejectLabel: "취소",
     accept: handleDelete,
+    reject: () => {}
   });
 };
 
