@@ -146,9 +146,7 @@ const submitProblems = async () => {
           updated_at: korNow,
         };
 
-        console.log("problemForSubmission:", problemForSubmission);
         const data = await problemAPI.add(workbookId, problemForSubmission);
-        console.log(data);
         return {
           success: true,
           problemTitle: problem?.title || `문제 ${idx + 1}`,
@@ -210,7 +208,6 @@ const onGoingBack = () => {
 };
 
 // onBeforeRouteLeave((to, from, next) => {
-//   console.log("onbeforeRouterLeave");
 
 //   // 제출 클릭한 경우 건너뛰기
 //   if (isSubmitClicked.value) return;

@@ -66,11 +66,9 @@ const handleTitleChange = (event) => {
 
 // 카테고리 변경 감지
 const handleCategoryChange = (event) => {
-  console.log('1. MultiSelect에서 받은 값:', event);
   
   if (event?.value?.[0]) {
-    const rawCategory = toRaw(event.value[0]); // value 배열의 첫 번째 항목을 변환
-    console.log('2. 변환된 일반 카테고리 객체:', rawCategory);
+    const rawCategory = toRaw(event.value[0]);
 
     problemUpdateStore.updateField("category", rawCategory.id);
   } else {

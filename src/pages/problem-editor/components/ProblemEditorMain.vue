@@ -59,7 +59,6 @@ let explanationEditorInstance = null;
 
 // 카테고리 생성용
 const doesCategoryExist = computed(() => {
-  console.log(filteredCategory.value);
   return JSON.stringify(category).indexOf(`${filteredCategory.value}`) === -1
     ? false
     : true;
@@ -79,13 +78,11 @@ const createCategory = async () => {
     name: filteredCategory.value.trim(),
   });
 
-  console.log(newCategoryData);
   category.push(...newCategoryData);
   localProblem.category = [...newCategoryData];
 
   filteredCategory.value = "";
 
-  console.log("새로운 카테고리가 생성되고 선택되었습니다:", newCategoryData);
 };
 
 // const uploadedQuestionImages = reactive({});

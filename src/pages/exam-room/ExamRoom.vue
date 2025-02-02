@@ -210,6 +210,7 @@ watchEffect(fetchExams);
                 showEditButtons: false,
                 isClickable: exam.uid === authStore.user?.id || exam.isInvited,
               }"
+              @invite-accepted="fetchExams"
             />
           </div>
         </li>
@@ -247,6 +248,7 @@ watchEffect(fetchExams);
               ...exam,
               showEditButtons: true,
             }"
+            @exam-deleted="fetchExams"
           />
         </li>
       </ul>
@@ -281,6 +283,7 @@ watchEffect(fetchExams);
           <InvitedExamCard
             :invite-data="invite"
             :test-center="invite.test_center"
+            @exam-status-change="fetchExams"
           />
         </li>
       </ul>

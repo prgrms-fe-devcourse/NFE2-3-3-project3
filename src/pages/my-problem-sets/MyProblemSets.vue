@@ -81,7 +81,6 @@ const descriptionLength = computed(() => description.value?.length || 0);
 const openAddDialog = async () => {
   const currentUser = await userAPI.getOne(authStore.user.id);
   const grade = getCurrentGradeInfo(currentUser.total_points);
-  console.log(workbooks.value.length, grade.current.problemSetLimit);
   if (workbooks.value.length >= grade.current.problemSetLimit) {
     toast.add({
       severity: "error",

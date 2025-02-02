@@ -111,7 +111,6 @@ export const useProblemUpdateStore = defineStore("problemUpdate", () => {
   };
 
   function updateField(field, value) {
-    console.log("store 업데이트 category:", field, value);
     if (field in editedProblem.value) {
       // 유효성 검사 수행
       const validation = validateField(field, value);
@@ -176,7 +175,6 @@ export const useProblemUpdateStore = defineStore("problemUpdate", () => {
 
   async function saveProblem() {
     const { category } = editedProblem.value;
-    console.log("저장 전 카테고리 상태:", category); // 저장 전 카테고리 상태
     try {
       // 전체 유효성 검사 수행
       if (!validateAllFields()) {

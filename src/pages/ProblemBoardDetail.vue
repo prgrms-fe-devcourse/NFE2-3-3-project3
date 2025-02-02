@@ -26,17 +26,12 @@ const commentText = ref("");
 // 문제 데이터 로드
 const loadProblem = async () => {
   try {
-    console.log("현재 route params:", route.params); // 라우트 파라미터 확인
-
     if (!route.params.problemId) {
       console.log("ID가 없습니다");
       return;
     }
 
-    // getAll 대신 getById 사용
-    console.log("문제 로딩 시작:", route.params.problemId);
     const data = await problemAPI.getById(route.params.problemId);
-    console.log("받아온 데이터:", data);
 
     if (data) {
       problem.value = data;
