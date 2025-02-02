@@ -17,6 +17,7 @@ import { inviteAPI } from "@/api/invite";
 // Store & Composables
 import { useAuthStore } from "@/store/authStore";
 import { useConfirm } from "primevue/useconfirm";
+import { ConfirmDialog } from 'primevue';
 
 // Constants
 const ITEMS_PER_PAGE = 4;
@@ -264,6 +265,8 @@ watchEffect(fetchExams);
   >
     <img :src="createIcon" alt="새 시험장 만들기" class="w-8 h-8" />
   </RouterLink>
+
+  <ConfirmDialog />
 
 </template>
 
