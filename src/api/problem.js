@@ -107,7 +107,6 @@ const search = async (userId, keyword, startDate, endDate, status) => {
       end_date: endDate,
       status,
     });
-    console.log(data);
 
     if (error) throw error;
     return data;

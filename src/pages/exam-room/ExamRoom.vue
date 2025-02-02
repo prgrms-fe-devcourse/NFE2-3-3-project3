@@ -6,7 +6,6 @@ import { RouterLink, useRouter } from "vue-router";
 // Components
 import ExamCard from "@/pages/exam-room/components/ExamCard.vue";
 import InvitedExamCard from "./components/InvitedExamCard.vue";
-import ConfirmDialog from "primevue/confirmdialog";
 
 // Icons
 import createIcon from "@/assets/icons/exam-room/edit_square.svg";
@@ -92,9 +91,10 @@ const fetchExams = async () => {
     // 1. 내가 만든 시험장 목록
     const testCenterResponse = await testCenterAPI.getAllFields(authStore.user.id);
 
-    // 2. 초대받은 시험장 중 수락한 목록
+    // 2. 초대받은 시험장 목록
     const inviteResponse = await inviteAPI.getAll(authStore.user.id);
-    const acceptedInvites = inviteResponse?.filter((invite) => invite.participate) || [];
+    const acceptedInvites =
+      inviteResponse?.filter((invite) => invite.participate) || [];
 
     // 두 목록 합치기
     const allExams = [
@@ -118,13 +118,17 @@ const fetchExams = async () => {
 
     // 진행중이 아닌 시험 필터링 (내가 만든 시험만)
     const ongoingExamIds = ongoingExams.value.map((exam) => exam.id);
-    myExams.value = testCenterResponse?.filter((exam) => {
-      const endDate = new Date(exam.end_date);
-      return !ongoingExamIds.includes(exam.id) && endDate >= now;
-    }) || [];
+    myExams.value =
+      testCenterResponse?.filter((exam) => {
+        const endDate = new Date(exam.end_date);
+        return !ongoingExamIds.includes(exam.id) && endDate >= now;
+      }) || [];
 
-    // 초대된 시험 중 미응답 목록
-    invitedExams.value = inviteResponse?.filter((invite) => !invite.participate) || [];
+    // 초대된 시험 중 미응답이면서 종료일이 지나지 않은 시험만 표시
+    invitedExams.value = inviteResponse?.filter((invite) => {
+      const endDate = new Date(invite.test_center.end_date);
+      return !invite.participate && endDate >= now;  // 종료일이 현재보다 이후인 시험만 필터링
+    }) || [];
   } catch (error) {
     console.error("시험 데이터 로딩 실패:", error);
   }
@@ -261,7 +265,6 @@ watchEffect(fetchExams);
     <img :src="createIcon" alt="새 시험장 만들기" class="w-8 h-8" />
   </RouterLink>
 
-  <ConfirmDialog />
 </template>
 
 <style scoped>
