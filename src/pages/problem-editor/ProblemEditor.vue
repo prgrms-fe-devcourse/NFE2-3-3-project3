@@ -209,42 +209,42 @@ const onGoingBack = () => {
   window.history.length > 2 ? router.go(-1) : router.push("/");
 };
 
-onBeforeRouteLeave((to, from, next) => {
-  console.log("onbeforeRouterLeave");
+// onBeforeRouteLeave((to, from, next) => {
+//   console.log("onbeforeRouterLeave");
 
-  // 제출 클릭한 경우 건너뛰기
-  if (isSubmitClicked.value) return;
-  else {
-    if (createdProblems.value.problemLists.length > 0) {
-      return new Promise((resolve) => {
-        confirm.require({
-          message:
-            "아직 제출되지 않은 문제들이 있습니다. 작성한 문제는 임시 저장됩니다.",
-          header: "페이지 나가기 확인",
-          icon: "pi pi-exclamation-circle",
-          acceptLabel: "저장 후 나가기",
-          rejectLabel: "취소",
-          accept: () => {
-            // sessionStorage.setItem(
-            //   "createdProblem",
-            //   JSON.stringify(createdProblems.value),
-            // );
-            // 페이지 이동 허용
-            confirm.close();
-            next(true);
-          },
-          reject: () => {
-            // 페이지 이동 취소
-            confirm.close();
-            next(false);
-          },
-        });
-      });
-    } else {
-      next(true);
-    }
-  }
-});
+//   // 제출 클릭한 경우 건너뛰기
+//   if (isSubmitClicked.value) return;
+//   else {
+//     if (createdProblems.value.problemLists.length > 0) {
+//       return new Promise((resolve) => {
+//         confirm.require({
+//           message:
+//             "아직 제출되지 않은 문제들이 있습니다. 작성한 문제는 임시 저장됩니다.",
+//           header: "페이지 나가기 확인",
+//           icon: "pi pi-exclamation-circle",
+//           acceptLabel: "저장 후 나가기",
+//           rejectLabel: "취소",
+//           accept: () => {
+//             // sessionStorage.setItem(
+//             //   "createdProblem",
+//             //   JSON.stringify(createdProblems.value),
+//             // );
+//             // 페이지 이동 허용
+//             confirm.close();
+//             next(true);
+//           },
+//           reject: () => {
+//             // 페이지 이동 취소
+//             confirm.close();
+//             next(false);
+//           },
+//         });
+//       });
+//     } else {
+//       next(true);
+//     }
+//   }
+// });
 
 // const getSessionData = () => {
 //   const storedData = sessionStorage.getItem("createdProblems");
@@ -321,8 +321,6 @@ watch(
       <ProblemEditorMain
         v-if="targetProblem.idx !== -1"
         :key="targetProblem.idx"
-        :problem-idx="targetProblem.idx"
-        :problem-content="targetProblem.content"
         @delete-problem="deleteProblem"
       />
       <!-- <ProblemEditorMain

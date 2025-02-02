@@ -176,7 +176,7 @@ watch(
           >
             <h2 class="text-xl font-bold">문제 {{ currentProblem.number }}</h2>
             <Button
-              :label="'다시 볼 문제'"
+              :label="'다시 풀 문제'"
               icon="pi pi-flag"
               size="small"
               severity="secondary"
@@ -320,14 +320,14 @@ watch(
 </template>
 
 <style scoped>
-/* 다시 볼 문제 활성 상태 */
+/* 다시 풀 문제 활성 상태 */
 .again-view-active {
   background-color: #f1a140 !important;
   color: #ffffff !important;
   border-color: transparent !important;
 }
 
-/* 다시 볼 문제 비활성 상태 */
+/* 다시 풀 문제 비활성 상태 */
 .again-view-inactive {
   background-color: #8992b5 !important;
   color: #ffffff !important;

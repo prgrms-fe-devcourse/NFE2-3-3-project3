@@ -59,7 +59,7 @@ onMounted(() => {
         to="/problem-editor"
         class="bg-beige-2 rounded-lg p-6 flex flex-col justify-between gap-2 items-end"
       >
-        <div>
+        <div class="w-full">
           <p
             class="mb-3 text-xl font-semibold text-left font-pretend text-gray-2"
           >
@@ -77,7 +77,7 @@ onMounted(() => {
         to="/exam-room"
         class="bg-beige-2 rounded-lg p-6 flex flex-col justify-between gap-2 items-end"
       >
-        <div>
+        <div class="w-full">
           <p
             class="mb-3 text-xl font-semibold text-left font-pretend text-gray-2"
           >
@@ -99,7 +99,7 @@ onMounted(() => {
           <p
             class="mb-3 text-xl font-semibold text-left font-pretend text-gray-2"
           >
-            다시 볼 문제
+            다시 풀 문제
           </p>
           <p class="text-sm text-left text-gray-1 font-pretend">
             틀렸거나, 다시 보고 싶은 문제를 다시 한번 공부해보세요.

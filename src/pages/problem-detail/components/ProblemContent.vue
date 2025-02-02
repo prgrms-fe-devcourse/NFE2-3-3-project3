@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, nextTick } from "vue";
+import { ref, onMounted, watch, nextTick, onBeforeUnmount } from "vue";
 import Viewer from "@toast-ui/editor/dist/toastui-editor-viewer";
 import "@toast-ui/editor/dist/toastui-editor-viewer.css";
 
@@ -13,29 +13,48 @@ const props = defineProps({
 const viewer = ref(null);
 const viewerEl = ref(null);
 
-onMounted(async () => {
-  // props.problem이 로드될 때까지 대기
-  await nextTick();
+const initViewer = async () => {
+  try {
+    if (viewerEl.value && props.problem?.question) {
+      // 기존 viewer가 있다면 제거
+      if (viewer.value) {
+        viewer.value.destroy();
+        viewer.value = null;
+      }
 
-  if (viewerEl.value && props.problem?.question) {
-    viewer.value = new Viewer({
-      el: viewerEl.value,
-      initialValue: props.problem.question || "",
-    });
+      // 새로운 viewer 초기화
+      viewer.value = new Viewer({
+        el: viewerEl.value,
+        initialValue: props.problem.question,
+        height: '100%'
+      });
+    }
+  } catch (error) {
+    console.error("Viewer 초기화 실패:", error);
   }
+};
+
+onMounted(async () => {
+  await nextTick();
+  await initViewer();
 });
 
 watch(
-  () => props.problem,
-  async (newProblem) => {
-    // viewer가 초기화되고 새로운 문제가 있을 때만 업데이트
-    await nextTick();
-    if (viewer.value && newProblem?.question) {
-      viewer.value.setMarkdown(newProblem.question);
+  () => props.problem?.question,
+  async (newQuestion) => {
+    if (newQuestion) {
+      await nextTick();
+      await initViewer();
     }
-  },
-  { deep: true },
+  }
 );
+
+onBeforeUnmount(() => {
+  if (viewer.value) {
+    viewer.value.destroy();
+    viewer.value = null;
+  }
+});
 </script>
 
 <template>

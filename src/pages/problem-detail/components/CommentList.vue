@@ -8,40 +8,46 @@ import { useToast } from "primevue/usetoast";
 import { RouterLink } from "vue-router";
 import { useRouter } from "vue-router";
 import { Paginator } from "primevue";
+import { useConfirm } from "primevue/useconfirm";
 
 const toast = useToast();
 const props = defineProps({
   comments: {
     type: Array,
-    required: true
+    required: true,
   },
   isLoading: {
     type: Boolean,
-    default: false
+    default: false,
   },
   currentPage: {
     type: Number,
-    required: true
+    required: true,
   },
   totalPages: {
     type: Number,
-    required: true
+    required: true,
   },
   totalComments: {
     type: Number,
-    required: true
+    required: true,
   },
   value: {
     type: String,
-    default: ""
+    default: "",
   },
   problemId: {
     type: String,
-    required: true
-  }
+    required: true,
+  },
 });
 
-const emit = defineEmits(["update:value", "submit-comment", "page-change", "comment-change"]);
+const emit = defineEmits([
+  "update:value",
+  "submit-comment",
+  "page-change",
+  "comment-change",
+]);
 
 const authStore = useAuthStore();
 const userId = ref(authStore.user?.id);
@@ -50,6 +56,7 @@ const editingCommentId = ref(null);
 const editingContent = ref("");
 const textareaValue = ref("");
 const router = useRouter();
+const confirm = useConfirm();
 
 const commentCount = computed(() => formattedComments.value.length);
 
@@ -62,7 +69,7 @@ watch(
   (newUser) => {
     userId.value = newUser?.id;
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const getUserProfile = async (uid) => {
@@ -88,9 +95,9 @@ watchEffect(async () => {
           ...comment,
           avatar_url: userProfile.avatar_url,
           name: userProfile.name,
-          formattedDate: formatDateForComment(new Date(comment.created_at))
+          formattedDate: formatDateForComment(new Date(comment.created_at)),
         };
-      })
+      }),
     );
     formattedComments.value = formattedNewComments;
   }
@@ -110,17 +117,17 @@ const handleSubmitComment = async () => {
       severity: "error",
       summary: "로그인 필요",
       detail: "댓글을 작성하려면 로그인이 필요합니다.",
-      life: 3000
+      life: 3000,
     });
     return;
   }
-  
+
   if (textareaValue.value.length > 500) {
     toast.add({
       severity: "error",
       summary: "글자 수 초과",
       detail: "댓글은 500자를 초과할 수 없습니다.",
-      life: 3000
+      life: 3000,
     });
     return;
   }
@@ -129,7 +136,7 @@ const handleSubmitComment = async () => {
     await commentAPI.createComment({
       problem_id: props.problemId,
       comment: textareaValue.value,
-      uid: userId.value
+      uid: userId.value,
     });
 
     textareaValue.value = "";
@@ -139,37 +146,47 @@ const handleSubmitComment = async () => {
       severity: "success",
       summary: "댓글 작성 완료",
       detail: "댓글이 등록되었습니다.",
-      life: 3000
+      life: 3000,
     });
   } catch (error) {
     console.error("댓글 작성 실패:", error);
     toast.add({
       severity: "error",
       detail: "댓글 작성 중 오류가 발생했습니다.",
-      life: 3000
+      life: 3000,
     });
   }
 };
 
 const handleDeleteComment = async (id) => {
-  try {
-    await commentAPI.deleteComment(id);
-    emit("comment-change");
+  confirm.require({
+    message: "정말 댓글을 삭제하시겠습니까?",
+    header: "댓글 삭제 확인",
+    icon: "pi pi-exclamation-triangle",
+    acceptLabel: "삭제",
+    rejectLabel: "취소",
+    acceptClass: "p-button-secondary",
+    accept: async () => {
+      try {
+        await commentAPI.deleteComment(id);
+        emit("comment-change");
 
-    toast.add({
-      severity: "success",
-      summary: "삭제 완료",
-      detail: "댓글이 삭제되었습니다.",
-      life: 3000
-    });
-  } catch (error) {
-    console.error("Delete error:", error);
-    toast.add({
-      severity: "error",
-      detail: "댓글 삭제 중 오류가 발생했습니다.",
-      life: 3000
-    });
-  }
+        toast.add({
+          severity: "success",
+          summary: "삭제 완료",
+          detail: "댓글이 삭제되었습니다.",
+          life: 3000,
+        });
+      } catch (error) {
+        console.error("Delete error:", error);
+        toast.add({
+          severity: "error",
+          detail: "댓글 삭제 중 오류가 발생했습니다.",
+          life: 3000,
+        });
+      }
+    },
+  });
 };
 
 const handleEditComment = (comment) => {
@@ -185,14 +202,14 @@ const handleEditSubmit = async (event) => {
         severity: "error",
         summary: "글자 수 초과",
         detail: "댓글은 500자를 초과할 수 없습니다.",
-        life: 3000
+        life: 3000,
       });
       return;
     }
 
     try {
       const response = await commentAPI.updateComment(editingCommentId.value, {
-        comment: editingContent.value
+        comment: editingContent.value,
       });
 
       if (response) {
@@ -204,7 +221,7 @@ const handleEditSubmit = async (event) => {
           severity: "success",
           summary: "수정 완료",
           detail: "댓글이 수정되었습니다.",
-          life: 3000
+          life: 3000,
         });
       }
     } catch (error) {
@@ -212,7 +229,7 @@ const handleEditSubmit = async (event) => {
       toast.add({
         severity: "error",
         detail: "댓글 수정 중 오류가 발생했습니다.",
-        life: 3000
+        life: 3000,
       });
     }
   }
@@ -242,10 +259,7 @@ const onPageChange = (event) => {
         <strong class="text-gray-700 text-xl">{{ totalComments }}</strong>
       </div>
 
-      <div
-        v-if="!comments?.length"
-        class="text-center text-gray-500 py-4 mb-8"
-      >
+      <div v-if="!comments?.length" class="text-center text-gray-500 py-4 mb-8">
         첫 번째 댓글을 작성해보세요.
       </div>
 
@@ -263,7 +277,9 @@ const onPageChange = (event) => {
           >
             <img :src="comment.avatar_url" class="rounded-full w-7 h-7" />
             <span class="font-bold">{{ comment.name }}</span>
-            <span class="text-gray-400 text-sm">{{ comment.formattedDate }}</span>
+            <span class="text-gray-400 text-sm">{{
+              comment.formattedDate
+            }}</span>
           </RouterLink>
 
           <div
