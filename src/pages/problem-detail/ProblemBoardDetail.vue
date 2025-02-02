@@ -13,6 +13,7 @@ import ProblemContent from "./components/ProblemContent.vue";
 import ProblemSolution from "./components/ProblemSolution.vue";
 import CommentList from "./components/CommentList.vue";
 import { problemAPI } from "@/api/problem";
+import { ConfirmDialog } from 'primevue';
 
 const route = useRoute();
 const router = useRouter();
@@ -222,5 +223,6 @@ onMounted(async () => {
         />
       </template>
     </Dialog>
+    <ConfirmDialog />
   </div>
 </template>
