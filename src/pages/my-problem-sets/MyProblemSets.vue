@@ -21,6 +21,8 @@ const {
   title,
   description,
   shared,
+  isMyBooksViewAll,
+  isSharedBooksViewAll,
 } = storeToRefs(workbookStore);
 
 //모달
@@ -28,21 +30,29 @@ const toast = useToast();
 const showDialog = ref(false);
 
 //전체보기
-const isMyBooksViewAll = ref(false);
-const isSharedBooksViewAll = ref(false);
+
 const toggleMyBooksViewAll = () => {
   isMyBooksViewAll.value = !isMyBooksViewAll.value;
 };
+const toggleSharedBooksViewAll = () => {
+  isSharedBooksViewAll.value = !isSharedBooksViewAll.value;
+};
 
-const visibleMyBooks = computed(() => {
-  const newBooks = isMyBooksViewAll.value
-    ? workbooks.value
-    : workbooks.value.slice(0, 4);
-  return newBooks.map((book) => ({
-    ...book,
-    problems: new Array(problemCounts.value[book.id] || 0).fill({}),
-    shared: book.shared ?? false,
-  }));
+// const visibleMyBooks = computed(() => {
+//   const newBooks = isMyBooksViewAll.value
+//     ? workbooks.value
+//     : workbooks.value.slice(0, 4);
+//   return newBooks.map((book) => ({
+//     ...book,
+//     problems: new Array(problemCounts.value[book.id] || 0).fill({}),
+//     shared: book.shared ?? false,
+//   }));
+// });
+
+const visibleSharedBooks = computed(() => {
+  return isSharedBooksViewAll.value
+    ? sharedWorkbooks.value
+    : sharedWorkbooks.value.slice(0, 4);
 });
 
 //문제 수를 개별적으로 가져오는 함수
@@ -52,10 +62,6 @@ const fetchCountsForAllWorkbooks = async () => {
   for (const book of allBooks) {
     await workbookStore.fetchProblemCount(book.id);
   }
-};
-
-const toggleSharedBooksViewAll = () => {
-  isSharedBooksViewAll.value = !isSharedBooksViewAll.value;
 };
 
 // 문제집 상세 페이지로 이동하는 함수
@@ -70,6 +76,10 @@ const resetFormFields = () => {
   shared.value = false;
 };
 
+//computed로 안전하게 길이 계산
+const titleLength = computed(() => title.value?.length || 0);
+const descriptionLength = computed(() => description.value?.length || 0);
+
 //문제집 추가
 const addWorkbook = async () => {
   if (!title.value.trim() || !description.value.trim()) {
@@ -77,7 +87,7 @@ const addWorkbook = async () => {
       severity: "warn",
       summary: "경고",
       detail: "제목과 설명을 입력해주세요.",
-      life: 3000,
+      life: 2000,
     });
     return;
   }
@@ -95,21 +105,20 @@ const addWorkbook = async () => {
       severity: "success",
       summary: "성공",
       detail: "문제집이 성공적으로 추가되었습니다!",
-      life: 3000,
+      life: 2000,
     });
 
     await workbookStore.loadWorkbooks(authStore.user.id);
     await fetchCountsForAllWorkbooks();
 
     showDialog.value = false;
-    resetFormFields();
   } catch (error) {
     console.error("문제집 생성에 실패했습니다:", error);
     toast.add({
       severity: "error",
       summary: "오류",
       detail: "문제집 생성에 실패했습니다.",
-      life: 3000,
+      life: 2000,
     });
   }
 };
@@ -129,6 +138,38 @@ watch(
   },
   { immediate: true },
 );
+
+watch(title, (newValue) => {
+  if (newValue === "") return;
+  if (newValue.length > 20) {
+    toast.add({
+      severity: "warn",
+      summary: "경고",
+      detail: "제목은 최대 20자까지만 입력 가능합니다.",
+      life: 1000,
+    });
+    title.value = newValue.substring(0, 20);
+  }
+});
+
+watch(description, (newValue) => {
+  if (newValue === "") return;
+  if (newValue.length > 200) {
+    toast.add({
+      severity: "warn",
+      summary: "경고",
+      detail: "설명은 최대 200자까지만 입력 가능합니다.",
+      life: 1000,
+    });
+    description.value = newValue.substring(0, 200);
+  }
+});
+// 모달이 닫힐 때 초기화
+watch(showDialog, (newVal) => {
+  if (!newVal) {
+    resetFormFields();
+  }
+});
 </script>
 
 <template>
@@ -136,20 +177,27 @@ watch(
     <h1 class="text-[42px] font-laundry">보관한 문제집</h1>
 
     <!-- 내가 만든 문제집 섹션 -->
-    <section class="flex flex-col gap-[18px]">
+    <!-- <section class="flex flex-col gap-[18px] relative">
       <div class="flex items-center gap-[16px]">
         <h2 class="font-semibold text-xl">내가 만든 문제집</h2>
         <button
+          v-if="workbooks.length > 4"
           @click="toggleMyBooksViewAll"
-          class="text-[#B1B1B1] hover:no-underline flex items-center gap-1"
+          class="px-2 py-2 text-sm font-medium text-orange-1 border border-orange-1 rounded-md hover:bg-orange-1 hover:text-white transition-all flex items-center gap-2"
         >
-          {{ isMyBooksViewAll ? "접기" : "전체보기 +" }}
+          {{ isMyBooksViewAll ? "접기" : "전체보기" }}
+          <span
+            :class="isMyBooksViewAll ? 'rotate-180' : ''"
+            class="transition-transform"
+          >
+            ▼
+          </span>
         </button>
       </div>
       <div class="grid grid-cols-4 gap-4">
         <div
-          v-for="(book, index) in visibleMyBooks"
-          :key="index"
+          v-for="book in workbooks.slice(0, 4)"
+          :key="book.id"
           class="w-[204px] h-[146px] p-4 bg-orange-3 rounded-lg flex flex-col justify-between cursor-pointer"
           @click="goToProblemSet(book.id)"
         >
@@ -172,6 +220,115 @@ watch(
           </div>
         </div>
       </div>
+      <transition name="fade">
+        <div v-if="isMyBooksViewAll" class="grid grid-cols-4 gap-4 mt-4">
+          <div
+            v-for="(book, index) in workbooks.slice(4)"
+            :key="book.id"
+            class="w-[204px] h-[146px] p-4 bg-orange-3 rounded-lg flex flex-col justify-between cursor-pointer"
+            @click="goToProblemSet(book.id)"
+          >
+            <div>
+              <h3 class="font-semibold">{{ book.title }}</h3>
+              <p class="text-sm text-gray-600 truncate">
+                {{ book.description }}
+              </p>
+            </div>
+            <div class="flex justify-between items-center mt-2">
+              <img
+                v-if="book.shared"
+                :src="shareIcon"
+                alt="공유됨"
+                class="w-5 h-5"
+                :class="{ 'opacity-0': !book.shared }"
+              />
+              <span v-else class="w-5 h-5"></span>
+              <p class="text-sm font-medium">
+                {{ problemCounts[book.id] || 0 }}문제
+              </p>
+            </div>
+          </div>
+        </div>
+      </transition>
+    </section> -->
+
+    <section class="flex flex-col gap-[18px] relative">
+      <div class="flex items-center gap-[16px]">
+        <h2 class="font-semibold text-xl">내가 만든 문제집</h2>
+        <button
+          v-if="workbooks.length > 4"
+          @click="toggleMyBooksViewAll"
+          class="px-2 py-2 text-sm font-medium text-orange-1 border border-orange-1 rounded-md hover:bg-orange-1 hover:text-white transition-all flex items-center gap-2"
+        >
+          {{ isMyBooksViewAll ? "접기" : "전체보기" }}
+          <span
+            :class="isMyBooksViewAll ? 'rotate-180' : ''"
+            class="transition-transform"
+          >
+            ▼
+          </span>
+        </button>
+      </div>
+
+      <!-- 1️⃣ 항상 보이는 4개의 문제집 -->
+      <div class="grid grid-cols-4 gap-4">
+        <div
+          v-for="book in workbooks.slice(0, 4)"
+          :key="book.id"
+          class="w-[204px] h-[146px] p-4 bg-orange-3 rounded-lg flex flex-col justify-between cursor-pointer transition-opacity duration-300 hover:opacity-90 hover:shadow-md"
+          @click="goToProblemSet(book.id)"
+        >
+          <div>
+            <h3 class="font-semibold">{{ book.title }}</h3>
+            <p class="text-sm text-gray-600 truncate">{{ book.description }}</p>
+          </div>
+          <div class="flex justify-between items-center mt-2">
+            <img
+              v-if="book.shared"
+              :src="shareIcon"
+              alt="공유됨"
+              class="w-5 h-5"
+              :class="{ 'opacity-0': !book.shared }"
+            />
+            <span v-else class="w-5 h-5"></span>
+            <p class="text-sm font-medium">
+              {{ problemCounts[book.id] || 0 }}문제
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2️⃣ "전체보기" 버튼을 누르면 표시되는 추가 문제집 -->
+      <transition name="fade">
+        <div v-if="isMyBooksViewAll" class="grid grid-cols-4 gap-4 mt-4">
+          <div
+            v-for="book in workbooks.slice(4)"
+            :key="book.id"
+            class="w-[204px] h-[146px] p-4 bg-orange-3 rounded-lg flex flex-col justify-between cursor-pointer transition-opacity duration-300 hover:opacity-90 hover:shadow-md"
+            @click="goToProblemSet(book.id)"
+          >
+            <div>
+              <h3 class="font-semibold">{{ book.title }}</h3>
+              <p class="text-sm text-gray-600 truncate">
+                {{ book.description }}
+              </p>
+            </div>
+            <div class="flex justify-between items-center mt-2">
+              <img
+                v-if="book.shared"
+                :src="shareIcon"
+                alt="공유됨"
+                class="w-5 h-5"
+                :class="{ 'opacity-0': !book.shared }"
+              />
+              <span v-else class="w-5 h-5"></span>
+              <p class="text-sm font-medium">
+                {{ problemCounts[book.id] || 0 }}문제
+              </p>
+            </div>
+          </div>
+        </div>
+      </transition>
     </section>
 
     <!-- 공유 받은 문제집 섹션 -->
@@ -179,6 +336,7 @@ watch(
       <div class="flex items-center gap-[16px]">
         <h2 class="font-semibold text-xl">공유 받은 문제집</h2>
         <button
+          v-if="sharedWorkbooks.length > 4"
           @click="toggleSharedBooksViewAll"
           class="text-[#B1B1B1] hover:no-underline flex items-center gap-1"
         >
@@ -187,7 +345,7 @@ watch(
       </div>
       <div class="grid grid-cols-4 gap-4">
         <div
-          v-for="book in sharedWorkbooks"
+          v-for="book in visibleSharedBooks"
           :key="book.id"
           class="w-[204px] h-[146px] p-4 bg-orange-3 rounded-lg flex flex-col justify-between cursor-pointer"
           @click="goToProblemSet(book.id)"
@@ -212,66 +370,73 @@ watch(
           </div>
         </div>
       </div>
-      <!-- 아래의 img가 모달을 나오게 해주는 버튼 -->
-      <img
-        :src="createWorkbook"
-        alt="createWorkbook"
-        class="fixed flex items-center justify-center w-16 h-16 rounded-full cursor-pointer bg-orange-1 right-20 bottom-20"
-        @click="showDialog = true"
-      />
-
-      <!-- 모달 -->
-      <Dialog
-        v-model:visible="showDialog"
-        header="문제집 추가하기"
-        modal
-        class="w-[500px]"
-      >
-        <div class="flex flex-col gap-4">
-          <div>
-            <label for="title" class="block text-sm font-medium"
-              >문제집 제목</label
-            >
-            <input
-              id="title"
-              type="text"
-              class="w-full border rounded px-2 py-1"
-              v-model="title"
-            />
-          </div>
-          <div>
-            <label for="description" class="block text-sm font-medium"
-              >문제집 설명</label
-            >
-            <textarea
-              id="description"
-              rows="4"
-              class="w-full border rounded px-2 py-1"
-              v-model="description"
-            ></textarea>
-          </div>
-
-          <div class="flex items-center gap-2">
-            <label for="shared" class="text-sm font-medium">공개 여부</label>
-            <ToggleSwitch v-model="shared" name="shared" />
-          </div>
-        </div>
-        <template #footer>
-          <div class="flex justify-end gap-2">
-            <Button
-              label="문제집 추가하기"
-              class="p-button"
-              @click="addWorkbook"
-            />
-            <Button
-              label="취소"
-              class="p-button-text"
-              @click="showDialog = false"
-            />
-          </div>
-        </template>
-      </Dialog>
     </section>
+
+    <!-- 아래의 img가 모달을 나오게 해주는 버튼 -->
+    <img
+      :src="createWorkbook"
+      alt="createWorkbook"
+      class="fixed flex items-center justify-center w-16 h-16 rounded-full cursor-pointer bg-orange-1 right-20 bottom-20"
+      @click="showDialog = true"
+    />
+
+    <!-- 모달 -->
+    <Dialog
+      v-model:visible="showDialog"
+      header="문제집 추가하기"
+      modal
+      class="w-[500px]"
+    >
+      <div class="flex flex-col gap-4">
+        <div>
+          <label for="title" class="block text-sm font-medium"
+            >문제집 제목</label
+          >
+          <input
+            id="title"
+            type="text"
+            class="w-full border rounded px-2 py-1"
+            v-model="title"
+          />
+          <p class="text-xs text-gray-500 mt-1 text-right">
+            {{ titleLength }} / 20
+          </p>
+        </div>
+        <div>
+          <label for="description" class="block text-sm font-medium"
+            >문제집 설명</label
+          >
+          <textarea
+            id="description"
+            rows="4"
+            class="w-full border rounded px-2 py-1"
+            v-model="description"
+          ></textarea>
+          <p class="text-xs text-gray-500 mt-1 text-right">
+            {{ descriptionLength }} / 200
+          </p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <label for="shared" class="text-sm font-medium">공개 여부</label>
+          <ToggleSwitch v-model="shared" name="shared" />
+        </div>
+      </div>
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <Button
+            label="문제집 추가하기"
+            class="p-button"
+            @click="addWorkbook"
+          />
+          <Button
+            label="취소"
+            class="group p-button-text hover:bg-orange-1"
+            @click="showDialog = false"
+          />
+        </div>
+      </template>
+    </Dialog>
   </section>
 </template>
 
@@ -284,5 +449,14 @@ watch(
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 </style>
