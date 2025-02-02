@@ -50,18 +50,39 @@ const loadProblems = async (userId) => {
       categoryAPI.getAll(),
     ]);
 
-    // againViewProblems의 problem_id 집합 생성
-    const againViewProblemIds = new Set(againViewProblems.map((p) => p.id));
+    console.log("againViewProblems :", againViewProblems);
 
-    // userProblems를 기준으로 병합
-    const mergedProblems = userProblems.map((problem) => ({
-      ...problem,
-      isOwner: true,
-      againView: againViewProblemIds.has(problem.id),
-      latest_status: problem.latest_status,
-      category_name: categories.find((c) => c.id === problem.category_id)?.name,
-    }));
+    const problemsMap = new Map();
 
+    userProblems.forEach((problem) => {
+      problemsMap.set(problem.id, {
+        ...problem,
+        isOwner: true,
+        againView: false,
+        latest_status: problem.latest_status,
+        category_name: categories.find((c) => c.id === problem.category_id)
+          ?.name,
+      });
+    });
+
+    againViewProblems.forEach((againViewProblem) => {
+      const existingProblem = problemsMap.get(againViewProblem.id);
+      if (existingProblem) {
+        existingProblem.againView = true;
+      } else {
+        problemsMap.set(againViewProblem.id, {
+          ...againViewProblem,
+          isOwner: false,
+          againView: true,
+          latest_status: againViewProblem.latest_status,
+          category_name: categories.find(
+            (c) => c.id === againViewProblem.category_id,
+          )?.name,
+        });
+      }
+    });
+
+    const mergedProblems = Array.from(problemsMap.values());
     problems.value = mergedProblems;
     initialProblems.value = mergedProblems;
   } catch (err) {

@@ -6,27 +6,28 @@ import {
   ref,
   onBeforeMount,
   computed,
-  onBeforeUnmount,
   watchEffect,
   watch,
   defineExpose,
   toRaw,
 } from "vue";
 import {
-  Listbox,
   Button,
   ToggleSwitch,
   MultiSelect,
   InputText,
-  StyleClass,
   SelectButton,
 } from "primevue";
 
 import Editor from "@toast-ui/editor";
 import "@toast-ui/editor/dist/toastui-editor.css";
 import { storageAPI } from "@/api/storage";
-import { HtmlGenerator, parse } from "latexjs";
 import { categoryAPI } from "@/api/category";
+import { useCreateProblemStore } from "@/store/createProblemStore";
+import { storeToRefs } from "pinia";
+
+const createProblemStore = useCreateProblemStore();
+const { targetProblem, createdProblems } = storeToRefs(createProblemStore);
 
 const props = defineProps({
   problemIdx: {
@@ -66,20 +67,22 @@ const props = defineProps({
   },
 });
 
-const emits = defineEmits(["updateListItem", "deleteProblem", "submitProblem"]);
+// const emits = defineEmits(["updateListItem", "deleteProblem", "submitProblem"]);
+const emits = defineEmits(["deleteProblem"]);
+
+const localProblem = reactive({
+  ...props.problemContent,
+  category: toRaw(props.problemContent.category),
+});
 
 const setType = (type) => {
   localProblem.type = type;
-  emits("updateListItem", "TYPE", type);
+  createProblemStore.updateListItem("TYPE", type);
 };
 const PROBLEM_TYPES = ["4지선다", "O/X"];
 // 카테고리
 
 const category = reactive([]);
-
-const localProblem = reactive({
-  ...props.problemContent,
-});
 
 const currentIdx = computed(() => {
   return props.problemIdx;
@@ -90,7 +93,6 @@ const questionEditor = ref(null);
 let questionEditorInstance = null;
 
 const explanationEditor = ref(null);
-
 let explanationEditorInstance = null;
 
 // 카테고리 생성용
@@ -112,7 +114,7 @@ const createCategory = async () => {
   }
 
   const newCategoryData = await categoryAPI.createCategory({
-    name: filteredCategory.value.trim(),
+    name: filteredCategory.value.trim().slice(0, 15),
   });
 
   console.log(newCategoryData);
@@ -124,8 +126,97 @@ const createCategory = async () => {
   console.log("새로운 카테고리가 생성되고 선택되었습니다:", newCategoryData);
 };
 
+// // targetProblem.idx 값이 변경될 때 localProblem을 업데이트
+// watchEffect(() => {
+//   console.log(targetProblem.value.idx);
+//   Object.assign(createdProblems.value.problemLists[targetProblem.value.idx]);
+
+//   // if (
+//   //   targetProblem.value.idx !== -1 &&
+//   //   createdProblems.value.problemLists.length > targetProblem.value.idx
+//   // ) {
+//   //   Object.assign(createdProblems.value.problemLists[targetProblem.value.idx]);
+//   // } else {
+//   //   Object.assign(localProblem, {
+//   //     title: "",
+//   //     question: "",
+//   //     answer: "",
+//   //     explanation: "",
+//   //     origin_source: "",
+//   //     problem_type: "",
+//   //     category: [],
+//   //     image_src: "",
+//   //     option_one: "",
+//   //     option_two: "",
+//   //     option_three: "",
+//   //     option_four: "",
+//   //     shared: false,
+//   //     validity: {
+//   //       category: false,
+//   //       title: false,
+//   //       question: false,
+//   //       answer: false,
+//   //       origin_source: false,
+//   //     },
+//   //   });
+//   // }
+//   console.log(localProblem, createdProblems.value.problemLists);
+// });
+
 watchEffect(() => {
-  // 문제 에디터 초기화
+  if (props.problemIdx !== -1) {
+    const problem = createdProblems.value.problemLists[props.problemIdx];
+    if (problem) {
+      Object.assign(localProblem, problem);
+    }
+  }
+});
+
+const uploadedQuestionImages = reactive({});
+const uploadedExplanationImages = reactive({});
+
+const getUploadedImages = () => {
+  if (!questionEditorInstance) return [];
+
+  const markdown = questionEditorInstance.getMarkdown();
+  const markdownImages = [...markdown.matchAll(/!\[.*?\]\((.*?)\)/g)].map(
+    (match) => match[1],
+  );
+
+  const htmlContent = questionEditorInstance.getHTML();
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(htmlContent, "text/html");
+  const htmlImages = [...doc.querySelectorAll("img")].map((img) => img.src);
+
+  return [...new Set([...markdownImages, ...htmlImages])];
+};
+
+// 에디터 크기 자동 조절 함수
+const adjustEditorHeight = (type) => {
+  const uploadedImages =
+    type === "Question"
+      ? { ...uploadedQuestionImages }
+      : { ...uploadedExplanationImages };
+  const editorImages = getUploadedImages(); // 현재 에디터에 포함된 이미지 리스트
+  const totalImgHeight = editorImages.reduce((sum, imgUrl) => {
+    return sum + (uploadedImages[imgUrl] || 0); // 높이가 없으면 0으로 처리
+  }, 0);
+
+  if (questionEditorInstance) {
+    const contentHeight =
+      questionEditorInstance.getMarkdown().split("\n").length * 20 +
+      totalImgHeight; // 줄 수에 따른 높이 조절
+    const minHeight = 300;
+    const maxHeight = 600;
+    const newHeight = Math.min(Math.max(contentHeight, minHeight), maxHeight);
+
+    questionEditorInstance.setHeight(`${newHeight}px`);
+  }
+};
+
+// 문제 에디터 초기화
+watchEffect(() => {
   if (questionEditor.value && !questionEditorInstance) {
     questionEditorInstance = new Editor({
       el: questionEditor.value,
@@ -137,12 +228,14 @@ watchEffect(() => {
         ["hr", "quote"],
         ["ul", "ol", "task", "indent", "outdent"],
         ["table", "image", "link"],
-        ["code", "codeblock"],
+        ["code"],
       ],
       events: {
         change: () => {
           const value = questionEditorInstance.getMarkdown();
-          localProblem.question = value; // question만 업데이트
+          localProblem.question = value;
+          targetProblem.value.content.question = value;
+          adjustEditorHeight(); // 높이 조정
         },
       },
       hooks: {
@@ -150,56 +243,75 @@ watchEffect(() => {
           // 이미지 업로드 처리
           try {
             const { type, size } = fileOrBlob;
-
             if (!type.startsWith("image/")) {
               throw new Error("이미지 파일만 업로드할 수 있습니다.");
             }
-
             const MAX_FILE_SIZE = 50 * 1024 * 1024;
             if (size > MAX_FILE_SIZE) {
               throw new Error("파일 크기가 50MB를 초과할 수 없습니다.");
             }
-
             const imageUrl = await storageAPI.uploadImage(fileOrBlob);
             callback(imageUrl, fileOrBlob.name);
+            // 이미지 크기 읽기
+            const img = new Image();
+            img.src = imageUrl; //
+            img.onload = () => {
+              uploadedQuestionImages[imageUrl] = img.naturalHeight;
+              adjustEditorHeight("Explanation");
+              console.log(
+                `업로드된 이미지 크기: ${img.naturalWidth}x${img.naturalHeight}px`,
+              );
+            };
+            img.onerror = (err) => {
+              console.warn("이미지 로드 실패, 높이 계산 불가:", imageUrl, err);
+            };
           } catch (err) {
             console.error("이미지 업로드 실패:", err);
           }
         },
       },
-      customHTMLRenderer: {
-        latex(node) {
-          const generator = new latexjs.HtmlGenerator({ hyphenate: false });
-          const { body } = latexjs
-            .parse(node.literal, { generator })
-            .htmlDocument();
-
-          return [
-            { type: "openTag", tagName: "div", outerNewLine: true },
-            { type: "html", content: body.innerHTML },
-            { type: "closeTag", tagName: "div", outerNewLine: true },
-          ];
-        },
-      },
     });
 
-    // 초기 question 값 설정
-    if (localProblem.question) {
-      questionEditorInstance.setMarkdown(localProblem.question);
-    }
-  }
+    // 초기 explanation 값 설정
+    nextTick(() => {
+      if (localProblem.question) {
+        const rawQuestion = toRaw(localProblem.question); // 반응형 객체에서 순수 값 가져오기
+        console.log("🚀 전:", rawQuestion);
 
-  // 풀이 에디터 초기화
+        setTimeout(() => {
+          // 🔥 `setMarkdown`이 실행될 때까지 약간의 시간 지연
+          if (questionEditorInstance) {
+            questionEditorInstance.setMarkdown(rawQuestion);
+            console.log("✅ 후:", questionEditorInstance.getMarkdown());
+          } else {
+            console.warn("❌ questionEditorInstance가 아직 생성되지 않았음");
+          }
+        }, 100);
+      }
+    });
+  }
+});
+
+// 풀이 에디터 초기화
+watchEffect(() => {
   if (explanationEditor.value && !explanationEditorInstance) {
     explanationEditorInstance = new Editor({
       el: explanationEditor.value,
       height: "200px",
       initialEditType: "wysiwyg",
       previewStyle: "vertical",
+      toolbarItems: [
+        ["heading", "bold", "italic", "strike"],
+        ["hr", "quote"],
+        ["ul", "ol", "task", "indent", "outdent"],
+        ["table", "image", "link"],
+        ["code"],
+      ],
       events: {
         change: () => {
           const value = explanationEditorInstance.getMarkdown();
-          localProblem.explanation = value; // explanation만 업데이트
+          localProblem.explanation = value;
+          adjustEditorHeight(); // 높이 조정
         },
       },
       hooks: {
@@ -207,18 +319,28 @@ watchEffect(() => {
           // 이미지 업로드 처리
           try {
             const { type, size } = fileOrBlob;
-
             if (!type.startsWith("image/")) {
               throw new Error("이미지 파일만 업로드할 수 있습니다.");
             }
-
             const MAX_FILE_SIZE = 50 * 1024 * 1024;
             if (size > MAX_FILE_SIZE) {
               throw new Error("파일 크기가 50MB를 초과할 수 없습니다.");
             }
-
             const imageUrl = await storageAPI.uploadImage(fileOrBlob);
             callback(imageUrl, fileOrBlob.name);
+            // 이미지 크기 읽기
+            const img = new Image();
+            img.src = imageUrl; //
+            img.onload = () => {
+              uploadedExplanationImages[imageUrl] = img.naturalHeight;
+              adjustEditorHeight("Explanation");
+              console.log(
+                `업로드된 이미지 크기: ${img.naturalWidth}x${img.naturalHeight}px`,
+              );
+            };
+            img.onerror = (err) => {
+              console.warn("이미지 로드 실패, 높이 계산 불가:", imageUrl, err);
+            };
           } catch (err) {
             console.error("이미지 업로드 실패:", err);
           }
@@ -236,34 +358,46 @@ watchEffect(() => {
 onBeforeMount(async () => {
   const categoryData = await categoryAPI.getAll();
   category.push(...categoryData);
+  localProblem.visited = true;
+
   localProblem.type = localProblem.type === "" ? "4지선다" : localProblem.type;
 });
 
 const updateValidity = () => {
-  localProblem.validity.category = localProblem.category?.length > 0;
+  console.log(localProblem);
+  localProblem.validity.category =
+    localProblem.category?.length > 0 ? true : false;
   localProblem.validity.title = localProblem.title?.length > 0 ? true : false;
   localProblem.validity.question =
     localProblem.question?.length > 0 ? true : false;
   localProblem.validity.answer = localProblem.answer?.length > 0 ? true : false;
   localProblem.validity.origin_source =
     localProblem.origin_source?.length > 0 ? true : false;
+  localProblem.isValid = Object.values(localProblem.validity).every(Boolean);
 };
 
-// Call updateValidity inside watchEffect so Vue tracks dependencies correctly
 watchEffect(() => {
   updateValidity();
 });
 
 const submitProblem = () => {
+  console.log("submit", currentIdx, localProblem);
+  console.log("createdProblems", createdProblems.value.folder);
+
   const categoryRaw = toRaw(localProblem.category);
   updateValidity();
   localProblem.isValid = Object.values(localProblem.validity).every(Boolean);
   localProblem.visited = true;
-  emits("submitProblem", currentIdx.value, {
+  createProblemStore.submitProblem(currentIdx.value, {
     ...localProblem,
     category: categoryRaw,
   });
-  console.log(localProblem);
+  // createdProblems.value.problemLists[currentIdx.value] = {
+  //   ...localProblem,
+  //   category: categoryRaw,
+  // };
+
+  console.log("제출됨", localProblem);
 };
 
 defineExpose({
@@ -271,16 +405,22 @@ defineExpose({
 });
 
 // 문제 변경시 제출, 업데이트
-onBeforeUnmount(() => {
-  submitProblem();
-});
+watch(
+  () => localProblem,
+  (newVal) => {
+    if (currentIdx.value !== -1) {
+      createProblemStore.submitProblem(currentIdx.value, toRaw(newVal));
+    }
+  },
+  { deep: true }, // 내부 객체 변경까지 감지
+);
 </script>
 
 <template>
   <main class="flex flex-col gap-4 flex-grow">
     <article
       class="flex items-top flex-grow pl-4 pr-10 py-4 gap-3"
-      v-if="props.problemIdx !== -1"
+      v-if="currentIdx !== -1"
     >
       <img
         :src="deletePath"
@@ -336,6 +476,7 @@ onBeforeUnmount(() => {
                   icon="pi pi-plus"
                   :disabled="doesCategoryExist"
                   @click="createCategory"
+                  @filter="onFilterCategory"
                 />
               </div>
             </template>
@@ -358,9 +499,12 @@ onBeforeUnmount(() => {
             v-model="localProblem.title"
             name="problem"
             class="md:h-10 w-full"
-            placeholder="문제의 제목을 작성해 주세요."
+            placeholder="문제의 제목을 작성해 주세요.(20자 이내)"
             :invalid="localProblem.title == ''"
-            @change="(e) => emits('updateListItem', 'TITLE', e.target.value)"
+            maxlength="20"
+            @change="
+              (e) => createProblemStore.updateListItem('TITLE', e.target.value)
+            "
           />
           <div ref="questionEditor"></div>
           <p>답 <sup class="text-black-2">*</sup></p>
@@ -447,5 +591,10 @@ onBeforeUnmount(() => {
   top: 188px !important;
   bottom: auto !important;
   transform: none !important;
+}
+
+.tox-toolbar-overlord {
+  display: flex !important;
+  justify-content: center !important;
 }
 </style>

@@ -116,7 +116,7 @@ watch(
   (newExamResultId) => {
     if (newExamResultId) {
       loadInitialData();
-      fetchMyOption(newExamResultId);
+      fetchMyOption(newExamResultId, userId.value);
     }
   },
   { immediate: true },

@@ -10,38 +10,51 @@ export const againViewProblemAPI = {
     try {
       const { data, error } = await supabase
         .from("again_view_problem")
-        .select(`
-          problem:problem_id (
-            id,
-            question,
-            answer,
-            explanation,
+        .select(
+          `
+        problem:problem_id (
+          id,
+          question,
+          answer,
+          explanation,
+          created_at,
+          updated_at,
+          origin_source,
+          problem_type,
+          title,
+          category_id,
+          uid,
+          image_src,
+          option_one,
+          option_two,
+          option_three,
+          option_four,
+          shared,
+          likes:problem_like(count),
+          history:problem_history(
+            status,
             created_at,
-            updated_at,
-            origin_source,
-            problem_type,
-            title,
-            category_id,
-            uid,
-            image_src,
-            option_one,
-            option_two,
-            option_three,
-            option_four,
-            shared,
-            likes:problem_like(count)
+            uid
           )
-        `)
+        )
+      `,
+        )
         .eq("uid", userId);
-  
+
       if (error) throw error;
-  
-      // 데이터 구조를 flat하게 변환
-      return data.map(item => ({
+
+      // 데이터 처리 및 변환
+      const processedData = data.map((item) => ({
         ...item.problem,
-        likes: [{ count: item.problem.likes[0]?.count || 0 }]
+        likes: [{ count: item.problem.likes[0]?.count || 0 }],
+        latest_status:
+          item.problem.history
+            ?.filter((h) => h.uid === userId)
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0]
+            ?.status || "none",
       }));
-  
+
+      return processedData;
     } catch (error) {
       console.error(error);
       throw error;

@@ -17,7 +17,10 @@ import { inviteAPI } from "@/api/invite";
 // Store & Composables
 import { useAuthStore } from "@/store/authStore";
 import { useConfirm } from "primevue/useconfirm";
-import { ConfirmDialog } from 'primevue';
+import { ConfirmDialog } from "primevue";
+import { getCurrentGradeInfo } from "@/utils/getCurrentGradeInfo";
+import { userAPI } from "@/api/user";
+import { useToast } from "primevue";
 
 // Constants
 const ITEMS_PER_PAGE = 4;
@@ -26,6 +29,7 @@ const ITEMS_PER_PAGE = 4;
 const authStore = useAuthStore();
 const confirm = useConfirm();
 const router = useRouter();
+const toast = useToast();
 
 // Data Refs
 const ongoingExams = ref([]);
@@ -43,22 +47,22 @@ const isInvitedExamsExpanded = ref(false);
 
 // Computed - Visible Items
 const visibleOngoingExams = computed(() =>
-  ongoingExams.value.slice(0, ongoingExamsDisplayCount.value)
+  ongoingExams.value.slice(0, ongoingExamsDisplayCount.value),
 );
 
 const visibleMyExams = computed(() =>
-  myExams.value.slice(0, myExamsDisplayCount.value)
+  myExams.value.slice(0, myExamsDisplayCount.value),
 );
 
 const visiblePendingInvites = computed(() =>
-  invitedExams.value.slice(0, invitedExamsDisplayCount.value)
+  invitedExams.value.slice(0, invitedExamsDisplayCount.value),
 );
 
 // Computed - Show More Button
 const showMoreButtons = computed(() => ({
   ongoing: ongoingExams.value.length > ITEMS_PER_PAGE,
   myExams: myExams.value.length > ITEMS_PER_PAGE,
-  invited: invitedExams.value.length > ITEMS_PER_PAGE
+  invited: invitedExams.value.length > ITEMS_PER_PAGE,
 }));
 
 // Methods - Toggle Display
@@ -83,6 +87,30 @@ const toggleInvitedExamsDisplay = () => {
     : ITEMS_PER_PAGE;
 };
 
+const navigateToCreateExam = async () => {
+  const user = await userAPI.getOne(authStore.user.id);
+  const grade = getCurrentGradeInfo(user.total_points);
+
+  const acceptedInviteExam =
+    invitedExams.value.filter((invite) => invite.participate) || [];
+
+  const currentExamsLength =
+    myExams.value.length +
+    ongoingExams.value.length +
+    acceptedInviteExam.length;
+
+  if (currentExamsLength >= grade.current.examLimit) {
+    toast.add({
+      severity: "error",
+      summary: "시험 생성 실패",
+      detail: "현재 등급에서의 시험 갯수 제한에 도달했습니다.",
+      life: 3000,
+    });
+    return;
+  }
+  router.push("/create-exam-room");
+};
+
 // Methods - Data Fetching
 const fetchExams = async () => {
   if (!authStore.user?.id) return;
@@ -90,7 +118,9 @@ const fetchExams = async () => {
   const now = new Date();
   try {
     // 1. 내가 만든 시험장 목록
-    const testCenterResponse = await testCenterAPI.getAllFields(authStore.user.id);
+    const testCenterResponse = await testCenterAPI.getAllFields(
+      authStore.user.id,
+    );
 
     // 2. 초대받은 시험장 목록
     const inviteResponse = await inviteAPI.getAll(authStore.user.id);
@@ -125,11 +155,9 @@ const fetchExams = async () => {
         return !ongoingExamIds.includes(exam.id) && endDate >= now;
       }) || [];
 
-    // 초대된 시험 중 미응답이면서 종료일이 지나지 않은 시험만 표시
-    invitedExams.value = inviteResponse?.filter((invite) => {
-      const endDate = new Date(invite.test_center.end_date);
-      return !invite.participate && endDate >= now;  // 종료일이 현재보다 이후인 시험만 필터링
-    }) || [];
+    // 초대된 시험 중 미응답 목록
+    invitedExams.value =
+      inviteResponse?.filter((invite) => !invite.participate) || [];
   } catch (error) {
     console.error("시험 데이터 로딩 실패:", error);
   }
@@ -259,15 +287,14 @@ watchEffect(fetchExams);
     </section>
   </div>
 
-  <RouterLink
-    to="/create-exam-room"
+  <button
+    @click="navigateToCreateExam"
     class="fixed flex items-center justify-center w-16 h-16 rounded-full cursor-pointer bg-orange-1 right-20 bottom-20"
   >
     <img :src="createIcon" alt="새 시험장 만들기" class="w-8 h-8" />
-  </RouterLink>
+  </button>
 
   <ConfirmDialog />
-
 </template>
 
 <style scoped>

@@ -78,13 +78,6 @@ watch(
     <nav
       class="flex items-center justify-end px-16 py-6 space-x-3 text-gray-600"
     >
-      <Button
-        icon="pi pi-sun"
-        severity="secondary"
-        variant="text"
-        rounded
-        class="!py-0"
-      />
       <!-- 알림 및 포인트 -->
       <Notification />
 
