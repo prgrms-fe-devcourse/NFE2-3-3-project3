@@ -150,7 +150,7 @@ watchEffect(fetchExams);
         <button
           v-if="showMoreButtons.ongoing"
           @click="toggleOngoingExamsDisplay"
-          class="px-3 py-2 transition-colors rounded-full text-gray-3 hover:bg-gray-100"
+          class="px-3 py-2 transition-colors rounded-full text-gray-1 hover:bg-gray-100"
         >
           {{ isOngoingExamsExpanded ? "접기" : "전체보기 +" }}
         </button>
@@ -195,7 +195,7 @@ watchEffect(fetchExams);
         <button
           v-if="showMoreButtons.myExams"
           @click="toggleMyExamsDisplay"
-          class="px-3 py-2 transition-colors rounded-full text-gray-3 hover:bg-gray-100"
+          class="px-3 py-2 transition-colors rounded-full text-gray-1 hover:bg-gray-100"
         >
           {{ isMyExamsExpanded ? "접기" : "전체보기 +" }}
         </button>
@@ -231,7 +231,7 @@ watchEffect(fetchExams);
         <button
           v-if="showMoreButtons.invited"
           @click="toggleInvitedExamsDisplay"
-          class="px-3 py-2 transition-colors rounded-full text-gray-3 hover:bg-gray-100"
+          class="px-3 py-2 transition-colors rounded-full text-gray-1 hover:bg-gray-100"
         >
           {{ isInvitedExamsExpanded ? "접기" : "전체보기 +" }}
         </button>
