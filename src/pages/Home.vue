@@ -59,7 +59,7 @@ onMounted(() => {
         to="/problem-editor"
         class="bg-beige-2 rounded-lg p-6 flex flex-col justify-between gap-2 items-end"
       >
-        <div>
+        <div class="w-full">
           <p
             class="mb-3 text-xl font-semibold text-left font-pretend text-gray-2"
           >
@@ -77,7 +77,7 @@ onMounted(() => {
         to="/exam-room"
         class="bg-beige-2 rounded-lg p-6 flex flex-col justify-between gap-2 items-end"
       >
-        <div>
+        <div class="w-full">
           <p
             class="mb-3 text-xl font-semibold text-left font-pretend text-gray-2"
           >
