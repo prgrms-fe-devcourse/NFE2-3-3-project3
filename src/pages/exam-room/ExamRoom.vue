@@ -210,7 +210,7 @@ watchEffect(fetchExams);
                 showEditButtons: false,
                 isClickable: exam.uid === authStore.user?.id || exam.isInvited,
               }"
-              @@invite-accepted="fetchExams"
+              @invite-accepted="fetchExams"
             />
           </div>
         </li>
