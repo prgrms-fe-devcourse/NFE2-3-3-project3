@@ -8,7 +8,6 @@ import EmptyText from "@/components/layout/EmptyText.vue";
 import Badge from "primevue/badge";
 import { storeToRefs } from "pinia";
 import { useAuthStore } from "@/store/authStore";
-import { GRADES } from "@/const/grades";
 
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
@@ -121,9 +120,9 @@ const getNotificationMessage = (notification) => {
     case "invite":
       return `${sender.name}님이 회원님을 시험에 초대했습니다.`;
     case "grade_middle":
-      return `"중수"로 등급이 올랐습니다! 중수에서의 권한은 시험장 ${GRADES.two.examLimit}개 | 문제집 ${GRADES.two.problemSetLimit}개입니다.`;
+      return `"중수"로 등급이 올랐습니다! 🎉🎉`;
     case "grade_high":
-      return `"고수"로 등급이 올랐습니다! 고수에서의 권한은 시험장 ${GRADES.three.examLimit}개 | 문제집 ${GRADES.two.problemSetLimit}개입니다.`;
+      return `"고수"로 등급이 올랐습니다! 🎉🎉`;
     default:
       return "";
   }

@@ -14,13 +14,14 @@ export const useExamResultStore = defineStore("examResult", {
     problems: [], //문제 데이터
     currentProblem: null, //선택된 문제
     columns: 10, // 테이블 열 크기
+    workbooks: [], //시험장 문제집 정보
 
-    // isFlagged: {},
     againViewProblems: [],
     isLoading: false, // 로딩 상태
     error: null, // 에러 메시지
     isInitializing: false,
     isFetchingProblems: false, //상태관리를 위한 변수들
+    isFetchingWorkbook: false,
     isGetScores: false,
     isMyOption: false,
     myOption: [],
@@ -149,14 +150,13 @@ export const useExamResultStore = defineStore("examResult", {
     },
 
     //내가고른 선택지
-    async fetchMyOption(testResultId) {
+    async fetchMyOption(testResultId, userId) {
       if (!testResultId) {
         console.error("fetchProblems: testResultId가 정의되지 않았습니다.");
         return;
       }
 
       try {
-        // 1. test_center_id 가져오기
         const testCenterData = await problemHistoryAPI.getTestCenterId(
           testResultId,
         );
@@ -167,9 +167,9 @@ export const useExamResultStore = defineStore("examResult", {
 
         const { test_center_id } = testCenterData;
 
-        // 2. problem_history 데이터 가져오기
         const problemHistory = await problemHistoryAPI.getProblemHistory(
           test_center_id,
+          userId,
         );
         if (!problemHistory) {
           console.error(
@@ -178,7 +178,6 @@ export const useExamResultStore = defineStore("examResult", {
           return;
         }
 
-        // 3. Pinia 상태 업데이트
         this.myOption = problemHistory.map((item) => ({
           problem_id: item.problem_id,
           my_option: item.my_option,
@@ -333,6 +332,40 @@ export const useExamResultStore = defineStore("examResult", {
         } catch (error) {
           console.error("checkAgainViewStatus 호출 중 오류 발생:", error);
         }
+      }
+    },
+
+    //시험장 문제집 정보
+    async fetchAndStoreWorkbook(testResultId) {
+      if (this.isFetchingWorkbook) {
+        console.warn("fetchworkbook 중복호출 방지");
+        return;
+      }
+
+      if (!testResultId) {
+        console.error("[ERROR] Invalid testResultId:", testResultId);
+        return;
+      }
+      this.isFetchingWorkbook = true;
+      try {
+        const workbook = await testResultAPI.fetchWorkbookFromTestResult(
+          testResultId,
+        );
+        if (workbook) {
+          this.workbooks = [
+            {
+              id: workbook.id,
+              title: workbook.title,
+              description: workbook.description,
+            },
+          ];
+        } else {
+          console.warn("Workbook not found for testResultId:", testResultId);
+        }
+      } catch (error) {
+        console.error("Error fetching workbook:", error);
+      } finally {
+        this.isFetchingWorkbook = false;
       }
     },
   },

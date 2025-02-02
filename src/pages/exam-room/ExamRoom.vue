@@ -6,7 +6,6 @@ import { RouterLink, useRouter } from "vue-router";
 // Components
 import ExamCard from "@/pages/exam-room/components/ExamCard.vue";
 import InvitedExamCard from "./components/InvitedExamCard.vue";
-import ConfirmDialog from "primevue/confirmdialog";
 
 // Icons
 import createIcon from "@/assets/icons/exam-room/edit_square.svg";
@@ -18,6 +17,10 @@ import { inviteAPI } from "@/api/invite";
 // Store & Composables
 import { useAuthStore } from "@/store/authStore";
 import { useConfirm } from "primevue/useconfirm";
+import { ConfirmDialog } from "primevue";
+import { getCurrentGradeInfo } from "@/utils/getCurrentGradeInfo";
+import { userAPI } from "@/api/user";
+import { useToast } from "primevue";
 
 // Constants
 const ITEMS_PER_PAGE = 4;
@@ -26,6 +29,7 @@ const ITEMS_PER_PAGE = 4;
 const authStore = useAuthStore();
 const confirm = useConfirm();
 const router = useRouter();
+const toast = useToast();
 
 // Data Refs
 const ongoingExams = ref([]);
@@ -43,22 +47,22 @@ const isInvitedExamsExpanded = ref(false);
 
 // Computed - Visible Items
 const visibleOngoingExams = computed(() =>
-  ongoingExams.value.slice(0, ongoingExamsDisplayCount.value)
+  ongoingExams.value.slice(0, ongoingExamsDisplayCount.value),
 );
 
 const visibleMyExams = computed(() =>
-  myExams.value.slice(0, myExamsDisplayCount.value)
+  myExams.value.slice(0, myExamsDisplayCount.value),
 );
 
 const visiblePendingInvites = computed(() =>
-  invitedExams.value.slice(0, invitedExamsDisplayCount.value)
+  invitedExams.value.slice(0, invitedExamsDisplayCount.value),
 );
 
 // Computed - Show More Button
 const showMoreButtons = computed(() => ({
   ongoing: ongoingExams.value.length > ITEMS_PER_PAGE,
   myExams: myExams.value.length > ITEMS_PER_PAGE,
-  invited: invitedExams.value.length > ITEMS_PER_PAGE
+  invited: invitedExams.value.length > ITEMS_PER_PAGE,
 }));
 
 // Methods - Toggle Display
@@ -83,6 +87,30 @@ const toggleInvitedExamsDisplay = () => {
     : ITEMS_PER_PAGE;
 };
 
+const navigateToCreateExam = async () => {
+  const user = await userAPI.getOne(authStore.user.id);
+  const grade = getCurrentGradeInfo(user.total_points);
+
+  const acceptedInviteExam =
+    invitedExams.value.filter((invite) => invite.participate) || [];
+
+  const currentExamsLength =
+    myExams.value.length +
+    ongoingExams.value.length +
+    acceptedInviteExam.length;
+
+  if (currentExamsLength >= grade.current.examLimit) {
+    toast.add({
+      severity: "error",
+      summary: "시험 생성 실패",
+      detail: "현재 등급에서의 시험 갯수 제한에 도달했습니다.",
+      life: 3000,
+    });
+    return;
+  }
+  router.push("/create-exam-room");
+};
+
 // Methods - Data Fetching
 const fetchExams = async () => {
   if (!authStore.user?.id) return;
@@ -90,11 +118,14 @@ const fetchExams = async () => {
   const now = new Date();
   try {
     // 1. 내가 만든 시험장 목록
-    const testCenterResponse = await testCenterAPI.getAllFields(authStore.user.id);
+    const testCenterResponse = await testCenterAPI.getAllFields(
+      authStore.user.id,
+    );
 
-    // 2. 초대받은 시험장 중 수락한 목록
+    // 2. 초대받은 시험장 목록
     const inviteResponse = await inviteAPI.getAll(authStore.user.id);
-    const acceptedInvites = inviteResponse?.filter((invite) => invite.participate) || [];
+    const acceptedInvites =
+      inviteResponse?.filter((invite) => invite.participate) || [];
 
     // 두 목록 합치기
     const allExams = [
@@ -118,13 +149,15 @@ const fetchExams = async () => {
 
     // 진행중이 아닌 시험 필터링 (내가 만든 시험만)
     const ongoingExamIds = ongoingExams.value.map((exam) => exam.id);
-    myExams.value = testCenterResponse?.filter((exam) => {
-      const endDate = new Date(exam.end_date);
-      return !ongoingExamIds.includes(exam.id) && endDate >= now;
-    }) || [];
+    myExams.value =
+      testCenterResponse?.filter((exam) => {
+        const endDate = new Date(exam.end_date);
+        return !ongoingExamIds.includes(exam.id) && endDate >= now;
+      }) || [];
 
     // 초대된 시험 중 미응답 목록
-    invitedExams.value = inviteResponse?.filter((invite) => !invite.participate) || [];
+    invitedExams.value =
+      inviteResponse?.filter((invite) => !invite.participate) || [];
   } catch (error) {
     console.error("시험 데이터 로딩 실패:", error);
   }
@@ -145,7 +178,7 @@ watchEffect(fetchExams);
         <button
           v-if="showMoreButtons.ongoing"
           @click="toggleOngoingExamsDisplay"
-          class="px-3 py-2 transition-colors rounded-full text-gray-3 hover:bg-gray-100"
+          class="px-3 py-2 transition-colors rounded-full text-gray-1 hover:bg-gray-100"
         >
           {{ isOngoingExamsExpanded ? "접기" : "전체보기 +" }}
         </button>
@@ -185,12 +218,12 @@ watchEffect(fetchExams);
 
     <!-- 내가 만든 시험 섹션 -->
     <section class="w-full mb-8">
-      <div class="flex justify-between items-center mb-4">
+      <div class="flex gap-2 items-center mb-4">
         <h2 class="text-xl font-medium text-gray-2">내가 만든 시험</h2>
         <button
           v-if="showMoreButtons.myExams"
           @click="toggleMyExamsDisplay"
-          class="px-3 py-2 transition-colors rounded-full text-gray-3 hover:bg-gray-100"
+          class="px-3 py-2 transition-colors rounded-full text-gray-1 hover:bg-gray-100"
         >
           {{ isMyExamsExpanded ? "접기" : "전체보기 +" }}
         </button>
@@ -221,12 +254,12 @@ watchEffect(fetchExams);
 
     <!-- 초대받은 시험 섹션 -->
     <section class="w-full mb-8">
-      <div class="flex justify-between items-center mb-4">
+      <div class="flex gap-2 items-center mb-4">
         <h2 class="text-xl font-medium text-gray-2">초대받은 시험</h2>
         <button
           v-if="showMoreButtons.invited"
           @click="toggleInvitedExamsDisplay"
-          class="px-3 py-2 transition-colors rounded-full text-gray-3 hover:bg-gray-100"
+          class="px-3 py-2 transition-colors rounded-full text-gray-1 hover:bg-gray-100"
         >
           {{ isInvitedExamsExpanded ? "접기" : "전체보기 +" }}
         </button>
@@ -254,12 +287,12 @@ watchEffect(fetchExams);
     </section>
   </div>
 
-  <RouterLink
-    to="/create-exam-room"
+  <button
+    @click="navigateToCreateExam"
     class="fixed flex items-center justify-center w-16 h-16 rounded-full cursor-pointer bg-orange-1 right-20 bottom-20"
   >
     <img :src="createIcon" alt="새 시험장 만들기" class="w-8 h-8" />
-  </RouterLink>
+  </button>
 
   <ConfirmDialog />
 </template>

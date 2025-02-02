@@ -19,7 +19,6 @@ const {
   startDate: startDateFromQuery,
   endDate: endDateFromQuery,
   status: statusFromQuery,
-  sort,
 } = route.query;
 
 const keyword = ref(keywordFromQuery);
@@ -43,36 +42,15 @@ const handleClickOutside = (event) => {
 };
 
 watch(status, (newStatus) => {
-  emit(
-    "search",
-    keyword.value,
-    startDate.value,
-    endDate.value,
-    sort,
-    newStatus,
-  );
+  emit("search", keyword.value, startDate.value, endDate.value, newStatus);
 });
 
 watch(startDate, (newStartDate) => {
-  emit(
-    "search",
-    keyword.value,
-    newStartDate,
-    endDate.value,
-    sort,
-    status.value,
-  );
+  emit("search", keyword.value, newStartDate, endDate.value, status.value);
 });
 
 watch(endDate, (newEndDate) => {
-  emit(
-    "search",
-    keyword.value,
-    startDate.value,
-    newEndDate,
-    sort,
-    status.value,
-  );
+  emit("search", keyword.value, startDate.value, newEndDate, status.value);
 });
 
 onMounted(() => {
@@ -138,7 +116,7 @@ onBeforeUnmount(() => {
       </div>
       <div class="w-full h-10 px-4 bg-beige-2 border border-black-4 rounded-lg">
         <div class="flex card items-center h-10 gap-4">
-          <span>기간 선택</span>
+          <span>검색 기간</span>
           <span>|</span>
           <span>시작일</span>
           <DatePicker

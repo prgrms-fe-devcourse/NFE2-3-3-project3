@@ -2,7 +2,7 @@
 import { RouterLink } from "vue-router";
 import { Column, DataTable } from "primevue";
 import { GRADES } from "@/const/grades";
-import { ref, watchEffect } from "vue";
+import { ref, watch } from "vue";
 import { formatDate } from "@/utils/formatDate";
 import { PointType } from "@/const/PointType";
 import { useRoute } from "vue-router";
@@ -18,12 +18,14 @@ const { user } = storeToRefs(authStore);
 const pointHistories = ref([]);
 const followers = ref([]);
 const followings = ref([]);
-const TABS = ["팔로잉 목록", "팔로워 목록", "포인트 내역"];
+const TAB = {
+  following: "팔로잉 목록",
+  follower: "팔로워 목록",
+  point: "포인트 내역",
+};
+const TABS = [TAB.following, TAB.follower, TAB.point];
 
 const currentTab = ref(route.query.tab || TABS[0]);
-const changeTab = (event) => {
-  currentTab.value = event.target.innerText;
-};
 
 const getMessageFromPointType = (pointType) => {
   switch (pointType) {
@@ -40,21 +42,24 @@ const getMessageFromPointType = (pointType) => {
   }
 };
 
-watchEffect(async () => {
-  if (!user.value) return;
-  const pointPromise = pointAPI.getAll(user.value.id);
-  const followerPromise = followAPI.getFollowers(user.value.id);
-  const followingPromise = followAPI.getFollowing(user.value.id);
-  const [pointData, followerData, followingData] = await Promise.all([
-    pointPromise,
-    followerPromise,
-    followingPromise,
-  ]);
+watch(
+  () => route.query.tab,
+  async (tab) => {
+    currentTab.value = tab || TAB.following;
 
-  pointHistories.value = pointData;
-  followers.value = followerData;
-  followings.value = followingData;
-});
+    if (tab === TAB.follower) {
+      const followerData = await followAPI.getFollowers(user.value.id);
+      followers.value = followerData;
+    } else if (tab === TAB.point) {
+      const pointData = await pointAPI.getAll(user.value.id);
+      pointHistories.value = pointData;
+    } else {
+      const followingData = await followAPI.getFollowing(user.value.id);
+      followings.value = followingData;
+    }
+  },
+  { immediate: true },
+);
 </script>
 <template>
   <section class="flex flex-col gap-6">
@@ -68,7 +73,6 @@ watchEffect(async () => {
             ? 'text-orange-1'
             : 'hover:text-gray-1 transition-colors'
         "
-        @click="changeTab"
         replace
       >
         {{ tab }}
@@ -121,10 +125,10 @@ watchEffect(async () => {
 
     <!-- 포인트 내역 탭 -->
     <div v-else class="flex flex-col gap-6">
-      <div class="grid grid-cols-4 h-full gap-3">
+      <div class="flex h-full gap-3">
         <div
           v-for="grade in [GRADES.one, GRADES.two, GRADES.three]"
-          class="flex gap-4 w-full bg-black-6 p-4 rounded-lg"
+          class="flex gap-4 w-[50rem] bg-black-6 p-4 rounded-lg"
         >
           <div class="flex justify-center items-center">
             <img
@@ -133,11 +137,11 @@ watchEffect(async () => {
               alt="등급 이미지"
             />
           </div>
-          <div class="flex flex-col gap-2">
-            <p>
-              <span class="font-semibold mr-2">{{ grade.name }}</span>
-              <span class="text-sm text-[10px]">{{ grade.point }}포인트</span>
-            </p>
+          <div class="flex flex-col justify-center gap-4">
+            <div class="flex flex-col">
+              <p class="font-semibold mr-2">{{ grade.name }}</p>
+              <p class="text-sm text-[10px]">{{ grade.point }}포인트</p>
+            </div>
             <div>
               <p class="text-sm">
                 <span

@@ -9,6 +9,9 @@ export const useWorkbookStore = defineStore("workbook", {
     title: "",
     description: "",
     shared: false,
+    isMyBooksViewAll: false,
+    isSharedBooksViewAll: false,
+    isMounted: false,
   }),
   actions: {
     async loadWorkbooks(userId) {
@@ -46,5 +49,29 @@ export const useWorkbookStore = defineStore("workbook", {
       this.description = description;
       this.shared = shared;
     },
+    toggleMyBooksViewAll() {
+      this.isMyBooksViewAll = !this.isMyBooksViewAll;
+    },
+    toggleSharedBooksViewAll() {
+      this.isSharedBooksViewAll = !this.isSharedBooksViewAll;
+    },
+    resetViewState() {
+      this.isMyBooksViewAll = false;
+      this.isSharedBooksViewAll = false;
+    },
+    setMounted() {
+      this.isMounted = true;
+    },
+  },
+
+  persist: {
+    enabled: true, // localStorage 자동 저장
+    strategies: [
+      {
+        key: "workbookState",
+        storage: localStorage,
+        paths: ["isMyBooksViewAll", "isSharedBooksViewAll", "isMounted"], // 필요한 상태만 저장
+      },
+    ],
   },
 });
