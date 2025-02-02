@@ -4,7 +4,7 @@ import createWorkbook from "@/assets/icons/my-problem-sets/createWorkbook.svg";
 import Dialog from "primevue/dialog";
 import Button from "primevue/button";
 import { Avatar, useToast, ToggleSwitch } from "primevue";
-import { ref, computed, watch, onMounted } from "vue";
+import { ref, computed, watch } from "vue";
 import { useAuthStore } from "@/store/authStore";
 import { useWorkbookStore } from "@/store/workbookStore";
 import { storeToRefs } from "pinia";
@@ -25,7 +25,6 @@ const {
   shared,
   isMyBooksViewAll,
   isSharedBooksViewAll,
-  isMounted,
 } = storeToRefs(workbookStore);
 
 //모달
@@ -41,17 +40,6 @@ const toggleMyBooksViewAll = () => {
 const toggleSharedBooksViewAll = () => {
   isSharedBooksViewAll.value = !isSharedBooksViewAll.value;
 };
-
-// const visibleMyBooks = computed(() => {
-//   const newBooks = isMyBooksViewAll.value
-//     ? workbooks.value
-//     : workbooks.value.slice(0, 4);
-//   return newBooks.map((book) => ({
-//     ...book,
-//     problems: new Array(problemCounts.value[book.id] || 0).fill({}),
-//     shared: book.shared ?? false,
-//   }));
-// });
 
 const visibleSharedBooks = computed(() => {
   return isSharedBooksViewAll.value
@@ -166,16 +154,6 @@ watch(title, (newValue) => {
   if (newValue.length > 20) {
     if (!isTitleWarning.value) {
       isTitleWarning.value = true;
-      toast.add({
-        severity: "warn",
-        summary: "경고",
-        detail: "제목은 최대 20자까지만 입력 가능합니다.",
-        life: 2000,
-      });
-
-      setTimeout(() => {
-        isTitleWarning.value = false;
-      }, 2000);
     }
     title.value = newValue.substring(0, 20);
   }
@@ -186,16 +164,6 @@ watch(description, (newValue) => {
   if (newValue.length > 200) {
     if (!isDescriptionWarning.value) {
       isDescriptionWarning.value = true;
-      toast.add({
-        severity: "warn",
-        summary: "경고",
-        detail: "설명은 최대 200자까지만 입력 가능합니다.",
-        life: 2000,
-      });
-
-      setTimeout(() => {
-        isDescriptionWarning.value = false;
-      }, 2000);
     }
     description.value = newValue.substring(0, 200);
   }
@@ -205,10 +173,6 @@ watch(showDialog, (newVal) => {
   if (!newVal) {
     resetFormFields();
   }
-});
-
-onMounted(() => {
-  workbookStore.setMounted();
 });
 </script>
 
@@ -221,7 +185,7 @@ onMounted(() => {
         <button
           v-if="workbooks.length > 4"
           @click="toggleMyBooksViewAll"
-          class="px-2 py-2 font-medium text-[#B1B1B1] border rounded-md hover:bg-black-5 hover:text-black transition-all flex items-center gap-2"
+          class="px-3 py-2 transition-colors rounded-full text-gray-1 hover:bg-gray-100"
         >
           {{ isMyBooksViewAll ? "접기" : "전체보기 +" }}
         </button>
@@ -284,13 +248,13 @@ onMounted(() => {
         </article>
       </div>
 
-      <section class="flex flex-col gap-[18px]">
+      <section class="flex flex-col gap-[18px] mt-16">
         <div class="flex items-center gap-[16px]">
           <h2 class="font-semibold text-xl">공유 받은 문제집</h2>
           <button
             v-if="sharedWorkbooks.length > 4"
             @click="toggleSharedBooksViewAll"
-            class="text-[#B1B1B1] hover:no-underline flex items-center gap-1"
+            class="px-3 py-2 transition-colors rounded-full text-gray-1 hover:bg-gray-100"
           >
             {{ isSharedBooksViewAll ? "접기" : "전체보기 +" }}
           </button>
