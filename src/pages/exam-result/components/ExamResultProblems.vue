@@ -122,12 +122,16 @@ watch(
   { immediate: true },
 );
 
-let viewer;
+let viewer, explanationViewer;
 
 onMounted(() => {
   viewer = new Viewer({
     el: document.querySelector("#viewer"),
     initialValue: currentProblem.value?.question || "",
+  });
+  explanationViewer = new Viewer({
+    el: document.querySelector("#explanationViewer"),
+    initialValue: currentProblem.value?.explanation || "",
   });
 });
 
@@ -136,6 +140,14 @@ watch(
   (newQuestion) => {
     if (viewer) {
       viewer.setMarkdown(newQuestion || "");
+    }
+  },
+);
+watch(
+  () => currentProblem.value?.explanation,
+  (newExplanation) => {
+    if (explanationViewer) {
+      explanationViewer.setMarkdown(newExplanation || "");
     }
   },
 );
@@ -256,7 +268,7 @@ watch(
                   v-else-if="
                     selectedStatus && selectedStatus.status === 'wrong'
                   "
-                  class="text-red-500"
+                  class="text-[#F60505]"
                 >
                   오답
                 </span>
@@ -293,9 +305,10 @@ watch(
             class="bg-gray-50 p-4 mt-4 rounded-lg"
           >
             <h3 class="font-bold text-lg mb-2 text-gray-700">상세 풀이</h3>
-            <p class="text-gray-600 leading-relaxed">
-              {{ currentProblem.explanation }}
-            </p>
+            <div
+              id="explanationViewer"
+              class="text-gray-600 leading-relaxed"
+            ></div>
           </div>
         </div>
       </div>

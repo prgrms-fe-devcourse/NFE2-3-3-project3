@@ -11,7 +11,7 @@ const authStore = useAuthStore();
 const toast = useToast();
 
 const userId = computed(() => authStore.user?.id);
-const { tableData, currentProblem, againViewProblems } =
+const { tableData, currentProblem, againViewProblems, status } =
   storeToRefs(examResultStore);
 const { selectProblem, toggleFlag, checkAgainViewStatus } = examResultStore;
 
@@ -24,6 +24,15 @@ const handleToggleFlag = async (cell) => {
     console.error("handleToggleFlag 오류:", error);
   }
 };
+
+//문제 상태 계산
+const selectedStatus = computed(() => {
+  if (!currentProblem.value) return null;
+  const statusForCurrentProblem = status.value.find(
+    (item) => item.problem_id === currentProblem.value.id,
+  );
+  return statusForCurrentProblem || null;
+});
 
 // 문제 선택 핸들러
 const handleSelectProblem = async (cell) => {
@@ -55,6 +64,49 @@ watch(
 );
 </script>
 
+<!-- <template>
+  <div class="container mx-auto mt-8">
+    <div class="border border-[#D4D4D4] rounded-[16px] overflow-hidden mb-8">
+      <table class="custom-table">
+        <tbody>
+          <template
+            v-for="(row, rowIndex) in tableData"
+            :key="'row-' + rowIndex"
+          >
+            <tr>
+              <td
+                v-for="(cell, colIndex) in row"
+                :key="'number-cell-' + colIndex"
+                class="cell problem-cell"
+                :class="{ highlighted: cell.id === currentProblem?.id }"
+                @click="handleSelectProblem(cell)"
+              >
+                <button class="w-full py-2">
+                  {{ cell.number }}
+                </button>
+              </td>
+            </tr>
+            <tr>
+              <td
+                v-for="(cell, colIndex) in row"
+                :key="'flag-cell-' + colIndex"
+                class="cell flag-cell"
+                @click="() => handleToggleFlag(cell)"
+              >
+                <i
+                  v-if="againViewProblems.includes(cell.id)"
+                  class="pi pi-flag"
+                  style="color: orange; cursor: pointer"
+                ></i>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</template> -->
+
 <template>
   <div class="container mx-auto mt-8">
     <!-- 문제 테이블 -->
@@ -79,19 +131,31 @@ watch(
                 </button>
               </td>
             </tr>
-            <!-- 플래그 행 -->
+            <!-- 정답 여부 행 -->
             <tr>
               <td
                 v-for="(cell, colIndex) in row"
-                :key="'flag-cell-' + colIndex"
-                class="cell flag-cell"
-                @click="() => handleToggleFlag(cell)"
+                :key="'status-cell-' + colIndex"
+                class="cell flag-cell text-center font-bold"
               >
-                <i
-                  v-if="againViewProblems.includes(cell.id)"
-                  class="pi pi-flag"
-                  style="color: orange; cursor: pointer"
-                ></i>
+                <span
+                  v-if="
+                    status.find((s) => s.problem_id === cell.id)?.status ===
+                    'corrected'
+                  "
+                  class="text-green-500"
+                >
+                  O
+                </span>
+                <span
+                  v-else-if="
+                    status.find((s) => s.problem_id === cell.id)?.status ===
+                    'wrong'
+                  "
+                  class="text-[#F60505]"
+                >
+                  X
+                </span>
               </td>
             </tr>
           </template>
