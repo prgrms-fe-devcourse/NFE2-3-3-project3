@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { getPostDetails } from '@/api/supabase/post';
 import PostApplyList from './components/PostApplyList.vue';
 import PostSideBar from './components/PostSideBar.vue';
+import NotFound from './components/NotFound.vue';
 import { deleteApplication, postApplication } from '@/api/supabase/apply';
 import { supabase } from '@/config/supabase';
 import PostComment from './components/PostComment.vue';
@@ -19,6 +20,7 @@ import { useBaseModalStore } from '@/stores/baseModal';
 import { errorToast, warningToast } from '@/utils/toast';
 import { useLoginModalStore } from '@/stores/loginModal';
 import { storeToRefs } from 'pinia';
+import { useUserProfileModalStore } from '@/stores/userProfileModal';
 
 const route = useRoute();
 const router = useRouter();
@@ -33,6 +35,9 @@ const isApplied = ref(false);
 const userStore = useUserStore();
 const likeCount = ref(0);
 const baseModal = useBaseModalStore();
+
+// 유저프로필 모달
+const userProfileModalStore = useUserProfileModalStore();
 
 const { user, isLoggedIn, userPostLikes } = storeToRefs(userStore);
 
@@ -74,7 +79,6 @@ const handleToggleLike = async (event) => {
     const result = await toggleLike(postId.value);
 
     if (result !== null) {
-      // 상태 갱신 후 userStore 업데이트
       userStore.updateLikes(postId.value);
     }
     if (isLiked.value) likeCount.value++;
@@ -94,7 +98,6 @@ const handleToggleBookmark = async (event) => {
   try {
     const result = await toggleBookmark(postId.value);
     if (result !== null) {
-      // 상태 갱신 후 userStore 업데이트
       userStore.updateBookmarks(postId.value);
     }
   } catch (error) {
@@ -232,16 +235,33 @@ const handleCloseRecruitment = async (postId) => {
     console.error('Error updating post:', error);
   }
 };
+
+const handleUserProfileImageClick = () => {
+  if (!postDetails.value.author) {
+    console.error('User ID is undefined');
+    return;
+  }
+
+  userProfileModalStore.fetchModalUserProfile(postDetails.value.author);
+  userProfileModalStore.setUserProfileModal(true);
+};
 </script>
 
 <template>
   <div class="container mx-auto p-4 md:p-8 flex flex-col items-start md:flex-row gap-8">
+    <NotFound
+      v-if="!loading && !postDetails"
+      message="존재하지 않거나 삭제된 게시물입니다."
+      :handleBackToPost="handleBackToPost"
+    />
     <!-- 왼쪽 콘텐츠 영역 -->
-    <div class="flex-none w-[738px]" v-if="!loading && postDetails">
+    <div v-else class="flex-none w-[738px]" v-if="!loading && postDetails">
       <!-- 게시물 헤더 -->
       <div class="mb-8">
         <div class="flex justify-between items-center mb-4">
-          <h1 class="text-2xl font-bold">{{ postDetails.title }}</h1>
+          <h1 class="text-2xl font-bold break-words w-[80%]">
+            {{ postDetails.title }}
+          </h1>
           <div class="flex items-center gap-4" v-if="isAuthor">
             <!-- 수정 버튼 -->
             <button @click="router.push(`/ModifyRecruitPost/${postId}`)" class="">수정</button>
@@ -251,11 +271,12 @@ const handleCloseRecruitment = async (postId) => {
         </div>
 
         <div class="flex items-center justify-between gap-2">
-          <div class="flex items-center gap-2">
-            <div
-              v-if="postDetails && postDetails.user"
-              class="w-10 h-10 rounded-full flex items-center justify-center"
-            >
+          <div
+            v-if="postDetails && postDetails.user"
+            class="flex items-center gap-2 cursor-pointer"
+            @click="handleUserProfileImageClick(postDetails.user.id)"
+          >
+            <div class="w-10 h-10 rounded-full flex items-center justify-center">
               <img
                 v-if="postDetails.user.profile_img_path"
                 :src="postDetails.user.profile_img_path"
@@ -265,7 +286,8 @@ const handleCloseRecruitment = async (postId) => {
             </div>
             <div>
               <p class="body-b">
-                {{ postDetails.user.name }}<span class="m-2">&middot;</span>
+                <span>{{ postDetails.user.name }}</span>
+                <span class="m-2">&middot;</span>
                 <span class="caption-r">{{ formatDate(postDetails.created_at) }}</span>
               </p>
             </div>
@@ -357,6 +379,7 @@ const handleCloseRecruitment = async (postId) => {
       :handleCloseRecruitment="handleCloseRecruitment"
       :handleApplyOrCancel="handleApplyOrCancel"
       :isApplied="isApplied"
+      v-if="!error"
     />
   </div>
 </template>
