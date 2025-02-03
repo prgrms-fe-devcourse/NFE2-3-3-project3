@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeRouteLeave, useRouter } from "vue-router";
+import { useRouter } from "vue-router";
 import ProblemEditorHeader from "./components/ProblemEditorHeader.vue";
 import ProblemEditorLists from "./components/ProblemEditorLists.vue";
 import ProblemEditorMain from "./components/ProblemEditorMain.vue";
@@ -112,7 +112,7 @@ const submitProblems = async () => {
       severity: "error",
       summary: "문제 생성 실패",
       detail:
-        "필수 항목이 누락되어 제출할 수 없습니다.\n문제집 선택 여부와 필수항목 누락 여부를 확인해주세요.",
+        "필수 항목이 누락되어 제출할 수 없습니다.\n필수항목 누락 여부를 확인해주세요.",
       life: 4000,
     });
     return;
@@ -124,10 +124,6 @@ const submitProblems = async () => {
     async (problem, idx) => {
       try {
         const categoryRaw = toRaw(problem.category);
-        const now = new Date();
-        const utc = now.getTime() + now.getTimezoneOffset() * 60 * 1000;
-        const koreaTimeDiff = 9 * 60 * 60 * 1000;
-        const korNow = new Date(utc + koreaTimeDiff);
 
         const problemForSubmission = {
           title: problem?.title || "",
@@ -142,8 +138,6 @@ const submitProblems = async () => {
           option_three: problem?.option_three || null,
           option_four: problem?.option_four || null,
           shared: problem?.shared || false,
-          created_at: korNow,
-          updated_at: korNow,
         };
 
         const data = await problemAPI.add(workbookId, problemForSubmission);

@@ -6,19 +6,11 @@ import {
   ref,
   onBeforeMount,
   computed,
-  onBeforeUnmount,
   watchEffect,
   watch,
-  defineExpose,
   toRaw,
 } from "vue";
-import {
-  Button,
-  ToggleSwitch,
-  MultiSelect,
-  InputText,
-  SelectButton,
-} from "primevue";
+import { Button, MultiSelect, InputText, SelectButton } from "primevue";
 
 import Editor from "@toast-ui/editor";
 import "@toast-ui/editor/dist/toastui-editor.css";
@@ -82,7 +74,6 @@ const createCategory = async () => {
   localProblem.category = [...newCategoryData];
 
   filteredCategory.value = "";
-
 };
 
 // const uploadedQuestionImages = reactive({});
@@ -251,6 +242,19 @@ const updateValidity = () => {
   localProblem.validity.answer = localProblem.answer?.length > 0 ? true : false;
   localProblem.validity.origin_source =
     localProblem.origin_source?.length > 0 ? true : false;
+
+  localProblem.validity.option_one =
+    localProblem.option_one?.length > 0 ? true : false;
+  localProblem.validity.option_two =
+    localProblem.option_two?.length > 0 ? true : false;
+
+  if (localProblem.problem_type === "multiple_choice") {
+    localProblem.validity.option_three =
+      localProblem.option_three?.length > 0 ? true : false;
+    localProblem.validity.option_four =
+      localProblem.option_four?.length > 0 ? true : false;
+  }
+
   localProblem.isValid = Object.values(localProblem.validity).every(Boolean);
 };
 
