@@ -7,9 +7,9 @@ const { problemSet } = defineProps({
 });
 </script>
 <template>
-  <RouterLink>
+  <RouterLink class="max-h-40">
     <article
-      class="flex flex-col justify-between w-full h-40 bg-orange-3 gap-[50px] px-4 py-3 rounded-lg"
+      class="flex flex-col justify-between w-full h-full bg-orange-3 gap-[50px] px-4 py-3 rounded-lg"
     >
       <div class="min-h-12">
         <p class="font-pretend text-lg line-clamp-1 break-all">
