@@ -1,9 +1,9 @@
 <script setup>
 import { watch, watchEffect } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import { useProblemStore } from "@/store/problemStore";
 import { useProblemUpdateStore } from "@/store/problemUpdateStore";
-import { ConfirmDialog, useConfirm } from "primevue";
+import { ConfirmDialog } from "primevue";
 import ProblemBoardUpdateSolution from "./components/ProblemBoardUpdateSolution.vue";
 import ProblemBoardUpdateContent from "./components/ProblemBoardUpdateContent.vue";
 import ProblemBoardUpdateHeader from "./components/ProblemBoardUpdateHeader.vue";
