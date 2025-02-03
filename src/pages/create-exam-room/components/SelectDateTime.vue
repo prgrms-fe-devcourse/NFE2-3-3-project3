@@ -68,7 +68,6 @@ watch([selectedDate, startHours, startMinutes], () => {
 });
 
 watch([durationHours, durationMinutes], () => {
-  console.log(selectedDate.value, startHours.value, startMinutes.value);
   const totalMinutes = durationHours.value * 60 + durationMinutes.value;
   if (totalMinutes <= 1440) {
     emit("update:duration", totalMinutes);
