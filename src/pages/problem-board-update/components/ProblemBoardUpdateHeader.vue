@@ -12,6 +12,7 @@ import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useProblemStore } from "@/store/problemStore";
 import { toRaw } from "vue";
+import { useConfirm } from "primevue/useconfirm";
 
 const props = defineProps({
   problem: {
@@ -29,6 +30,7 @@ const router = useRouter();
 const categories = ref([]);
 const filteredCategory = ref("");
 const { editedProblem } = storeToRefs(problemUpdateStore);
+const confirm = useConfirm();
 
 // author 정보 가져오기
 const author = computed(() => problemStore.author);
