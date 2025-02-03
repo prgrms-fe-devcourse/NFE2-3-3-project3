@@ -86,7 +86,6 @@ export const useProblemUpdateStore = defineStore("problemUpdate", () => {
   };
 
   function updateField(field, value) {
-    console.log("store 업데이트:", field, value);
     if (field in editedProblem.value) {
       editedProblem.value[field] = value;
       return true;
