@@ -13,7 +13,7 @@ import ProblemContent from "./components/ProblemContent.vue";
 import ProblemSolution from "./components/ProblemSolution.vue";
 import CommentList from "./components/CommentList.vue";
 import { problemAPI } from "@/api/problem";
-import { ConfirmDialog } from 'primevue';
+import { ConfirmDialog } from "primevue";
 
 const route = useRoute();
 const router = useRouter();
@@ -41,14 +41,13 @@ const fetchComments = async (page = currentPage.value) => {
     const response = await commentAPI.getComments({
       problem_id: parseInt(route.params.problemId),
       page,
-      pageSize: 10
+      pageSize: 10,
     });
 
     comments.value = response.data;
     currentPage.value = response.currentPage;
     totalPages.value = response.totalPages;
     commentCount.value = response.count; // 전체 댓글 수 저장
-
   } catch (error) {
     console.error("댓글 로딩 실패:", error);
   } finally {
@@ -64,7 +63,7 @@ const handleSubmitComment = async () => {
     await commentAPI.createComment({
       problem_id: parseInt(route.params.problemId),
       content: commentValue.value,
-      uid: authStore.user.id
+      uid: authStore.user.id,
     });
 
     commentValue.value = "";
@@ -73,14 +72,14 @@ const handleSubmitComment = async () => {
       severity: "success",
       summary: "댓글 작성 완료",
       detail: "댓글이 성공적으로 등록되었습니다.",
-      life: 3000
+      life: 3000,
     });
   } catch (error) {
     console.error("댓글 작성 실패:", error);
     toast.add({
       severity: "error",
       detail: "댓글 작성 중 오류가 발생했습니다.",
-      life: 3000
+      life: 3000,
     });
   }
 };
@@ -88,19 +87,6 @@ const handleSubmitComment = async () => {
 // 페이지 변경 핸들러
 const handlePageChange = (page) => {
   fetchComments(page + 1);
-};
-
-// 좋아요 상태 확인
-const checkLikeStatus = async () => {
-  try {
-    if (!authStore.user?.id) return;
-    const response = await problemLikeAPI.getUid(authStore.user.id);
-    hasLiked.value = response?.data?.some(
-      (like) => like.problem_id === parseInt(route.params.problemId),
-    );
-  } catch (error) {
-    console.error("좋아요 상태 확인 실패:", error);
-  }
 };
 
 // 좋아요 토글
@@ -142,19 +128,19 @@ const handleDelete = async () => {
   try {
     await problemAPI.deleteOne(route.params.problemId);
     toast.add({
-      severity: 'success',
-      summary: '삭제 완료',
-      detail: '문제가 삭제되었습니다.',
-      life: 3000
+      severity: "success",
+      summary: "삭제 완료",
+      detail: "문제가 삭제되었습니다.",
+      life: 3000,
     });
-    router.push('/problem-board'); // 변경된 리디렉션 경로
+    router.push("/problem-board"); // 변경된 리디렉션 경로
   } catch (error) {
-    console.error('문제 삭제 실패:', error);
+    console.error("문제 삭제 실패:", error);
     toast.add({
-      severity: 'error',
-      summary: '오류',
-      detail: '문제 삭제 중 오류가 발생했습니다.',
-      life: 3000
+      severity: "error",
+      summary: "오류",
+      detail: "문제 삭제 중 오류가 발생했습니다.",
+      life: 3000,
     });
   } finally {
     showConfirmDialog.value = false;
@@ -165,7 +151,7 @@ const handleDelete = async () => {
 onMounted(async () => {
   await Promise.all([
     problemStore.loadProblem(route.params.problemId),
-    fetchComments(1)
+    fetchComments(1),
   ]);
 });
 </script>
@@ -194,7 +180,7 @@ onMounted(async () => {
       :isLoading="isLoadingComments"
       :currentPage="currentPage"
       :totalPages="totalPages"
-      :totalComments="commentCount" 
+      :totalComments="commentCount"
       :problemId="route.params.problemId"
       v-model:value="commentValue"
       @submit-comment="handleSubmitComment"
@@ -215,11 +201,7 @@ onMounted(async () => {
           severity="secondary"
           @click="showConfirmDialog = false"
         />
-        <Button
-          label="삭제"
-          severity="danger"
-          @click="handleDelete"
-        />
+        <Button label="삭제" severity="danger" @click="handleDelete" />
       </template>
     </Dialog>
     <ConfirmDialog />

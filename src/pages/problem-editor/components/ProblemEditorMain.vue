@@ -197,7 +197,6 @@ onBeforeMount(async () => {
 });
 
 const updateValidity = () => {
-  console.log(localProblem);
   localProblem.validity.category = localProblem.category?.length > 0;
   localProblem.validity.title = localProblem.title?.length > 0;
   localProblem.validity.question = localProblem.question?.length > 0;
