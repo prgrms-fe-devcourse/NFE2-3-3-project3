@@ -2,12 +2,7 @@ import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { problemAPI } from "@/api/problem";
 import { useToast } from "primevue/usetoast";
-
-const MAX_LENGTH = {
-  TITLE: 20,
-  SOURCE: 20,
-  CATEGORY: 20,
-};
+import { useConfirm } from "primevue/useconfirm";
 
 const emptyProblem = {
   title: "",
@@ -25,49 +20,28 @@ const emptyProblem = {
   shared: false,
 };
 
+const FIELD_NAMES = {
+  title: "제목",
+  question: "문제 내용",
+  answer: "정답",
+  explanation: "해설",
+  origin_source: "출처",
+  category: "카테고리"
+};
+
 const validateField = (field, value) => {
-  // 빈 문자열 체크 - 문자열인 경우에만 trim 적용
   if (typeof value === "string") {
     if (!value || value.trim() === "") {
       return {
         isValid: false,
-        message: `${field}을(를) 입력해주세요.`,
+        message: `${FIELD_NAMES[field]}을(를) 입력해주세요.`
       };
     }
   } else if (!value) {
-    // 문자열이 아닌 경우
     return {
       isValid: false,
-      message: `${field}을(를) 입력해주세요.`,
+      message: `${FIELD_NAMES[field]}을(를) 입력해주세요.`
     };
-  }
-
-  // 길이 제한 체크
-  switch (field) {
-    case "title":
-      if (typeof value === "string" && value.length > MAX_LENGTH.TITLE) {
-        return {
-          isValid: false,
-          message: `제목은 ${MAX_LENGTH.TITLE}자를 초과할 수 없습니다.`,
-        };
-      }
-      break;
-    case "origin_source":
-      if (typeof value === "string" && value.length > MAX_LENGTH.SOURCE) {
-        return {
-          isValid: false,
-          message: `출처는 ${MAX_LENGTH.SOURCE}자를 초과할 수 없습니다.`,
-        };
-      }
-      break;
-    case "category":
-      if (value?.name && value.name.length > MAX_LENGTH.CATEGORY) {
-        return {
-          isValid: false,
-          message: `카테고리명은 ${MAX_LENGTH.CATEGORY}자를 초과할 수 없습니다.`,
-        };
-      }
-      break;
   }
 
   return { isValid: true };
@@ -75,6 +49,7 @@ const validateField = (field, value) => {
 
 export const useProblemUpdateStore = defineStore("problemUpdate", () => {
   const toast = useToast();
+  const confirm = useConfirm();
   const isLoading = ref(false);
   const originalProblem = ref(null);
   const editedProblem = ref({ ...emptyProblem });
@@ -111,22 +86,8 @@ export const useProblemUpdateStore = defineStore("problemUpdate", () => {
   };
 
   function updateField(field, value) {
+    console.log("store 업데이트:", field, value);
     if (field in editedProblem.value) {
-      // 유효성 검사 수행
-      const validation = validateField(field, value);
-      if (!validation.isValid) {
-        validationErrors.value[field] = validation.message;
-        toast.add({
-          severity: "error",
-          summary: "입력 오류",
-          detail: validation.message,
-          life: 3000,
-        });
-        return false;
-      }
-
-      // 유효성 검사 통과시 값 업데이트
-      validationErrors.value[field] = null;
       editedProblem.value[field] = value;
       return true;
     } else {
@@ -135,58 +96,34 @@ export const useProblemUpdateStore = defineStore("problemUpdate", () => {
     }
   }
 
-  function validateAllFields() {
-    const requiredFields = ["title", "question", "answer"];
-    const errors = {};
+  function validateRequiredFields() {
+    const requiredFields = ["title", "question", "answer", "explanation", "origin_source", "category"];
+    const missingFields = [];
 
     for (const field of requiredFields) {
       const value = editedProblem.value[field];
       const validation = validateField(field, value);
       if (!validation.isValid) {
-        errors[field] = validation.message;
+        missingFields.push(FIELD_NAMES[field]);
       }
     }
 
-    // 출처가 있는 경우에만 유효성 검사
-    if (editedProblem.value.origin_source) {
-      const sourceValidation = validateField(
-        "origin_source",
-        editedProblem.value.origin_source,
-      );
-      if (!sourceValidation.isValid) {
-        errors.origin_source = sourceValidation.message;
-      }
+    if (missingFields.length > 0) {
+      confirm.require({
+        message: `필수 항목이 누락되었습니다 : ${missingFields.join(", ")}`,
+        header: "필수 입력 확인",
+        rejectVisible: false, 
+        accept: () => {},
+      });
+      return false;
     }
 
-    // 카테고리 유효성 검사
-    if (editedProblem.value.category) {
-      const categoryValidation = validateField(
-        "category",
-        editedProblem.value.category,
-      );
-      if (!categoryValidation.isValid) {
-        errors.category = categoryValidation.message;
-      }
-    }
-
-    validationErrors.value = errors;
-    return Object.keys(errors).length === 0;
+    return true;
   }
 
   async function saveProblem() {
-    const { category } = editedProblem.value;
     try {
-      // 전체 유효성 검사 수행
-      if (!validateAllFields()) {
-        const errorMessages = Object.values(validationErrors.value);
-        errorMessages.forEach((message) => {
-          toast.add({
-            severity: "error",
-            summary: "저장 실패",
-            detail: message,
-            life: 3000,
-          });
-        });
+      if (!validateRequiredFields()) {
         return false;
       }
 
