@@ -11,11 +11,16 @@ import ProblemTable from "@/components/layout/ProblemTable.vue";
 import pen from "@/assets/icons/my-problem-sets-update/pen.svg";
 import share from "@/assets/icons/my-problem-sets-update/share.svg";
 import ConfirmModal from "@/components/layout/ConfirmModal.vue";
+import { useAuthStore } from "@/store/authStore";
+import { storeToRefs } from "pinia";
+import { formatDate } from "@/utils/formatDate";
 
 const toast = useToast();
 const route = useRoute();
 const router = useRouter();
 const confirm = useConfirm();
+const authStore = useAuthStore();
+const { user } = storeToRefs(authStore);
 
 const uid = ref(null);
 const title = ref(null);
@@ -163,6 +168,35 @@ const myProblemsDataUpdate = async () => {
 };
 provide("myProblemsDataUpdate", myProblemsDataUpdate);
 
+const search = async (keyword, startDate, endDate, sort, status) => {
+  const newProblems = await problemAPI.search(
+    user.value.id,
+    keyword,
+    startDate ? new Date(startDate).toISOString() : null,
+    endDate ? new Date(endDate).toISOString() : null,
+    status,
+  );
+
+  myProblems.value = newProblems.filter(
+    (problem) =>
+      !problems.value.some(
+        (workbookProblem) => workbookProblem.id === problem.id,
+      ),
+  );
+
+  router.replace({
+    query: {
+      ...route.query,
+      keyword,
+      startDate: formatDate(startDate),
+      endDate: formatDate(endDate),
+      status,
+      sort,
+      page: 1,
+    },
+  });
+};
+
 onMounted(async () => {
   const workbookData = await workbookAPI.getOne(route.params.problemSetId);
 
@@ -260,7 +294,7 @@ onMounted(async () => {
   >
     <div class="w-[1100px] px-[82px]">
       <div class="text-[36px] h-[54px] font-bold my-8">문제 추가하기</div>
-      <Search :show-status="true" class="my-8" />
+      <Search @search="search" :show-status="true" class="my-8" />
       <ProblemTable
         :problems="myProblems"
         :showCheckbox="false"
