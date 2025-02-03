@@ -26,7 +26,7 @@ const initViewer = async () => {
       viewer.value = new Viewer({
         el: viewerEl.value,
         initialValue: props.problem.question,
-        height: '100%'
+        height: "100%",
       });
     }
   } catch (error) {
@@ -46,7 +46,7 @@ watch(
       await nextTick();
       await initViewer();
     }
-  }
+  },
 );
 
 onBeforeUnmount(() => {
@@ -114,3 +114,11 @@ onBeforeUnmount(() => {
     </div>
   </div>
 </template>
+<style scoped>
+:deep(.toastui-editor-contents) {
+  font-family: "Pretendard";
+}
+:deep(p) {
+  font-size: 16px;
+}
+</style>

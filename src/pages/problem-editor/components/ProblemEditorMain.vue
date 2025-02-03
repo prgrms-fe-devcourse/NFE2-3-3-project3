@@ -87,9 +87,8 @@ watchEffect(() => {
       toolbarItems: [
         ["heading", "bold", "italic", "strike"],
         ["hr", "quote"],
-        ["ul", "ol", "task", "indent", "outdent"],
-        ["table", "image", "link"],
-        ["code", "codeblock"],
+        ["ul", "ol"],
+        ["table", "image"],
       ],
       events: {
         change: () => {
@@ -148,6 +147,12 @@ watchEffect(() => {
       height: "200px",
       initialEditType: "wysiwyg",
       previewStyle: "vertical",
+      toolbarItems: [
+        ["heading", "bold", "italic", "strike"],
+        ["hr", "quote"],
+        ["ul", "ol"],
+        ["table", "image"],
+      ],
       events: {
         change: () => {
           const value = explanationEditorInstance.getMarkdown();
@@ -192,30 +197,29 @@ onBeforeMount(async () => {
 });
 
 const updateValidity = () => {
+  console.log(localProblem);
   localProblem.validity.category = localProblem.category?.length > 0;
-  localProblem.validity.title = localProblem.title?.length > 0 ? true : false;
-  localProblem.validity.question =
-    localProblem.question?.length > 0 ? true : false;
-  localProblem.validity.answer = localProblem.answer?.length > 0 ? true : false;
-  localProblem.validity.origin_source =
-    localProblem.origin_source?.length > 0 ? true : false;
+  localProblem.validity.title = localProblem.title?.length > 0;
+  localProblem.validity.question = localProblem.question?.length > 0;
+  localProblem.validity.answer = localProblem.answer?.length > 0;
+  localProblem.validity.origin_source = localProblem.origin_source?.length > 0;
 
-  localProblem.validity.option_one =
-    localProblem.option_one?.length > 0 ? true : false;
-  localProblem.validity.option_two =
-    localProblem.option_two?.length > 0 ? true : false;
-
-  if (localProblem.problem_type === "multiple_choice") {
-    localProblem.validity.option_three =
-      localProblem.option_three?.length > 0 ? true : false;
-    localProblem.validity.option_four =
-      localProblem.option_four?.length > 0 ? true : false;
+  if (localProblem.type === "4지선다") {
+    localProblem.validity.option_one = localProblem.option_one?.length > 0;
+    localProblem.validity.option_two = localProblem.option_two?.length > 0;
+    localProblem.validity.option_three = localProblem.option_three?.length > 0;
+    localProblem.validity.option_four = localProblem.option_four?.length > 0;
+  } else {
+    delete localProblem.validity.option_one;
+    delete localProblem.validity.option_two;
+    delete localProblem.validity.option_three;
+    delete localProblem.validity.option_four;
   }
 
   localProblem.isValid = Object.values(localProblem.validity).every(Boolean);
 };
 
-watchEffect(() => {
+watch(localProblem, () => {
   updateValidity();
 });
 
@@ -397,5 +401,14 @@ watch(
   top: 188px !important;
   bottom: auto !important;
   transform: none !important;
+}
+:deep(button) {
+  text-align: center;
+}
+:deep(.toastui-editor-contents) {
+  font-family: "Pretendard";
+}
+:deep(p) {
+  font-size: 16px;
 }
 </style>

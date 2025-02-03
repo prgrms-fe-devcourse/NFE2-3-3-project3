@@ -333,4 +333,11 @@ watch(
   color: #ffffff !important;
   border-color: transparent !important;
 }
+
+:deep(.toastui-editor-contents) {
+  font-family: "Pretendard";
+}
+:deep(p) {
+  font-size: 16px;
+}
 </style>

@@ -185,4 +185,11 @@ onBeforeUnmount(() => {
   cursor: pointer;
   object-fit: cover;
 }
+
+:deep(.toastui-editor-contents) {
+  font-family: "Pretendard";
+}
+:deep(p) {
+  font-size: 16px;
+}
 </style>

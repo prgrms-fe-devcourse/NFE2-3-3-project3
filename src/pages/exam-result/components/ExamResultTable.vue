@@ -3,34 +3,13 @@ import { computed, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useExamResultStore } from "@/store/ExamResultStore";
 import { useAuthStore } from "@/store/authStore";
-import { useToast } from "primevue";
 
 const examResultStore = useExamResultStore();
 const authStore = useAuthStore();
-const toast = useToast();
 
 const userId = computed(() => authStore.user?.id);
 const { tableData, currentProblem, status } = storeToRefs(examResultStore);
-const { selectProblem, toggleFlag, checkAgainViewStatus } = examResultStore;
-
-// 플래그 상태 토글 핸들러
-const handleToggleFlag = async (cell) => {
-  if (!cell || !cell.id) return;
-  try {
-    await toggleFlag(cell.id, userId.value, toast);
-  } catch (error) {
-    console.error("handleToggleFlag 오류:", error);
-  }
-};
-
-//문제 상태 계산
-const selectedStatus = computed(() => {
-  if (!currentProblem.value) return null;
-  const statusForCurrentProblem = status.value.find(
-    (item) => item.problem_id === currentProblem.value.id,
-  );
-  return statusForCurrentProblem || null;
-});
+const { selectProblem, checkAgainViewStatus } = examResultStore;
 
 // 문제 선택 핸들러
 const handleSelectProblem = async (cell) => {
