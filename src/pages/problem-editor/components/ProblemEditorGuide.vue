@@ -1,6 +1,5 @@
 <script setup>
 import { useCreateProblemStore } from "@/store/createProblemStore";
-import { storeToRefs } from "pinia";
 
 const createProblemStore = useCreateProblemStore();
 </script>
@@ -19,7 +18,7 @@ const createProblemStore = useCreateProblemStore();
     >
       <p
         class="font-md leading-[11rem] font-medium text-3xl text-black-2"
-        @click="emits('addProblem', 'O/X')"
+        @click="createProblemStore.addProblem('O/X')"
       >
         O/X
       </p>

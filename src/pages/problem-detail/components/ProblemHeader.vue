@@ -5,11 +5,9 @@ import { useAuthStore } from "@/store/authStore";
 import { useToast } from "primevue/usetoast";
 import { pointAPI } from "@/api/point";
 import { getCurrentGradeInfo } from "@/utils/getCurrentGradeInfo";
-import { problemAPI } from "@/api/problem";
 import { problemLikeAPI } from "@/api/problemLike";
 import { supabase } from "@/api/index.js";
 import { RouterLink } from "vue-router";
-import shareIcon from "@/assets/icons/problem-board/fi-rr-share.svg";
 import thumbsUpIcon from "@/assets/icons/problem-board/fi-rr-thumbs-up.svg";
 import defaultProfileIMG from "@/assets/default-profile-image.svg";
 

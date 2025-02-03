@@ -1,7 +1,6 @@
 <script setup>
 import { ref, watch, computed } from "vue";
 import Calendar from "primevue/calendar";
-import InputNumber from "primevue/inputnumber";
 
 const props = defineProps({
   examDateTime: {
@@ -45,7 +44,7 @@ const validateNumberInput = (value, min, max) => {
 // 시간(시) 입력 처리 함수
 const handleHoursChange = (e, type) => {
   const value = validateNumberInput(e.target.value, 0, 23);
-  if (type === 'start') {
+  if (type === "start") {
     startHours.value = value;
   } else {
     durationHours.value = value;
@@ -55,7 +54,7 @@ const handleHoursChange = (e, type) => {
 // 시간(분) 입력 처리 함수
 const handleMinutesChange = (e, type) => {
   const value = validateNumberInput(e.target.value, 0, 59);
-  if (type === 'start') {
+  if (type === "start") {
     startMinutes.value = value;
   } else {
     durationMinutes.value = value;
@@ -84,7 +83,7 @@ watch([durationHours, durationMinutes], () => {
       <Calendar
         v-model="selectedDate"
         :showIcon="true"
-        :minDate="new Date()" 
+        :minDate="new Date()"
         dateFormat="yy-mm-dd"
         class="w-full"
         :inline="true"
@@ -148,4 +147,4 @@ watch([durationHours, durationMinutes], () => {
       </div>
     </div>
   </div>
- </template>
+</template>

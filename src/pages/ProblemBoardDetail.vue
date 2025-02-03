@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { useRouter, useRoute } from "vue-router";
+import { useRoute } from "vue-router";
 import { problemAPI } from "@/api/problem";
 import Menu from "primevue/menu";
 import Avatar from "primevue/avatar";

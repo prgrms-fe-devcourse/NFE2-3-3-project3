@@ -62,7 +62,6 @@ const getAllByUserId = async (userId) => {
           ?.status || "none",
     }));
 
-
     return processedData;
   } catch (error) {
     console.error(error);
@@ -165,9 +164,7 @@ const add = async (workbook_id, body) => {
       if (!option_four) throw new Error(`${title}: 4번 보기가 비어있습니다.`);
     }
 
-    const { user } = useAuthStore();
     const newBody = { ...body };
-    const created_at = Date.now();
     const { data, error } = await supabase
       .from("problem")
       .insert([newBody])

@@ -6,23 +6,8 @@ import { useCreateProblemStore } from "@/store/createProblemStore";
 const createProblemStore = useCreateProblemStore();
 const { createdProblems, targetProblem } = storeToRefs(createProblemStore);
 
-// const props = defineProps({
-//   problemList: {
-//     type: Array,
-//     default: () => [],
-//   },
-//   targetProblem: {
-//     type: Number,
-//   },
-// });
-// const emits = defineEmits(["addProblem", "onClickProblemList"]);
-// const targetProblemIdx = ref(props.targetProblem);
 const onClickProblem = (idx) => {
   createProblemStore.setTargetProblem(idx);
-  // if (targetProblemIdx) {
-  //   targetProblemIdx.value = idx;
-  // }
-  // emits("onClickProblemList", idx);
 };
 </script>
 

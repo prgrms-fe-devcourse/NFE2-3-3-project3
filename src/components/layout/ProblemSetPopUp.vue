@@ -58,7 +58,7 @@ const resolver = ({ values }) => {
     errors.title.push({ type: "required", message: "제목은 필수입니다." });
   }
 
-  if (values.title?.length >= 20) {
+  if (values.title?.length > 20) {
     errors.title.push({
       type: "minimum",
       message: "제목은 최대 20글자까지 작성 가능합니다.",

@@ -13,7 +13,6 @@ import { useToast } from "primevue/usetoast";
 const route = useRoute();
 const router = useRouter();
 const problemStore = useProblemStore();
-const authStore = useAuthStore();
 const problemUpdateStore = useProblemUpdateStore();
 const confirm = useConfirm();
 const toast = useToast();
@@ -60,13 +59,6 @@ const handleCancel = () => {
       });
     },
   });
-};
-
-// 저장 처리
-const handleSave = async () => {
-  if (await problemUpdateStore.saveProblem()) {
-    router.push(`/problem-board/${route.params.problemId}`);
-  }
 };
 </script>
 

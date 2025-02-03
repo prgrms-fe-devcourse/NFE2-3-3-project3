@@ -11,8 +11,7 @@ import { useProblemUpdateStore } from "@/store/problemUpdateStore";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useProblemStore } from "@/store/problemStore";
-import { useConfirm } from "primevue/useconfirm";
-import { toRaw } from 'vue';
+import { toRaw } from "vue";
 
 const props = defineProps({
   problem: {
@@ -66,13 +65,12 @@ const handleTitleChange = (event) => {
 
 // 카테고리 변경 감지
 const handleCategoryChange = (event) => {
-  
   if (event?.value?.[0]) {
     const rawCategory = toRaw(event.value[0]);
 
     problemUpdateStore.updateField("category", rawCategory.id);
   } else {
-    console.warn('유효하지 않은 카테고리 데이터:', event);
+    console.warn("유효하지 않은 카테고리 데이터:", event);
   }
 };
 
@@ -132,12 +130,12 @@ const createCategory = async () => {
 const handleUpdate = async () => {
   try {
     const category = editedProblem.value.category;
-    const normalizedCategoryId = category ? 
-      (typeof category === 'object' ? 
-        (toRaw(category)?.id || category.id) : 
-        category) 
+    const normalizedCategoryId = category
+      ? typeof category === "object"
+        ? toRaw(category)?.id || category.id
+        : category
       : null;
-    
+
     editedProblem.value.category = normalizedCategoryId;
 
     const success = await problemUpdateStore.saveProblem();
@@ -290,7 +288,6 @@ onMounted(async () => {
               </div>
             </template>
           </MultiSelect>
-
         </fieldset>
       </div>
     </form>

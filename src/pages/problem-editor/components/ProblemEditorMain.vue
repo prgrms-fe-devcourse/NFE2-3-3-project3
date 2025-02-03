@@ -6,19 +6,11 @@ import {
   ref,
   onBeforeMount,
   computed,
-  onBeforeUnmount,
   watchEffect,
   watch,
-  defineExpose,
   toRaw,
 } from "vue";
-import {
-  Button,
-  ToggleSwitch,
-  MultiSelect,
-  InputText,
-  SelectButton,
-} from "primevue";
+import { Button, MultiSelect, InputText, SelectButton } from "primevue";
 
 import Editor from "@toast-ui/editor";
 import "@toast-ui/editor/dist/toastui-editor.css";
@@ -82,51 +74,7 @@ const createCategory = async () => {
   localProblem.category = [...newCategoryData];
 
   filteredCategory.value = "";
-
 };
-
-// const uploadedQuestionImages = reactive({});
-// const uploadedExplanationImages = reactive({});
-
-// const getUploadedImages = () => {
-//   if (!questionEditorInstance) return [];
-
-//   const markdown = questionEditorInstance.getMarkdown();
-//   const markdownImages = [...markdown.matchAll(/!\[.*?\]\((.*?)\)/g)].map(
-//     (match) => match[1],
-//   );
-
-//   const htmlContent = questionEditorInstance.getHTML();
-
-//   const parser = new DOMParser();
-//   const doc = parser.parseFromString(htmlContent, "text/html");
-//   const htmlImages = [...doc.querySelectorAll("img")].map((img) => img.src);
-
-//   return [...new Set([...markdownImages, ...htmlImages])];
-// };
-
-// // 에디터 크기 자동 조절 함수
-// const adjustEditorHeight = (type) => {
-//   const uploadedImages =
-//     type === "Question"
-//       ? { ...uploadedQuestionImages }
-//       : { ...uploadedExplanationImages };
-//   const editorImages = getUploadedImages(); // 현재 에디터에 포함된 이미지 리스트
-//   const totalImgHeight = editorImages.reduce((sum, imgUrl) => {
-//     return sum + (uploadedImages[imgUrl] || 0); // 높이가 없으면 0으로 처리
-//   }, 0);
-
-//   if (questionEditorInstance) {
-//     const contentHeight =
-//       questionEditorInstance.getMarkdown().split("\n").length * 20 +
-//       totalImgHeight; // 줄 수에 따른 높이 조절
-//     const minHeight = 300;
-//     const maxHeight = 600;
-//     const newHeight = Math.min(Math.max(contentHeight, minHeight), maxHeight);
-
-//     questionEditorInstance.setHeight(`${newHeight}px`);
-//   }
-// };
 
 watchEffect(() => {
   // 문제 에디터 초기화
@@ -251,10 +199,22 @@ const updateValidity = () => {
   localProblem.validity.answer = localProblem.answer?.length > 0 ? true : false;
   localProblem.validity.origin_source =
     localProblem.origin_source?.length > 0 ? true : false;
+
+  localProblem.validity.option_one =
+    localProblem.option_one?.length > 0 ? true : false;
+  localProblem.validity.option_two =
+    localProblem.option_two?.length > 0 ? true : false;
+
+  if (localProblem.problem_type === "multiple_choice") {
+    localProblem.validity.option_three =
+      localProblem.option_three?.length > 0 ? true : false;
+    localProblem.validity.option_four =
+      localProblem.option_four?.length > 0 ? true : false;
+  }
+
   localProblem.isValid = Object.values(localProblem.validity).every(Boolean);
 };
 
-// Call updateValidity inside watchEffect so Vue tracks dependencies correctly
 watchEffect(() => {
   updateValidity();
 });
