@@ -68,17 +68,7 @@ const setFolder = (folder) => {
   createProblemStore.setProblemFolder(folder);
 };
 
-const onCreateNewFolder = async ({ title, description, shared }) => {
-  // 빈문자열
-  if (title.trim() === "") {
-    toast.add({
-      severity: "warn",
-      summary: "문제집 생성 불가",
-      detail: "문제집 제목을 입력해 주세요",
-      life: 3000,
-    });
-    return;
-  }
+const onCreateNewFolder = async (selectedFolder) => {
   // // 이미 있는 문제집
   // const isThereSet = problemSets.findIndex((problemSet) => {
   //   return problemSet.title === title.trim();
@@ -95,22 +85,12 @@ const onCreateNewFolder = async ({ title, description, shared }) => {
   //   });
   //   return;
   // }
-  try {
-    const data = await workbookAPI.add(
-      title.trim(),
-      description.trim(),
-      shared,
-    );
-    setFolder(data);
-    problemSets.push(data);
-    selectedProblemSet.value = data;
-  } catch (error) {
-    console.error("문제집 생성에 실패했습니다.");
-  }
+
+  setFolder(selectedFolder);
+  problemSets.push(selectedFolder);
 };
 
 const setFolderFromList = (value) => {
-  console.log("value", value);
   if (!value) {
     setFolder({ id: "", title: "문제집을 선택하세요" });
   } else {
@@ -191,7 +171,6 @@ onMounted(() => {
       />
     </div>
     <Button label="저장하기" @click="emits('submitProblems')"></Button>
-    <!-- 팝업 -->
   </header>
 </template>
 <style scoped>

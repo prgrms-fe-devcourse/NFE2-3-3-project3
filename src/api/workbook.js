@@ -84,6 +84,16 @@ const getAll = async (uid) => {
   return data;
 };
 
+const getAllNewWorkbooks = async (uid) => {
+  const { data, error } = await supabase
+    .from("workbook")
+    .select("*")
+    .eq("uid", uid)
+    .order("created_at", { ascending: false }); // 최신순 정렬 추가
+  if (error) throw error;
+  return data;
+};
+
 const getUid = async (uid) => {
   const { data, error } = await supabase
     .from("workbook")
@@ -391,4 +401,5 @@ export const workbookAPI = {
   getAllByUserId,
   fetchSharedWorkbooks,
   sharedWorkbookDelete,
+  getAllNewWorkbooks,
 };

@@ -28,7 +28,6 @@ const searchKeyword = ref("");
 
 // Computed
 const filteredWorkbooks = computed(() => {
-  console.log("Current workbooks:", workbooks.value); // 현재 workbooks 상태
   if (!searchKeyword.value) return workbooks.value;
   return workbooks.value.filter((book) =>
     book.title.toLowerCase().includes(searchKeyword.value.toLowerCase()),
@@ -36,10 +35,8 @@ const filteredWorkbooks = computed(() => {
 });
 
 const paginatedWorkbooks = computed(() => {
-  console.log("Filtered workbooks:", filteredWorkbooks.value); // 필터링된 결과
   const start = currentPage.value * itemsPerPage;
   const result = filteredWorkbooks.value.slice(start, start + itemsPerPage);
-  console.log("Paginated workbooks:", result); // 페이지네이션 결과
   return result;
 });
 
@@ -47,7 +44,6 @@ const paginatedWorkbooks = computed(() => {
 const fetchWorkbooks = async () => {
   try {
     const response = await workbookAPI.getAllByUserId(authStore.user.id);
-    console.log("Fetched workbooks:", response); // 데이터 확인
     workbooks.value = response;
   } catch (error) {
     console.error("문제집 로드 실패:", error);

@@ -23,7 +23,6 @@ const onClickProblem = (idx) => {
   //   targetProblemIdx.value = idx;
   // }
   // emits("onClickProblemList", idx);
-  // console.log(targetProblemIdx.value);
 };
 </script>
 

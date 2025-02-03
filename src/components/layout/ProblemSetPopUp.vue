@@ -13,7 +13,7 @@ import {
   ToggleSwitch,
   useToast,
 } from "primevue";
-import { onBeforeMount, ref, onBeforeUnmount, onMounted } from "vue";
+import { onBeforeMount, ref, onBeforeUnmount, onMounted, computed } from "vue";
 
 const {
   class: className,
@@ -48,6 +48,8 @@ const problemSets = ref([]);
 const title = ref("");
 const description = ref("");
 const shared = ref(false);
+
+const reversedProblemSets = computed(() => [...problemSets.value].reverse());
 
 const resolver = ({ values }) => {
   const errors = { title: [] };
@@ -136,7 +138,7 @@ onBeforeUnmount(() => {
     <div v-if="showProblemSet" class="w-64">
       <Listbox
         :key="problemSets.length"
-        :options="problemSets"
+        :options="reversedProblemSets"
         filter
         optionLabel="title"
         listStyle="height: 14rem"

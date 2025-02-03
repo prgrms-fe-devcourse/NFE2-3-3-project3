@@ -29,7 +29,13 @@ const sortedProblemSets = computed(() => {
         .slice(first.value, first.value + rows.value);
     case SORT.likes:
       return newProblemSets
-        .sort((a, b) => (b.likes.length || 0) - (a.likes.length || 0))
+        .sort((a, b) => {
+          if (a.likes.length === b.likes.length) {
+            return new Date(b.created_at) - new Date(a.created_at);
+          } else {
+            return b.likes.length - a.likes.length;
+          }
+        })
         .slice(first.value, first.value + rows.value);
     default:
       return newProblemSets.slice(first.value, first.value + rows.value);

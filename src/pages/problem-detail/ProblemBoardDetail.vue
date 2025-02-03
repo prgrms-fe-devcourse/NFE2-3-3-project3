@@ -49,7 +49,6 @@ const fetchComments = async (page = currentPage.value) => {
     totalPages.value = response.totalPages;
     commentCount.value = response.count; // 전체 댓글 수 저장
 
-    console.log("댓글 응답:", response); // 디버깅용
   } catch (error) {
     console.error("댓글 로딩 실패:", error);
   } finally {

@@ -3,7 +3,6 @@ import { computed, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useExamResultStore } from "@/store/ExamResultStore";
 import { useAuthStore } from "@/store/authStore";
-import { useRoute } from "vue-router";
 import { useToast } from "primevue";
 
 const examResultStore = useExamResultStore();
@@ -11,8 +10,7 @@ const authStore = useAuthStore();
 const toast = useToast();
 
 const userId = computed(() => authStore.user?.id);
-const { tableData, currentProblem, againViewProblems } =
-  storeToRefs(examResultStore);
+const { tableData, currentProblem, status } = storeToRefs(examResultStore);
 const { selectProblem, toggleFlag, checkAgainViewStatus } = examResultStore;
 
 // 플래그 상태 토글 핸들러
@@ -24,6 +22,15 @@ const handleToggleFlag = async (cell) => {
     console.error("handleToggleFlag 오류:", error);
   }
 };
+
+//문제 상태 계산
+const selectedStatus = computed(() => {
+  if (!currentProblem.value) return null;
+  const statusForCurrentProblem = status.value.find(
+    (item) => item.problem_id === currentProblem.value.id,
+  );
+  return statusForCurrentProblem || null;
+});
 
 // 문제 선택 핸들러
 const handleSelectProblem = async (cell) => {
@@ -40,8 +47,8 @@ watch(
   async (newProblem) => {
     if (!newProblem) {
       console.warn("currentProblem이 설정되지 않았습니다.");
-      examResultStore.currentProblem = null; // currentProblem 초기화
-      examResultStore.againViewProblems = []; // "다시 풀 문제" 상태 초기화
+      examResultStore.currentProblem = null;
+      examResultStore.againViewProblems = [];
       return;
     }
 
@@ -79,19 +86,31 @@ watch(
                 </button>
               </td>
             </tr>
-            <!-- 플래그 행 -->
+            <!-- 정답 여부 행 -->
             <tr>
               <td
                 v-for="(cell, colIndex) in row"
-                :key="'flag-cell-' + colIndex"
-                class="cell flag-cell"
-                @click="() => handleToggleFlag(cell)"
+                :key="'status-cell-' + colIndex"
+                class="cell flag-cell text-center font-bold"
               >
-                <i
-                  v-if="againViewProblems.includes(cell.id)"
-                  class="pi pi-flag"
-                  style="color: orange; cursor: pointer"
-                ></i>
+                <span
+                  v-if="
+                    status.find((s) => s.problem_id === cell.id)?.status ===
+                    'corrected'
+                  "
+                  class="text-green-500"
+                >
+                  O
+                </span>
+                <span
+                  v-else-if="
+                    status.find((s) => s.problem_id === cell.id)?.status ===
+                    'wrong'
+                  "
+                  class="text-[#F60505]"
+                >
+                  X
+                </span>
               </td>
             </tr>
           </template>

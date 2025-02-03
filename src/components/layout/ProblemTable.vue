@@ -20,7 +20,6 @@ import plus from "@/assets/icons/problem-board/plus.svg";
 import minus from "@/assets/icons/problem-board/minus.svg";
 import statusWrong from "@/assets/icons/problem-board/status-wrong.svg";
 import statusSolved from "@/assets/icons/problem-board/status-solved.svg";
-import seeMyProblems from "@/assets/icons/my-problems/see-my-problems.svg";
 import checkedMyProblem from "@/assets/icons/my-problems/color-my-problems.svg";
 import { useRoute } from "vue-router";
 import { useRouter } from "vue-router";
@@ -104,7 +103,7 @@ const first = ref(0);
 const rows = ref(10);
 const selectedProblems = ref([]);
 const showProblemSet = ref(false);
-const activeFilter = ref(null);
+const activeFilter = ref(route.query.type || null);
 
 const handleAddClick = () => {
   emit("open-dialog");
@@ -116,10 +115,12 @@ const handleFilterButtonClick = (filterType) => {
     // 같은 버튼을 두 번 클릭하면 필터 해제
     activeFilter.value = null;
     emit("filter-change", "all");
+    router.replace({ query: { ...route.query, type: undefined } });
   } else {
     // 새로운 필터 적용
     activeFilter.value = filterType;
     emit("filter-change", filterType);
+    router.replace({ query: { type: filterType } });
   }
 };
 
@@ -225,7 +226,11 @@ const sortedProblems = computed(() => {
         const bSharedLikes = b.likes ?? 0;
 
         // 둘 중 존재하는 값 사용
-        return (bLikes || bSharedLikes) - (aLikes || aSharedLikes);
+        if (aLikes === bLikes && aSharedLikes === bSharedLikes) {
+          return new Date(b.created_at) - new Date(a.created_at);
+        } else {
+          return (bLikes || bSharedLikes) - (aLikes || aSharedLikes);
+        }
       });
     default:
       return problems;
