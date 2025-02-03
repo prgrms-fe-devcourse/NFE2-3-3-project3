@@ -2,7 +2,6 @@
 import { ref, watchEffect } from "vue";
 import { useToast } from "primevue/usetoast";
 import { useAuthStore } from "@/store/authStore";
-import RadioButton from "primevue/radiobutton";
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
 import UserListItem from "./UserListItem.vue";
@@ -290,5 +289,4 @@ watchEffect(() => {
       </ul>
     </section>
   </div>
-
 </template>

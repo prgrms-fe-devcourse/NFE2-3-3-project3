@@ -1,12 +1,11 @@
 <script setup>
-import { ref, watch, computed, watchEffect } from "vue";
+import { ref, watch, watchEffect } from "vue";
 import { useAuthStore } from "@/store/authStore";
 import { commentAPI } from "@/api/comment";
 import { formatDateForComment } from "@/utils/formatDateForComment";
 import { supabase } from "@/api/index.js";
 import { useToast } from "primevue/usetoast";
 import { RouterLink } from "vue-router";
-import { useRouter } from "vue-router";
 import { Paginator } from "primevue";
 import { useConfirm } from "primevue/useconfirm";
 
@@ -55,10 +54,7 @@ const formattedComments = ref([]);
 const editingCommentId = ref(null);
 const editingContent = ref("");
 const textareaValue = ref("");
-const router = useRouter();
 const confirm = useConfirm();
-
-const commentCount = computed(() => formattedComments.value.length);
 
 const isCommentAuthor = (commentUid) => {
   return commentUid === authStore.user?.id;

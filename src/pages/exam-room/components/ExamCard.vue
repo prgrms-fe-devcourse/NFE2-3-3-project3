@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watchEffect, watch } from "vue";
+import { ref, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import Dialog from "primevue/dialog";
 import Button from "primevue/button";
@@ -131,7 +131,7 @@ const confirmDelete = (event) => {
     acceptLabel: "삭제",
     rejectLabel: "취소",
     accept: handleDelete,
-    reject: () => {}
+    reject: () => {},
   });
 };
 
@@ -230,12 +230,12 @@ watch(
           참가자 {{ participantCount + 1 }}명
         </h4>
         <div class="text-black-2 ml-9">
-          <p class=" text-gray-600">
-            <strong class="font-semibold">주최자</strong> 
+          <p class="text-gray-600">
+            <strong class="font-semibold">주최자</strong>
             {{ creator?.name || "알 수 없음" }}
           </p>
-          <p class=" text-gray-600">
-            <strong class="font-semibold">참가자</strong> 
+          <p class="text-gray-600">
+            <strong class="font-semibold">참가자</strong>
             {{ participants.map((p) => p.name).join("  ") || "없음" }}
           </p>
         </div>

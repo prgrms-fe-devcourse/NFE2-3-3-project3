@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted } from "vue";
 import { Paginator, useToast } from "primevue";
 import Comment from "@/components/layout/Comment.vue";
 import { commentAPI } from "@/api/comment";

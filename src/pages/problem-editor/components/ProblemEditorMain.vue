@@ -76,49 +76,6 @@ const createCategory = async () => {
   filteredCategory.value = "";
 };
 
-// const uploadedQuestionImages = reactive({});
-// const uploadedExplanationImages = reactive({});
-
-// const getUploadedImages = () => {
-//   if (!questionEditorInstance) return [];
-
-//   const markdown = questionEditorInstance.getMarkdown();
-//   const markdownImages = [...markdown.matchAll(/!\[.*?\]\((.*?)\)/g)].map(
-//     (match) => match[1],
-//   );
-
-//   const htmlContent = questionEditorInstance.getHTML();
-
-//   const parser = new DOMParser();
-//   const doc = parser.parseFromString(htmlContent, "text/html");
-//   const htmlImages = [...doc.querySelectorAll("img")].map((img) => img.src);
-
-//   return [...new Set([...markdownImages, ...htmlImages])];
-// };
-
-// // 에디터 크기 자동 조절 함수
-// const adjustEditorHeight = (type) => {
-//   const uploadedImages =
-//     type === "Question"
-//       ? { ...uploadedQuestionImages }
-//       : { ...uploadedExplanationImages };
-//   const editorImages = getUploadedImages(); // 현재 에디터에 포함된 이미지 리스트
-//   const totalImgHeight = editorImages.reduce((sum, imgUrl) => {
-//     return sum + (uploadedImages[imgUrl] || 0); // 높이가 없으면 0으로 처리
-//   }, 0);
-
-//   if (questionEditorInstance) {
-//     const contentHeight =
-//       questionEditorInstance.getMarkdown().split("\n").length * 20 +
-//       totalImgHeight; // 줄 수에 따른 높이 조절
-//     const minHeight = 300;
-//     const maxHeight = 600;
-//     const newHeight = Math.min(Math.max(contentHeight, minHeight), maxHeight);
-
-//     questionEditorInstance.setHeight(`${newHeight}px`);
-//   }
-// };
-
 watchEffect(() => {
   // 문제 에디터 초기화
   if (questionEditor.value && !questionEditorInstance) {
@@ -258,7 +215,6 @@ const updateValidity = () => {
   localProblem.isValid = Object.values(localProblem.validity).every(Boolean);
 };
 
-// Call updateValidity inside watchEffect so Vue tracks dependencies correctly
 watchEffect(() => {
   updateValidity();
 });

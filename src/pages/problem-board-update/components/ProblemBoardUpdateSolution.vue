@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, nextTick } from "vue";
+import { ref, watch, nextTick } from "vue";
 import Editor from "@toast-ui/editor";
 import "@toast-ui/editor/dist/toastui-editor.css";
 import { useProblemUpdateStore } from "@/store/problemUpdateStore";
@@ -74,7 +74,6 @@ watch(
     }
   },
 );
-
 </script>
 
 <template>

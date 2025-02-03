@@ -15,13 +15,11 @@ import addOption from "@/assets/icons/problem-set-board-detail/add-option.svg";
 import CommentList from "@/pages/problem-set-detail/components/CommentList.vue";
 import testCenterEnter from "@/assets/icons/problem-set-board-detail/test-center-enter.svg";
 
-import { problemAPI } from "@/api/problem";
 import { testCenterAPI } from "@/api/testCenter";
 
 const toast = useToast();
 const route = useRoute();
 const router = useRouter();
-const confirm = useConfirm();
 
 const itemsPerPage = 10;
 

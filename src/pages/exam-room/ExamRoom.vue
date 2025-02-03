@@ -1,7 +1,7 @@
 <script setup>
 // Vue Core
 import { ref, computed, watchEffect } from "vue";
-import { RouterLink, useRouter } from "vue-router";
+import { useRouter } from "vue-router";
 
 // Components
 import ExamCard from "@/pages/exam-room/components/ExamCard.vue";

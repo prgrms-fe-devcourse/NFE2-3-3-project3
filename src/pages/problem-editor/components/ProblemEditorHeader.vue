@@ -5,7 +5,6 @@ import folderPath from "@/assets/icons/problem-editor/folder.svg";
 import arrowTopPath from "@/assets/icons/problem-editor/arrow-top.svg";
 import { Button } from "primevue";
 import { workbookAPI } from "@/api/workbook";
-import { useToast } from "primevue/usetoast";
 import { useCreateProblemStore } from "@/store/createProblemStore";
 import { useAuthStore } from "@/store/authStore";
 import { storeToRefs } from "pinia";
@@ -16,7 +15,6 @@ const props = defineProps({
   },
 });
 
-const toast = useToast();
 const { user } = useAuthStore();
 
 const popup = ref(null);
@@ -32,11 +30,6 @@ const emits = defineEmits(["submitProblems", "onGoingBack"]);
 
 // 선택된 폴더
 const selectedFolder = ref("");
-const createdNewFolder = ref({
-  title: "",
-  description: "",
-  shared: false,
-});
 
 //폴더 토글 버튼 조작
 const onClickFolder = () => {
@@ -44,23 +37,7 @@ const onClickFolder = () => {
   isCreateNewFolder.value = false;
 };
 
-//초기값은 API에서 불러오기
-//my problemsets
 const problemSets = reactive([]);
-
-// const setFolder = (folder) => {
-//   if (!folder || typeof folder !== "object") {
-//     console.error("setFolder: 유효하지 않은 folder 값이 전달됨:", folder);
-//     folder = { id: "", title: "문제집을 선택하세요" };
-//   }
-
-//   createProblemStore.setProblemFolder(folder);
-//   // Object.assign(selectedProblemSet, folder);
-
-//   Object.assign(selectedProblemSet.value, folder);
-//   selectedFolder.value = folder.title;
-//   closeAllPopups();
-// };
 
 //폴더 지정 함수
 const setFolder = (folder) => {
@@ -69,23 +46,6 @@ const setFolder = (folder) => {
 };
 
 const onCreateNewFolder = async (selectedFolder) => {
-  // // 이미 있는 문제집
-  // const isThereSet = problemSets.findIndex((problemSet) => {
-  //   return problemSet.title === title.trim();
-  // });
-
-  // if (isThereSet !== -1) {
-  //   setFolder(problemSets[isThereSet]);
-  //   selectedProblemSet.value = problemSets[isThereSet];
-  //   toast.add({
-  //     severity: "info",
-  //     summary: "문제집 생성 불가",
-  //     detail: "이미 있는 문제집 입니다",
-  //     life: 3000,
-  //   });
-  //   return;
-  // }
-
   setFolder(selectedFolder);
   problemSets.push(selectedFolder);
 };
