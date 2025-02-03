@@ -152,10 +152,10 @@ const submitExam = async () => {
 </script>
 
 <template>
-  <h1 class="font-laundry mb-16 text-5xl font-medium">시험장 만들기</h1>
+  <h1 class="font-laundry mb-8 text-5xl font-medium">시험장 만들기</h1>
 
   <!-- Swiper -->
-  <div class="relative h-[750px] overflow-visible pr-12">
+  <div class="relative h-[700px] overflow-visible pr-12">
     <Swiper
       :effect="'cards'"
       :modules="[EffectCards]"

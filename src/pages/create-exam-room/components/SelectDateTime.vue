@@ -71,6 +71,7 @@ watch([durationHours, durationMinutes], () => {
   const totalMinutes = durationHours.value * 60 + durationMinutes.value;
   if (totalMinutes <= 1440) {
     emit("update:duration", totalMinutes);
+    emit("update:examDateTime", startDateTime.value);
   }
 });
 </script>
@@ -90,32 +91,34 @@ watch([durationHours, durationMinutes], () => {
         showButtonBar
       />
     </div>
-    <div class="flex gap-4 w-fit flex-col">
+    <div class="flex gap-8 w-fit flex-col">
       <!-- 시작 시간 -->
-      <h3 class="text-lg font-medium shrink-0">시작 시간</h3>
-      <div class="flex items-center gap-2">
-        <input
-          type="number"
-          v-model="startHours"
-          :min="0"
-          :max="23"
-          placeholder="0"
-          @input="(e) => handleHoursChange(e, 'start')"
-          class="w-1/2 border border-gray-300 rounded-md p-2 shadow-sm"
-        />
-        <label class="text-gray-600 block shrink-0 text-lg">시</label>
-        <input
-          type="number"
-          v-model="startMinutes"
-          :min="0"
-          :max="59"
-          placeholder="0"
-          step="5"
-          @input="(e) => handleMinutesChange(e, 'start')"
-          class="w-1/2 border border-gray-300 rounded-md p-2 shadow-sm"
-        />
-        <label class="text-gray-600 block shrink-0 text-lg">분</label>
-        <span class="text-gray-600 shrink-0 text-lg">부터</span>
+      <div class="flex gap-4 w-full flex-col">
+        <h3 class="text-lg font-medium shrink-0">시작 시간</h3>
+        <div class="flex items-center gap-2">
+          <input
+            type="number"
+            v-model="startHours"
+            :min="0"
+            :max="23"
+            placeholder="0"
+            @input="(e) => handleHoursChange(e, 'start')"
+            class="w-1/2 border border-gray-300 rounded-md p-2 shadow-sm"
+          />
+          <label class="text-gray-600 block shrink-0 text-lg">시</label>
+          <input
+            type="number"
+            v-model="startMinutes"
+            :min="0"
+            :max="59"
+            placeholder="0"
+            step="5"
+            @input="(e) => handleMinutesChange(e, 'start')"
+            class="w-1/2 border border-gray-300 rounded-md p-2 shadow-sm"
+          />
+          <label class="text-gray-600 block shrink-0 text-lg">분</label>
+          <span class="text-gray-600 shrink-0 text-lg">부터</span>
+        </div>
       </div>
       <!-- 지속 시간 -->
       <div class="flex gap-4 w-full flex-col">

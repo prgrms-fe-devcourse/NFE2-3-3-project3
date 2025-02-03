@@ -1,10 +1,11 @@
 <script setup>
-import { ref, computed, watchEffect } from "vue";
+import { ref, computed, watchEffect, watch } from "vue";
 import { useAuthStore } from "@/store/authStore";
 import SearchBar from "@/components/layout/SearchBar.vue";
 import MyWorkBook from "./MyWorkBook.vue";
 import { workbookAPI } from "@/api/workbook";
 import Paginator from "primevue/paginator";
+import { useRoute } from "vue-router";
 
 const props = defineProps({
   selectedWorkbook: {
@@ -13,6 +14,7 @@ const props = defineProps({
   },
 });
 
+const route = useRoute();
 const emit = defineEmits(["update:selectedWorkbook"]);
 
 // Store
@@ -63,6 +65,17 @@ const onPageChange = (event) => {
   currentPage.value = event.page;
 };
 
+watch(workbooks, () => {
+  if (!route.query?.problemSetId) return;
+
+  const workbook = workbooks.value.find(
+    (book) => book.id === Number(route.query.problemSetId),
+  );
+  if (workbook) {
+    handleWorkbookSelect(workbook);
+  }
+});
+
 // Watchers
 watchEffect(() => {
   if (authStore.isAuthenticated && authStore.user?.id) {
@@ -83,7 +96,7 @@ watchEffect(() => {
     <!-- 문제집 목록 -->
     <section class="flex flex-col gap-5">
       <div class="flex items-center gap-4">
-        <h2 class="font-semibold text-xl">내가 만든 문제집</h2>
+        <h2 class="font-semibold text-xl">보관한 문제집</h2>
       </div>
 
       <div
@@ -97,6 +110,7 @@ watchEffect(() => {
       <MyWorkBook
         v-else
         :visibleMyBooks="paginatedWorkbooks"
+        :selectedWorkbook="selectedWorkbook"
         @select-workbook="handleWorkbookSelect"
       />
 
