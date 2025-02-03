@@ -21,11 +21,11 @@ const initViewer = () => {
       }
       viewer = new Viewer({
         el: viewerRef.value,
-        initialValue: props.explanation || '',
+        initialValue: props.explanation || "",
       });
     }
   } catch (error) {
-    console.error('Viewer 초기화 실패:', error);
+    console.error("Viewer 초기화 실패:", error);
   }
 };
 
@@ -41,11 +41,14 @@ onMounted(() => {
   }
 });
 
-watch(() => props.explanation, () => {
-  nextTick(() => {
-    initViewer();
-  });
-});
+watch(
+  () => props.explanation,
+  () => {
+    nextTick(() => {
+      initViewer();
+    });
+  },
+);
 
 watch(isOpen, (newValue) => {
   if (newValue && props.explanation) {
@@ -104,3 +107,11 @@ watch(isOpen, (newValue) => {
     출처 | {{ source }}
   </p>
 </template>
+<style scoped>
+:deep(.toastui-editor-contents) {
+  font-family: "Pretendard";
+}
+:deep(p) {
+  font-size: 16px;
+}
+</style>

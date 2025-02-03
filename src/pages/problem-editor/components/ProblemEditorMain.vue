@@ -87,9 +87,8 @@ watchEffect(() => {
       toolbarItems: [
         ["heading", "bold", "italic", "strike"],
         ["hr", "quote"],
-        ["ul", "ol", "task", "indent", "outdent"],
-        ["table", "image", "link"],
-        ["code", "codeblock"],
+        ["ul", "ol"],
+        ["table", "image"],
       ],
       events: {
         change: () => {
@@ -148,6 +147,12 @@ watchEffect(() => {
       height: "200px",
       initialEditType: "wysiwyg",
       previewStyle: "vertical",
+      toolbarItems: [
+        ["heading", "bold", "italic", "strike"],
+        ["hr", "quote"],
+        ["ul", "ol"],
+        ["table", "image"],
+      ],
       events: {
         change: () => {
           const value = explanationEditorInstance.getMarkdown();
@@ -397,5 +402,14 @@ watch(
   top: 188px !important;
   bottom: auto !important;
   transform: none !important;
+}
+:deep(button) {
+  text-align: center;
+}
+:deep(.toastui-editor-contents) {
+  font-family: "Pretendard";
+}
+:deep(p) {
+  font-size: 16px;
 }
 </style>

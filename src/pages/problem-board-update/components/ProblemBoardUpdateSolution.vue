@@ -53,9 +53,8 @@ const toggleAccordion = async () => {
         toolbarItems: [
           ["heading", "bold", "italic", "strike"],
           ["hr", "quote"],
-          ["ul", "ol", "task", "indent", "outdent"],
-          ["table", "image", "link"],
-          ["code", "codeblock"],
+          ["ul", "ol"],
+          ["table", "image"],
         ],
         events: {
           change: handleExplanationChange,
@@ -140,5 +139,14 @@ watch(
 }
 .bg-black-6 {
   background-color: #666;
+}
+:deep(button) {
+  text-align: center;
+}
+:deep(.toastui-editor-contents) {
+  font-family: "Pretendard";
+}
+:deep(p) {
+  font-size: 16px;
 }
 </style>

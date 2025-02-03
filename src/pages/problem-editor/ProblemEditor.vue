@@ -71,7 +71,7 @@ const submitProblems = async () => {
           option_two: problem?.option_two || null,
           option_three: problem?.option_three || null,
           option_four: problem?.option_four || null,
-          shared: problem?.shared || false,
+          shared: true,
         };
 
         await problemAPI.add(workbookId, problemForSubmission);
