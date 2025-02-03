@@ -28,6 +28,7 @@ const deleteProblem = () => {
     acceptLabel: "삭제",
     rejectLabel: "취소",
     acceptClass: "p-button-danger",
+    rejectClass: "p-button-secondary",
     accept: () => {
       createProblemStore.deleteProblem();
     },

@@ -161,7 +161,8 @@ const handleDeleteComment = async (id) => {
     icon: "pi pi-exclamation-triangle",
     acceptLabel: "삭제",
     rejectLabel: "취소",
-    acceptClass: "p-button-secondary",
+    acceptClass: "p-button-danger",
+    rejectClass: "p-button-secondary",
     accept: async () => {
       try {
         await commentAPI.deleteComment(id);
