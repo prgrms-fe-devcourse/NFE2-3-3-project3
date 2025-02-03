@@ -30,7 +30,7 @@ const currentTab = ref(route.query.tab || TABS[0]);
 const getMessageFromPointType = (pointType) => {
   switch (pointType) {
     case PointType.problem:
-      return "새로운 문제를 생성하셨군요! 10포인트를 획득했습니다.";
+      return "새로운 문제를 생성하셨군요! 5포인트를 획득했습니다.";
     case PointType.comment:
       return "댓글을 작성하셨군요! 2포인트를 획득했습니다.";
     case PointType.test_complete:
