@@ -45,7 +45,7 @@ const userId = ref(null);
 const emit = defineEmits(["exam-status-change"]);
 const toast = useToast();
 const isAccepted = ref(false);
-const isRejected = ref(false); 
+const isRejected = ref(false);
 
 const examDuration = computed(() => {
   if (!props.testCenter.start_date || !props.testCenter.end_date) return "";
@@ -106,19 +106,19 @@ const handleAccept = async () => {
     await inviteAPI.accept(userId.value, props.inviteData.id);
     isAccepted.value = true; // 승인 상태 저장
     toast.add({
-      severity: 'success',
-      summary: '승인 완료',
-      detail: '시험에 참여 승인되었습니다.',
-      life: 3000
+      severity: "success",
+      summary: "승인 완료",
+      detail: "시험에 참여 승인되었습니다.",
+      life: 3000,
     });
     emit("exam-status-change");
   } catch (error) {
     console.error(error);
     toast.add({
-      severity: 'error',
-      summary: '오류',
-      detail: '승인 요청 처리 중 오류가 발생했습니다.',
-      life: 3000
+      severity: "error",
+      summary: "오류",
+      detail: "승인 요청 처리 중 오류가 발생했습니다.",
+      life: 3000,
     });
   } finally {
     isProcessing.value = false;
@@ -130,7 +130,7 @@ const handleDeny = async () => {
   isProcessing.value = true;
   try {
     await inviteAPI.deny(props.inviteData.id);
-    isRejected.value = true; 
+    isRejected.value = true;
     toast.add({
       severity: "success",
       summary: "초대 거절",
@@ -159,10 +159,11 @@ watchEffect(() => {
 </script>
 
 <template>
-  <div 
-  @click="showExamInfo = true"
-  v-if="!isRejected"
-  class="bg-orange-3 rounded-lg p-4 w-full text-gray-2">
+  <div
+    @click="showExamInfo = true"
+    v-if="!isRejected"
+    class="bg-orange-3 rounded-lg p-4 w-full text-gray-2"
+  >
     <!-- 문제집 제목 -->
     <div class="item-between" aria-label="title-wrapper">
       <h3 class="mb-4 font-medium text-lg">{{ workbookTitle }}</h3>
@@ -211,38 +212,46 @@ watchEffect(() => {
   >
     <div class="flex flex-col gap-4">
       <!-- 문제집 이름 -->
-      <p>
+      <div>
         <h4 class="text-xl font-medium flex items-center gap-3 mb-1">
           <img :src="folderIcon" alt="문제집 이름" class="w-6 h-6" />
-          {{ workbookTitle }}</h4>
+          {{ workbookTitle }}
+        </h4>
         <p class="text-black-2 ml-9">{{ workbookDescription }}</p>
-      </p>
+      </div>
       <!-- 초대자 정보 -->
-      <p>
+      <div>
         <h4 class="text-xl font-medium flex items-center gap-3 mb-1">
           <img :src="userIcon" alt="초대한 사람" class="w-6 h-6" />
-          초대한 사람</h4>
+          초대한 사람
+        </h4>
         <p class="text-black-2 ml-9">{{ userName }}</p>
-      </p>
+      </div>
       <!-- 시험 일정 -->
-      <p>
+      <div>
         <h4 class="text-xl font-medium flex items-center gap-3 mb-1">
           <img :src="calendarIcon" alt="시험 일정" class="w-6 h-6" />
-          기간</h4>
+          기간
+        </h4>
         <p class="text-black-2 ml-9">
-          {{ formatterIntlKR.format(new Date(testCenter.start_date)) }} - 
+          {{ formatterIntlKR.format(new Date(testCenter.start_date)) }} -
           {{ formatterIntlKR.format(new Date(testCenter.end_date)) }}
         </p>
-      </p>
+      </div>
       <!-- 소요 시간 -->
-      <p>
+      <div>
         <h4 class="text-xl font-medium flex items-center gap-3 mb-1">
           <img :src="timeFastIcon" alt="소요 시간" class="w-6 h-6" />
-          소요 시간</h4>
+          소요 시간
+        </h4>
         <p class="text-black-2 ml-9">
-          {{ formatMsToHourMinute(new Date(testCenter.end_date) - new Date(testCenter.start_date)) }}
+          {{
+            formatMsToHourMinute(
+              new Date(testCenter.end_date) - new Date(testCenter.start_date),
+            )
+          }}
         </p>
-      </p>
+      </div>
     </div>
 
     <template #footer>
