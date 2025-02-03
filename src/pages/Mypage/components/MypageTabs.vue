@@ -10,6 +10,7 @@ import { pointAPI } from "@/api/point";
 import { useAuthStore } from "@/store/authStore";
 import { storeToRefs } from "pinia";
 import { followAPI } from "@/api/follow";
+import EmptyText from "@/components/layout/EmptyText.vue";
 
 const route = useRoute();
 const authStore = useAuthStore();
@@ -80,47 +81,60 @@ watch(
     </div>
 
     <!-- 팔로잉 목록 탭 -->
-    <div v-if="currentTab === '팔로잉 목록'" class="grid grid-cols-6 gap-4">
-      <RouterLink
-        v-for="{ following } in followings"
-        :to="`/users/${following.id}`"
-        class="flex flex-col justify-center items-center gap-4 w-36 h-40 px-2 py-5 bg-black-6/20 rounded-lg"
+    <div v-if="currentTab === '팔로잉 목록'">
+      <div
+        v-if="!followings.length"
+        class="flex items-center justify-center h-40"
       >
-        <p v-if="!following" class="">아직 팔로잉한 사람이 없어요...</p>
-        <img
-          class="w-16 h-16 rounded-full border border-black-4"
-          :src="following.avatar_url"
-          alt="프로필 이미지"
-        />
-        <div class="flex flex-col items-center gap-1">
-          <p class="text-sm font-semibold">{{ following.name }}</p>
-          <p class="text-xs font-medium text-black-3">
-            {{ following.email }}
-          </p>
-        </div>
-      </RouterLink>
+        <EmptyText>팔로잉한 유저가 없습니다...</EmptyText>
+      </div>
+      <div v-else class="grid grid-cols-6 gap-4">
+        <RouterLink
+          v-for="{ following } in followings"
+          :to="`/users/${following.id}`"
+          class="flex flex-col justify-center items-center gap-4 w-36 h-40 px-2 py-5 bg-black-6/20 rounded-lg"
+        >
+          <p v-if="!following" class="">아직 팔로잉한 사람이 없어요...</p>
+          <img
+            class="w-16 h-16 rounded-full border border-black-4"
+            :src="following.avatar_url"
+            alt="프로필 이미지"
+          />
+          <div class="flex flex-col items-center gap-1">
+            <p class="text-sm font-semibold">{{ following.name }}</p>
+            <p class="text-xs font-medium text-black-3">
+              {{ following.email }}
+            </p>
+          </div>
+        </RouterLink>
+      </div>
     </div>
 
     <!-- 팔로워 목록 탭 -->
-    <div
-      v-else-if="currentTab === '팔로워 목록'"
-      class="grid grid-cols-6 gap-4"
-    >
-      <RouterLink
-        v-for="{ follower } in followers"
-        :to="`/users/${follower.id}`"
-        class="flex flex-col justify-center items-center gap-4 w-36 h-40 px-2 py-5 bg-black-6/20 rounded-lg"
+    <div v-else-if="currentTab === '팔로워 목록'">
+      <div
+        v-if="!followers.length"
+        class="flex items-center justify-center h-40"
       >
-        <img
-          class="w-16 h-16 rounded-full border border-black-4"
-          :src="follower.avatar_url"
-          alt="프로필 이미지"
-        />
-        <div class="flex flex-col items-center gap-1">
-          <p class="text-sm font-semibold">{{ follower.name }}</p>
-          <p class="text-xs font-medium text-black-3">{{ follower.email }}</p>
-        </div>
-      </RouterLink>
+        <EmptyText>아직 나를 팔로우 한 유저가 없습니다...</EmptyText>
+      </div>
+      <div v-else class="grid grid-cols-6 gap-4">
+        <RouterLink
+          v-for="{ follower } in followers"
+          :to="`/users/${follower.id}`"
+          class="flex flex-col justify-center items-center gap-4 w-36 h-40 px-2 py-5 bg-black-6/20 rounded-lg"
+        >
+          <img
+            class="w-16 h-16 rounded-full border border-black-4"
+            :src="follower.avatar_url"
+            alt="프로필 이미지"
+          />
+          <div class="flex flex-col items-center gap-1">
+            <p class="text-sm font-semibold">{{ follower.name }}</p>
+            <p class="text-xs font-medium text-black-3">{{ follower.email }}</p>
+          </div>
+        </RouterLink>
+      </div>
     </div>
 
     <!-- 포인트 내역 탭 -->
