@@ -1,0 +1,100 @@
+{
+  "participants": [
+    {
+      "id": 1,
+      "name": "박해민",
+      "team": "LG 트윈스",
+      "photo": "https://search.pstatic.net/common?type=b&size=216&expire=1&refresh=true&quality=100&direct=true&src=http%3A%2F%2Fsstatic.naver.net%2Fpeople%2FprofileImg%2Ft%2Fe0a0d16a-160c-4bb4-8b50-a88246d69f75.png"
+    },
+    {
+      "id": 2,
+      "name": "김현수",
+      "team": "LG 트윈스",
+      "photo": "https://search.pstatic.net/common?type=b&size=216&expire=1&refresh=true&quality=100&direct=true&src=http%3A%2F%2Fsstatic.naver.net%2Fpeople%2FprofileImg%2Ft%2Fcd24b507-8b76-44b1-9463-346b3feee93a.png"
+    },
+    {
+      "id": 3,
+      "name": "허경민",
+      "team": "두산 베어스(KT 위즈)",
+      "photo": "https://search.pstatic.net/common?type=b&size=216&expire=1&refresh=true&quality=100&direct=true&src=http%3A%2F%2Fsstatic.naver.net%2Fpeople%2FprofileImg%2Ft%2Fff68c699-9a03-4e40-9eb7-d5a26760b492.png"
+    },
+    {
+      "id": 4,
+      "name": "양의지",
+      "team": "두산 베어스",
+      "photo": "https://search.pstatic.net/common?type=b&size=216&expire=1&refresh=true&quality=100&direct=true&src=http%3A%2F%2Fsstatic.naver.net%2Fpeople%2F79%2F202304041538383501.png"
+    },
+    {
+      "id": 5,
+      "name": "홍종표",
+      "team": "KIA 타이거즈",
+      "photo": "https://search.pstatic.net/common?type=b&size=216&expire=1&refresh=true&quality=100&direct=true&src=http%3A%2F%2Fsstatic.naver.net%2Fpeople%2FprofileImg%2Ft%2F9dee8989-4f73-46bf-8bf3-2c8dd887d154.png"
+    },
+    {
+      "id": 6,
+      "name": "나성범",
+      "team": "KIA 타이거즈",
+      "photo": "https://search.pstatic.net/common?type=b&size=216&expire=1&refresh=true&quality=100&direct=true&src=http%3A%2F%2Fsstatic.naver.net%2Fpeople%2FprofileImg%2Ft%2F8cf241c3-1b3e-4e63-a768-6a2c0184de37.png"
+    },
+    {
+      "id": 7,
+      "name": "오승환",
+      "team": "삼성 라이온즈",
+      "photo": "https://search.pstatic.net/common?type=b&size=216&expire=1&refresh=true&quality=100&direct=true&src=http%3A%2F%2Fsstatic.naver.net%2Fpeople%2FprofileImg%2Ft%2Fdbabccff-0e96-4e00-9d6b-1b6708209a40.png"
+    },
+    {
+      "id": 8,
+      "name": "나균안",
+      "team": "롯데 자이언츠",
+      "photo": "https://search.pstatic.net/common?type=b&size=216&expire=1&refresh=true&quality=100&direct=true&src=http%3A%2F%2Fsstatic.naver.net%2Fpeople%2FprofileImg%2Ft%2Ff6868861-c43c-4edc-8db2-a95179eafb5b.png"
+    },
+    {
+      "id": 9,
+      "name": "유강남",
+      "team": "롯데 자이언츠",
+      "photo": "https://search.pstatic.net/common?type=b&size=216&expire=1&refresh=true&quality=100&direct=true&src=http%3A%2F%2Fsstatic.naver.net%2Fpeople%2F74%2F202304171338093751.png"
+    },
+    {
+      "id": 10,
+      "name": "한현희",
+      "team": "롯데 자이언츠",
+      "photo": "https://search.pstatic.net/common?type=b&size=216&expire=1&refresh=true&quality=100&direct=true&src=http%3A%2F%2Fsstatic.naver.net%2Fpeople%2F162%2F202304171525336891.png"
+    },
+    {
+      "id": 11,
+      "name": "노진혁",
+      "team": "롯데 자이언츠",
+      "photo": "https://search.pstatic.net/common?type=b&size=216&expire=1&refresh=true&quality=100&direct=true&src=http%3A%2F%2Fsstatic.naver.net%2Fpeople%2FprofileImg%2Ft%2F245a1b0b-78b4-429a-bb4a-b649ad2e73a7.png"
+    },
+    {
+      "id": 12,
+      "name": "손아섭",
+      "team": "NC 다이노스",
+      "photo": "https://search.pstatic.net/common?type=b&size=216&expire=1&refresh=true&quality=100&direct=true&src=http%3A%2F%2Fsstatic.naver.net%2Fpeople%2FprofileImg%2Ft%2F9940e59c-f022-4830-9445-5a2b21c8edfe.png"
+    },
+    {
+      "id": 13,
+      "name": "최원태",
+      "team": "LG 트윈스(삼성 라이온즈)",
+      "photo": "https://search.pstatic.net/common?type=b&size=216&expire=1&refresh=true&quality=100&direct=true&src=http%3A%2F%2Fsstatic.naver.net%2Fpeople%2FprofileImg%2Ft%2F12c06d1f-41c8-4dd3-ba80-c8f70a1fec15.png"
+    },
+    {
+      "id": 14,
+      "name": "박병호",
+      "team": "KT 위즈(삼성 라이온즈)",
+      "photo": "https://search.pstatic.net/common?type=b&size=216&expire=1&refresh=true&quality=100&direct=true&src=http%3A%2F%2Fsstatic.naver.net%2Fpeople%2FprofileImg%2Ft%2F266a3f95-fd44-4dbe-bd50-b23a6c0d5b91.png"
+    },
+    {
+      "id": 15,
+      "name": "이용찬",
+      "team": "NC 다이노스",
+      "photo": "https://search.pstatic.net/common?type=b&size=216&expire=1&refresh=true&quality=100&direct=true&src=http%3A%2F%2Fsstatic.naver.net%2Fpeople%2FprofileImg%2Ft%2F76f7818f-6fc0-44f5-a614-6a95b46d745a.png"
+    },
+    {
+      "id": 16,
+      "name": "벤자민",
+      "team": "KT 위즈",
+      "photo": "https://search.pstatic.net/sunny?src=https%3A%2F%2Fi.namu.wiki%2Fi%2FJgHpThyNdfTolCuiI5aIksyPWSWqLkGKEILo3-846j1Z4PS2gdRCyVYyIx6B8Whm-xD0KmbKRAUO9j0jwaT7Rg.webp&type=fff208_208"
+    }
+  ]
+}

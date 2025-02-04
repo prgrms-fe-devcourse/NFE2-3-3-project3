@@ -1,0 +1,38 @@
+/* 툴바 디자인 바꾸기 */
+.ql-toolbar {
+  border: none !important;
+  border-bottom: 1px solid #919191 !important;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 내용 디자인 바꾸기 */
+.ql-container {
+  border: none !important;
+  padding-top: 30px;
+  padding-bottom: 30px;
+  padding-left: 70px;
+  padding-right: 70px;
+}
+/* placeholder 수정하기 */
+.ql-editor::before {
+  color: #b1b1b1 !important;
+  font-size: 16px; /* 글자 크기 */
+  font-style: normal !important;
+  padding-left: 70px;
+}
+
+/* 에디터 css */
+.ql-editor {
+  font-size: 16px; /* 글자 크기 */
+}
+
+/* 이미지 정렬추가 */
+.ql-editor .ql-align-center img {
+  display: block;
+  margin: 0 auto;
+}
+.ql-editor .ql-align-right img {
+  display: block;
+  margin-left: auto;
+  margin-right: 0;
+}

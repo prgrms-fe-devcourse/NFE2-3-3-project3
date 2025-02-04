@@ -1,0 +1,14 @@
+@import "./tailwind.css";
+@import "./font.css";
+@import "./quill.css";
+* {
+  margin: 0x;
+  padding: 0px;
+  box-sizing: border-box;
+  font-family: "Pretendard", sans-serif;
+}
+
+/* html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+} */
