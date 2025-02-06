@@ -54,18 +54,38 @@
 ├── tailwind.config.js
 └── vite.config.js
 ```
-
 ## 🧑🏻‍💻👩🏻‍💻 구성원
 
-|                   Frontend                   |                   Frontend                   |                Frontend                |                 Frontend                 |                    Frontend                    |
-| :------------------------------------------: | :------------------------------------------: | :------------------------------------: | :--------------------------------------: | :--------------------------------------------: |
-|          <img width="100" alt="miseullang" src="https://github.com/user-attachments/assets/d7e3b2bf-5aea-42eb-b1cf-500cc983531b" />          |          <img width="100" alt="kimnaehyun" src="https://github.com/user-attachments/assets/279ca853-5ca8-4787-90ea-7ca89a703999" />
-          |       <img width="100" alt="nirii00" src="https://github.com/user-attachments/assets/d51a02b6-76c3-4c17-82d8-f19b8283a0f6" />
-       |        <img width="100" alt="Quokka3754" src="https://github.com/user-attachments/assets/e5c35a1c-a64d-451c-9269-61d5426fe34a" />
-        |           <img width="100" alt="YongJaeHyun" src="https://github.com/user-attachments/assets/03349f47-8fed-46dd-a785-d1bbd7465b39" />
-           |
-|                    권윤슬                    |                    김내현                    |                 김세빈                 |                  안효태                  |                     현용재                     |
-| [@miseullang](https://github.com/miseullang) | [@kimnaehyun](https://github.com/kimnaehyun) | [@nirii00](https://github.com/nirii00) | [@Quokka3764](https://github.com/uoomif) | [@YongJaeHyun](https://github.com/YongJaeHyun) |
+<table>
+  <tr>
+    <th>Frontend</th>
+    <th>Frontend</th>
+    <th>Frontend</th>
+    <th>Frontend</th>
+    <th>Frontend</th>
+  </tr>
+  <tr>
+    <td><img width="100" alt="miseullang" src="https://github.com/user-attachments/assets/d7e3b2bf-5aea-42eb-b1cf-500cc983531b" /></td>
+    <td><img width="100" alt="kimnaehyun" src="https://github.com/user-attachments/assets/279ca853-5ca8-4787-90ea-7ca89a703999" /></td>
+    <td><img width="100" alt="nirii00" src="https://github.com/user-attachments/assets/d51a02b6-76c3-4c17-82d8-f19b8283a0f6" /></td>
+    <td><img width="100" alt="Quokka3754" src="https://github.com/user-attachments/assets/e5c35a1c-a64d-451c-9269-61d5426fe34a" /></td>
+    <td><img width="100" alt="YongJaeHyun" src="https://github.com/user-attachments/assets/03349f47-8fed-46dd-a785-d1bbd7465b39" /></td>
+  </tr>
+  <tr>
+    <td>권윤슬</td>
+    <td>김내현</td>
+    <td>김세빈</td>
+    <td>안효태</td>
+    <td>현용재</td>
+  </tr>
+  <tr>
+    <td><a href="https://github.com/miseullang">@miseullang</a></td>
+    <td><a href="https://github.com/kimnaehyun">@kimnaehyun</a></td>
+    <td><a href="https://github.com/nirii00">@nirii00</a></td>
+    <td><a href="https://github.com/Quokka3764">@Quokka3764</a></td>
+    <td><a href="https://github.com/YongJaeHyun">@YongJaeHyun</a></td>
+  </tr>
+</table>
 
 <br/>
 
