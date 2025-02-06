@@ -30,7 +30,9 @@
 **협업툴**  
 [![My Skills](https://skillicons.dev/icons?i=figma,github,notion&theme=light)](https://skillicons.dev)
 
-<br>
+<br/>
+
+## 폴더 구조
 
 ```
 📦 Pullgo_ProblemShare/
@@ -54,7 +56,9 @@
 ├── tailwind.config.js
 └── vite.config.js
 ```
-## 🧑🏻‍💻👩🏻‍💻 구성원
+
+<br/>
+## 구성원
 
 <table>
   <tr>
@@ -89,7 +93,7 @@
 
 <br/>
 
-## ✏️ 커밋 컨벤션
+## 커밋 컨벤션
 
 - 🚨 Fix: [수정 대상] - [수정 내용]
 - ✨ Feature: 새로운 기능 추가, 사용자 입장에서 변화가 있을 경우
