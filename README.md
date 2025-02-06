@@ -1,34 +1,79 @@
 <!-- 반영한 브랜치 표시 확인용 -->
 
-## ✨ 반영 브랜치
+## Pullgo
 
-`feature/` -> `dev`
+![Thumbnail](https://github.com/user-attachments/assets/readme_home)
+
+- 프로젝트 기간 : 2025-01-13 ~ 2025-02-04
+- 배포 URL : https://pullgo.netlify.app/
 
 <!-- 간단한 PR task에 대한 설명 -->
 
-## 📝 설명
+## 프로젝트 소개 - 친구와, 혼자서, 학생들과 풀고 하세요!
 
-<!-- 상세 task 변경사항 체크리스트로 기술 -->
+- Pullgo는 문제를 쉽게 풀고 공유할 수 있는 문제 공유 사이트 입니다.
 
-## ✅ 변경 사항
+<br>
 
-- [x] App.tsx에 코드 수정
+## 기술 스택
 
-<!-- PR에서 중점적으로 봐야할 부분이나 질문 & 애로사항 공유 -->
+[![pnpm](https://img.shields.io/badge/maintained%20with-pnpm-f9ad00.svg)](https://pnpm.io/)
+![vue](https://img.shields.io/badge/vue-3.5.13-%234FC08D?logo=vuedotjs)
+![tailwind](https://img.shields.io/badge/tailwind-3.4.17-%2306B6D4?logo=tailwindcss)
 
-## 💬 PR 포인트 & 질문사항
+**라이브러리**  
+![supabase](https://img.shields.io/badge/supabase-2.6.0-%233FCF8E?logo=supabase)
+![PrimeVue](https://img.shields.io/badge/PrimeVue-3.41.2-%235785A8?logo=prime)
+![Toast UI Editor](https://img.shields.io/badge/Toast_UI_Editor-3.2.2-%230069ff?logo=github)
+![swiper](https://img.shields.io/badge/swiper-11.1.15-%23104E8B?logo=swiper)
 
-- PR 좀 봐주세요~~
-- 어떻게 생각하시나요?
+**협업툴**  
+[![My Skills](https://skillicons.dev/icons?i=figma,github,notion&theme=light)](https://skillicons.dev)
 
-## 📷 변경사항 스크린샷
+<br>
 
-<!-- 필수는 아니지만, 변경사항을 사진으로 공유하시면 좋아요! -->
+```
+📦 Pullgo_ProblemShare/
+├── .github/
+├── public/
+├── src/
+│ ├── api/
+│ ├── assets/
+│ ├── components/
+│ ├── pages/
+│ ├── router/
+│ ├── store/
+│ ├── utils/
+│ ├── App.vue
+│ ├── main.js
+│ └── index.js
+├── .gitignore
+├── README.md
+├── package.json
+├── postcss.config.js
+├── tailwind.config.js
+└── vite.config.js
+```
 
-- 변화된 부분을 올려주시면 좋아요 ✔
+## 🧑🏻‍💻👩🏻‍💻 구성원
 
-<!-- 이슈 필터링을 위한 url, 이슈에 관한 PR이 아니면 삭제해도 무방 -->
+|                   Frontend                   |                   Frontend                   |                Frontend                |                 Frontend                 |                    Frontend                    |
+| :------------------------------------------: | :------------------------------------------: | :------------------------------------: | :--------------------------------------: | :--------------------------------------------: |
+|          <img src=""  width="100"/>          |          <img src=""  width="100"/>          |       <img src=''  width="100"/>       |        <img src=""  width="100"/>        |           <img src=""  width="100"/>           |
+|                    권윤슬                    |                    김내현                    |                 김세빈                 |                  안효태                  |                     현용재                     |
+| [@miseullang](https://github.com/miseullang) | [@kimnaehyun](https://github.com/kimnaehyun) | [@nirii00](https://github.com/nirii00) | [@Quokka3764](https://github.com/uoomif) | [@YongJaeHyun](https://github.com/YongJaeHyun) |
 
-## 📢 이슈 정보
+<br/>
 
-[이슈 번호/정보](이슈 url)
+## ✏️ 커밋 컨벤션
+
+- 🚨 Fix: [수정 대상] - [수정 내용]
+- ✨ Feature: 새로운 기능 추가, 사용자 입장에서 변화가 있을 경우
+- 🎉 Init: 프로젝트 초기 생성
+- 📝 Chore: 그 외 자잘한 수정에 대한 커밋, 주석, 의존성 설치, 리드미 수정
+- 💄 Style: CSS, tailwind 스타일 관련 변경
+- 🔨 Refactor: 코드 리팩토링에 대한 커밋, 사용자 입장에서 변화가 없는 코드, 파일명 폴더명 변경 및 이동
+- 🗑️ Remove: 파일을 삭제하는 작업만 수행하는 경우
+- ♻️ Format: 코드 포맷팅 변경에 관련된 작업
+
+<br/>
